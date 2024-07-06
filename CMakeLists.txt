@@ -6,9 +6,18 @@ set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+#SDL
 set(SDL_DIR externals/SDL)
 add_subdirectory(${SDL_DIR})
 set_target_properties (uninstall SDL2 SDL2_test SDL2main SDL2-static sdl_headers_copy PROPERTIES FOLDER Externals)
 include_directories(${SDL_DIR}/include ${SDL_DIR}/src)
+
+#imgui
+set(IMGUI_DIR externals/imgui)
+file(GLOB IMGUI_FILES ${IMGUI_DIR}/*.cpp ${IMGUI_DIR}/*.h
+        ${IMGUI_DIR}/backends/imgui_impl_sdl2.cpp ${IMGUI_DIR}/backends/imgui_impl_sdlrenderer2.cpp)
+add_library(imgui ${IMGUI_FILES})
+target_include_directories(imgui PUBLIC ${IMGUI_DIR} ${IMGUI_DIR}/backends/)
+target_link_libraries(imgui PUBLIC SDL2-static)
 
 add_subdirectory(game/)
