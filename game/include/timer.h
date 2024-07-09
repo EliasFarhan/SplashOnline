@@ -17,7 +17,7 @@ public:
             time_ -= deltaTime;
 
     }
-    constexpr bool Over() const noexcept
+    [[nodiscard]] constexpr bool Over() const noexcept
     {
         return time_ <= 0;
     }
@@ -37,7 +37,7 @@ public:
     {
         time_ = -1;
     }
-    constexpr T CurrentRatio() const noexcept
+    [[nodiscard]] constexpr T CurrentRatio() const noexcept
     {
         T current = (period_ - time_) / period_;
         if (current < 0)
@@ -46,11 +46,11 @@ public:
             current = 1;
         return current;
     }
-    constexpr T CurrentTime() const noexcept
+    [[nodiscard]] constexpr T CurrentTime() const noexcept
     {
         return period_ - time_;
     }
-    constexpr T RemainingTime() const noexcept
+    [[nodiscard]] constexpr T RemainingTime() const noexcept
     {
         return time_;
     }
