@@ -6,6 +6,11 @@ set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+#NekoLib
+set(NEKOLIB_DIR externals/NekoLib)
+add_subdirectory(${NEKOLIB_DIR})
+
+
 #SDL
 set(SDL_DIR externals/SDL)
 add_subdirectory(${SDL_DIR})
@@ -20,4 +25,16 @@ add_library(imgui ${IMGUI_FILES})
 target_include_directories(imgui PUBLIC ${IMGUI_DIR} ${IMGUI_DIR}/backends/)
 target_link_libraries(imgui PUBLIC SDL2-static)
 
-add_subdirectory(game/)
+
+file(GLOB_RECURSE GAME_FILES src/*.cpp include/*.h)
+
+add_library(SplashLib ${GAME_FILES})
+target_link_libraries(SplashLib PUBLIC SDL2-static SDL2main imgui NekoCore)
+target_include_directories(SplashLib PUBLIC include/)
+
+file(GLOB MAIN_FILES main/*.cpp)
+foreach (MAIN_FILE ${MAIN_FILES})
+    get_filename_component(MAIN_NAME ${MAIN_FILE} NAME_WE)
+    add_executable(${MAIN_NAME} ${MAIN_FILE})
+    target_link_libraries(${MAIN_NAME} PUBLIC SplashLib)
+endforeach ()
