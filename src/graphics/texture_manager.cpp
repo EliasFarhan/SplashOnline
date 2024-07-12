@@ -6,10 +6,12 @@
 #include <stb_image.h>
 
 #include "graphics/texture_manager.h"
+#include "engine/engine.h"
+
+#include <thread/job_system.h>
 
 #include <string_view>
 #include <array>
-#include <thread>
 #include <atomic>
 
 namespace splash
@@ -76,13 +78,15 @@ SDL_Texture* CreateTextureFromSurface(SDL_Renderer* renderer, SDL_Surface* surfa
 {
 	return SDL_CreateTextureFromSurface(renderer, surface);
 }
-static std::thread loadingThread;
+
 static std::atomic<int> loadingIndex{-1};
 static std::array<Image, (int)TextureManager::TextureId::LENGTH> images;
 static std::array<SDL_Surface*, (int)TextureManager::TextureId::LENGTH> surfaces;
+static std::unique_ptr<neko::FuncJob> loadingJob;
+
 void TextureManager::Begin()
 {
-	loadingThread = std::thread([](){
+	loadingJob = std::make_unique<neko::FuncJob>([](){
 		for(int i = 0; i < texturePaths.size(); i++)
 		{
 			images[i] = LoadImageFromFile(texturePaths[i]);
@@ -90,6 +94,7 @@ void TextureManager::Begin()
 			loadingIndex.store(i, std::memory_order_release);
 		}
 	});
+	GetEngine()->ScheduleJob(loadingJob.get());
 }
 
 void TextureManager::End()
@@ -110,16 +115,14 @@ void TextureManager::UpdateLoad()
 {
 	if(IsLoaded())
 	{
-		if(loadingThread.joinable())
-		{
-			loadingThread.join();
-		}
 		return;
 	}
 	for(int i = 0; i <= loadingIndex.load(std::memory_order_consume); i++)
 	{
 		if(textures_[i] != nullptr) continue;
 		textures_[i] = CreateTextureFromSurface(renderer_, surfaces[i]);
+		SDL_FreeSurface(surfaces[i]);
+		stbi_image_free(images[i].pixels);
 	}
 }
 }

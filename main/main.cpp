@@ -40,9 +40,16 @@ int main(int argc, char** argv)
 	}
 
 	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
+	if(renderer == nullptr)
+	{
+		fprintf(stderr, "SDL renderer failed to initialise: %s\n", SDL_GetError());
 
-	splash::TextureManager textureManager(renderer);
-	textureManager.Begin();
+		return 1;
+	}
+	SDL_RendererInfo info;
+	SDL_GetRendererInfo(renderer, &info);
+
+	std::cout << "SDL Renderer name: " << info.name << '\n';
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -60,10 +67,10 @@ int main(int argc, char** argv)
 	while (isOpen)
 	{
 		SDL_Event e;
-//Handle events on queue
+		//Handle events on queue
 		while (SDL_PollEvent(&e) != 0)
 		{
-//User requests quit
+			//User requests quit
 			if (e.type == SDL_QUIT)
 			{
 				isOpen = false;
@@ -71,20 +78,10 @@ int main(int argc, char** argv)
 			ImGui_ImplSDL2_ProcessEvent(&e);
 		}
 
-		textureManager.UpdateLoad();
 
 		//Clear screen
 		SDL_RenderClear(renderer);
 
-		SDL_Rect texture_rect;
-		texture_rect.x = 0; //the x coordinate
-		texture_rect.y = 0; //the y coordinate
-		texture_rect.w = WIDTH; //the width of the texture
-		texture_rect.h = HEIGHT; //the height of the texture
-		SDL_RenderCopy(renderer,
-			textureManager.GetTexture(splash::TextureManager::TextureId::BG),
-			NULL,
-			&texture_rect);
 
 		// Start the Dear ImGui frame
 		ImGui_ImplSDLRenderer2_NewFrame();
@@ -93,10 +90,12 @@ int main(int argc, char** argv)
 
 		ImGui::Begin("Splash Online");
 		ImGui::End();
-// Rendering
+		// Rendering
 		ImGui::Render();
-		SDL_RenderSetScale(renderer, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
-//Update screen
+		SDL_RenderSetScale(renderer,
+			io.DisplayFramebufferScale.x,
+			io.DisplayFramebufferScale.y);
+		//Update screen
 		ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer);
 		SDL_RenderPresent(renderer);
 	}
@@ -105,10 +104,10 @@ int main(int argc, char** argv)
 	ImGui::DestroyContext();
 
 	SDL_DestroyRenderer(renderer);
-/* Frees memory */
+	/* Frees memory */
 	SDL_DestroyWindow(window);
 
-/* Shuts down all SDL subsystems */
+	/* Shuts down all SDL subsystems */
 	SDL_Quit();
 
 	return 0;
