@@ -28,6 +28,10 @@ void Engine::Run()
 			}
 			//TODO do something for event
 		}
+
+		graphicsManager_.Update(0.0f);
+
+
 	}
 	End();
 
@@ -36,10 +40,12 @@ void Engine::Run()
 void Engine::Begin()
 {
 	jobSystem_.Begin();
+	graphicsManager_.Begin();
 }
 
 void Engine::End()
 {
+	graphicsManager_.End();
 	jobSystem_.End();
 }
 

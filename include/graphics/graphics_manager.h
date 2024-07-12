@@ -13,8 +13,11 @@ namespace splash
 class GraphicsManager
 {
 public:
+
 	void Begin();
+	void Update(float dt);
 	void End();
+	void Draw();
 private:
 	TextureManager textureManager_;
 };

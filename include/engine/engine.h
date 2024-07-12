@@ -5,6 +5,7 @@
 #ifndef SPLASHONLINE_ENGINE_H_
 #define SPLASHONLINE_ENGINE_H_
 
+#include "graphics/graphics_manager.h"
 #include <thread/job_system.h>
 
 
@@ -23,6 +24,7 @@ private:
 	void End();
 
 	neko::JobSystem jobSystem_;
+	GraphicsManager graphicsManager_;
 	int otherQueue_{};
 	int networkQueue_{};
 };
