@@ -28,6 +28,10 @@ void Engine::Run()
 			}
 			//TODO do something for event
 		}
+
+		graphicsManager_.Update(0.0f);
+
+
 	}
 	End();
 
@@ -36,6 +40,7 @@ void Engine::Run()
 void Engine::Begin()
 {
 	jobSystem_.Begin();
+<<<<<<< HEAD
 	/*
 	* Initialises the SDL video subsystem (as well as the events subsystem).
 	* Returns 0 on success or a negative error code on failure using SDL_GetError().
@@ -46,6 +51,8 @@ void Engine::Begin()
 		return;
 	}
 	window_.Begin();
+=======
+>>>>>>> 00f5d1d61eb9a7367b0364773454697c3c8e6c81
 	graphicsManager_.Begin();
 }
 

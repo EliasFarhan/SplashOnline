@@ -5,6 +5,7 @@
 #ifndef SPLASHONLINE_ENGINE_H_
 #define SPLASHONLINE_ENGINE_H_
 
+#include "graphics/graphics_manager.h"
 #include <thread/job_system.h>
 #include "graphics/graphics_manager.h"
 #include "engine/window.h"

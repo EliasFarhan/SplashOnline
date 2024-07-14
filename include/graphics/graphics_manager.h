@@ -22,8 +22,10 @@ class GraphicsManager
 public:
 	GraphicsManager();
 	void Begin();
+	void Update(float dt);
 	void End();
 	[[nodiscard]] SDL_Renderer* GetRenderer() const;
+	void Draw();
 private:
 	TextureManager textureManager_;
 	GuiRenderer guiRenderer_;
