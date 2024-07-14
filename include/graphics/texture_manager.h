@@ -16,7 +16,6 @@ namespace splash
 class TextureManager
 {
 public:
-	explicit TextureManager(SDL_Renderer* renderer): renderer_(renderer){}
     void Begin();
 
 	void End();

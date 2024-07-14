@@ -6,6 +6,8 @@
 #define SPLASHONLINE_ENGINE_H_
 
 #include <thread/job_system.h>
+#include "graphics/graphics_manager.h"
+#include "engine/window.h"
 
 
 namespace splash
@@ -23,6 +25,8 @@ private:
 	void End();
 
 	neko::JobSystem jobSystem_;
+	Window window_;
+	GraphicsManager graphicsManager_;
 	int otherQueue_{};
 	int networkQueue_{};
 };

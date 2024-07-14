@@ -86,6 +86,7 @@ static std::unique_ptr<neko::FuncJob> loadingJob;
 
 void TextureManager::Begin()
 {
+	renderer_ = GetRenderer();
 	loadingJob = std::make_unique<neko::FuncJob>([](){
 		for(int i = 0; i < texturePaths.size(); i++)
 		{
