@@ -7,6 +7,6 @@
 [submodule "externals/NekoLib"]
 	path = externals/NekoLib
 	url = https://github.com/EliasFarhan/NekoLib.git
-[submodule "externals/NekoPhysics"]
-	path = externals/NekoPhysics
-	url = https://github.com/EliasFarhan/NekoPhysics.git
+[submodule "externals/tracy"]
+	path = externals/tracy
+	url = https://github.com/wolfpld/tracy.git

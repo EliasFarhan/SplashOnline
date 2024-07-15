@@ -6,6 +6,11 @@ set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+#NekoLib
+set(NEKOLIB_DIR externals/NekoLib)
+add_subdirectory(${NEKOLIB_DIR})
+
+
 #SDL
 set(SDL_DIR externals/SDL)
 add_subdirectory(${SDL_DIR})
@@ -20,4 +25,42 @@ add_library(imgui ${IMGUI_FILES})
 target_include_directories(imgui PUBLIC ${IMGUI_DIR} ${IMGUI_DIR}/backends/)
 target_link_libraries(imgui PUBLIC SDL2-static)
 
-add_subdirectory(game/)
+
+file(GLOB_RECURSE GAME_FILES src/*.cpp include/*.h)
+
+add_library(SplashLib ${GAME_FILES})
+target_link_libraries(SplashLib PUBLIC SDL2-static SDL2main imgui NekoCore)
+target_include_directories(SplashLib PUBLIC include/ externals/include)
+
+#attach data to SplashLib
+file(GLOB_RECURSE data_files "${CMAKE_CURRENT_SOURCE_DIR}/data/*")
+foreach(DATA ${data_files})
+    get_filename_component(FILE_NAME ${DATA} NAME)
+    get_filename_component(PATH_NAME ${DATA} DIRECTORY)
+    get_filename_component(EXTENSION ${DATA} EXT)
+    file(RELATIVE_PATH PATH_NAME "${PROJECT_SOURCE_DIR}" ${PATH_NAME})
+    set(DATA_OUTPUT "${PROJECT_BINARY_DIR}/${PATH_NAME}/${FILE_NAME}")
+    message("Data input: ${DATA} data output: ${DATA_OUTPUT} path name: ${PATH_NAME}")
+    if(NOT EXISTS "${PROJECT_BINARY_DIR}/${PATH_NAME}")
+        file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/${PATH_NAME}")
+    endif ()
+
+    add_custom_command(
+            OUTPUT ${DATA_OUTPUT}
+            DEPENDS ${DATA}
+            DEPENDS
+            COMMAND ${CMAKE_COMMAND} -E copy ${DATA} "${PROJECT_BINARY_DIR}/${PATH_NAME}/${FILE_NAME}"
+    )
+    list(APPEND DATA_BINARY_FILES ${DATA_OUTPUT})
+endforeach()
+add_custom_target(
+        SplashData
+        DEPENDS ${DATA_FILES} ${DATA_BINARY_FILES})
+add_dependencies(SplashLib SplashData)
+
+file(GLOB MAIN_FILES main/*.cpp)
+foreach (MAIN_FILE ${MAIN_FILES})
+    get_filename_component(MAIN_NAME ${MAIN_FILE} NAME_WE)
+    add_executable(${MAIN_NAME} ${MAIN_FILE})
+    target_link_libraries(${MAIN_NAME} PUBLIC SplashLib)
+endforeach ()
