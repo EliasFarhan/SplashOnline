@@ -5,6 +5,8 @@
 #ifndef SPLASHONLINE__GUI_RENDERER_H_
 #define SPLASHONLINE__GUI_RENDERER_H_
 
+#include "engine/window.h"
+
 #include <SDL.h>
 #include <vector>
 
@@ -17,16 +19,17 @@ public:
 	virtual void OnGui() = 0;
 };
 
-class GuiRenderer
+class GuiRenderer : public OnEventInterface
 {
 public:
 	void Begin();
-
+	void Update();
 	void End();
 
 	void Draw();
 
 	void AddListener(OnGuiInterface* guiInterface);
+	void OnEvent(const SDL_Event& event) override;
 private:
 	SDL_Renderer* renderer_;
 	std::vector<OnGuiInterface*> guiInterfaces_;

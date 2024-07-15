@@ -25,14 +25,18 @@ public:
 	void Update(float dt);
 	void End();
 	[[nodiscard]] SDL_Renderer* GetRenderer() const;
+	void PreDraw();
 	void Draw();
+	void PostDraw();
+	void AddDrawInterface(DrawInterface* drawInterface);
 private:
 	TextureManager textureManager_;
 	GuiRenderer guiRenderer_;
 	SDL_Renderer* renderer_;
+	std::vector<DrawInterface*> drawInterfaces_;
 };
 
-
+void AddDrawInterface(DrawInterface* drawInterface);
 SDL_Renderer* GetRenderer();
 }
 

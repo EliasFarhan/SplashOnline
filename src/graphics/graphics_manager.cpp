@@ -53,25 +53,36 @@ SDL_Renderer* GetRenderer()
 	return instance->GetRenderer();
 }
 
+void AddDrawInterface(DrawInterface* drawInterface)
+{
+	instance->AddDrawInterface(drawInterface);
+}
+
 void GraphicsManager::Update(float dt)
 {
 	if(!textureManager_.IsLoaded())
 	{
 		textureManager_.UpdateLoad();
 	}
+	guiRenderer_.Update();
 }
 
 void GraphicsManager::Draw()
 {
-	SDL_Rect texture_rect;
-	texture_rect.x = 0; //the x coordinate
-	texture_rect.y = 0; //the y coordinate
-	texture_rect.w = 800; //the width of the texture
-	texture_rect.h = 600; //the height of the texture
-	/*SDL_RenderCopy(renderer,
-		textureManager.GetTexture(splash::TextureManager::TextureId::BG),
-		NULL,
-		&texture_rect);
-	 */
+	guiRenderer_.Draw();
+}
+void GraphicsManager::PreDraw()
+{
+	//Clear screen
+	SDL_RenderClear(renderer_);
+}
+void GraphicsManager::PostDraw()
+{
+	// Rendering
+	SDL_RenderPresent(renderer_);
+}
+void GraphicsManager::AddDrawInterface(DrawInterface* drawInterface)
+{
+	drawInterfaces_.push_back(drawInterface);
 }
 }

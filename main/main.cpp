@@ -29,24 +29,12 @@ int main(int argc, char** argv)
 			{
 				isOpen = false;
 			}
-			ImGui_ImplSDL2_ProcessEvent(&e);
 		}
 
 
-		//Clear screen
-		SDL_RenderClear(renderer);
 
 
-		// Start the Dear ImGui frame
-		ImGui_ImplSDLRenderer2_NewFrame();
-		ImGui_ImplSDL2_NewFrame();
-		ImGui::NewFrame();
 
-		ImGui::Begin("Splash Online");
-		ImGui::End();
-		// Rendering
-
-		SDL_RenderPresent(renderer);
 
 
 	}

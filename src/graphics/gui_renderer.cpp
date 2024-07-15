@@ -27,6 +27,8 @@ void GuiRenderer::Begin()
 	ImGui::StyleColorsDark();
 	ImGui_ImplSDL2_InitForSDLRenderer(GetWindow(), renderer_);
 	ImGui_ImplSDLRenderer2_Init(renderer_);
+
+	AddEventListener(this);
 }
 
 void GuiRenderer::End()
@@ -50,5 +52,24 @@ void GuiRenderer::Draw()
 void GuiRenderer::AddListener(OnGuiInterface* guiInterface)
 {
 	guiInterfaces_.push_back(guiInterface);
+}
+
+void GuiRenderer::OnEvent(const SDL_Event& event)
+{
+	ImGui_ImplSDL2_ProcessEvent(&event);
+}
+void GuiRenderer::Update()
+{
+	// Start the Dear ImGui frame
+	ImGui_ImplSDLRenderer2_NewFrame();
+	ImGui_ImplSDL2_NewFrame();
+	ImGui::NewFrame();
+
+	ImGui::Begin("Splash Online");
+	ImGui::End();
+	for(auto* guiInterface : guiInterfaces_)
+	{
+		guiInterface->OnGui();
+	}
 }
 }

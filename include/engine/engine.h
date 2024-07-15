@@ -25,9 +25,9 @@ private:
 	void Begin();
 	void End();
 
-	neko::JobSystem jobSystem_;
-	Window window_;
-	GraphicsManager graphicsManager_;
+	neko::JobSystem jobSystem_{};
+	Window window_{};
+	GraphicsManager graphicsManager_{};
 	int otherQueue_{};
 	int networkQueue_{};
 };

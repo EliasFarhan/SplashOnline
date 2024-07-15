@@ -24,6 +24,7 @@ void Window::Begin()
 		fprintf(stderr, "SDL window failed to initialise: %s\n", SDL_GetError());
 		return;
 	}
+    isOpen_ = true;
 }
 
 void Window::End()
@@ -43,8 +44,41 @@ SDL_Window* Window::GetWindow()
 	return window_;
 }
 
+void Window::Update()
+{
+    SDL_Event e;
+    //Handle events on queue
+    while (SDL_PollEvent(&e) != 0)
+    {
+        //User requests quit
+        if (e.type == SDL_QUIT)
+        {
+            isOpen_ = false;
+        }
+        //TODO do something for event
+        for(auto* eventInterface : eventInterfaces_)
+        {
+            eventInterface->OnEvent(e);
+        }
+    }
+}
+
+void Window::AddEventListener(OnEventInterface *eventInterface)
+{
+    eventInterfaces_.push_back(eventInterface);
+}
+bool Window::IsOpen() const noexcept
+{
+	return isOpen_;
+}
+
 SDL_Window* GetWindow()
 {
 	return instance->GetWindow();
+}
+
+void AddEventListener(OnEventInterface *eventInterface)
+{
+    instance->AddEventListener(eventInterface);
 }
 }
