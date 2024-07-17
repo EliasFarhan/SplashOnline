@@ -72,7 +72,14 @@ bool Window::IsOpen() const noexcept
 	return isOpen_;
 }
 
-SDL_Window* GetWindow()
+std::pair<int, int> Window::GetWindowSize() const
+{
+	std::pair<int, int> windowSize;
+	SDL_GetWindowSize(window_, &windowSize.first, &windowSize.second);
+    return windowSize;
+}
+
+    SDL_Window* GetWindow()
 {
 	return instance->GetWindow();
 }
@@ -80,5 +87,10 @@ SDL_Window* GetWindow()
 void AddEventListener(OnEventInterface *eventInterface)
 {
     instance->AddEventListener(eventInterface);
+}
+
+std::pair<int, int> GetWindowSize()
+{
+	return instance->GetWindowSize();
 }
 }

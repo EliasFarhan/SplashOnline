@@ -69,6 +69,19 @@ void GraphicsManager::Update(float dt)
 
 void GraphicsManager::Draw()
 {
+	if(textureManager_.IsLoaded())
+	{
+		auto [width, height] = GetWindowSize();
+		SDL_Rect texture_rect;
+		texture_rect.x = 0; //the x coordinate
+		texture_rect.y = 0; //the y coordinate
+		texture_rect.w = width; //the width of the texture
+		texture_rect.h = height; //the height of the texture
+		SDL_RenderCopy(renderer_,
+				textureManager_.GetTexture(splash::TextureManager::TextureId::BG),
+				nullptr,
+				&texture_rect);
+	}
 	guiRenderer_.Draw();
 }
 void GraphicsManager::PreDraw()

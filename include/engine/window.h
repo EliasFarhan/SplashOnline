@@ -25,7 +25,8 @@ public:
 	void End();
 	SDL_Window* GetWindow();
     void AddEventListener(OnEventInterface* eventInterface);
-	bool IsOpen() const noexcept;
+	[[nodiscard]] bool IsOpen() const noexcept;
+    [[nodiscard]] std::pair<int, int> GetWindowSize() const;
 private:
     std::vector<OnEventInterface*> eventInterfaces_;
 	SDL_Window* window_ = nullptr;
@@ -34,5 +35,6 @@ private:
 
 SDL_Window* GetWindow();
 void AddEventListener(OnEventInterface* eventInterface);
+std::pair<int, int> GetWindowSize();
 }
 #endif //SPLASHONLINE_WINDOW_H_
