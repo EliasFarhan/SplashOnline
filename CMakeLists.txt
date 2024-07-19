@@ -26,11 +26,26 @@ target_include_directories(imgui PUBLIC ${IMGUI_DIR} ${IMGUI_DIR}/backends/)
 target_link_libraries(imgui PUBLIC SDL2-static)
 
 
+
+
 file(GLOB_RECURSE GAME_FILES src/*.cpp include/*.h)
 
 add_library(SplashLib ${GAME_FILES})
 target_link_libraries(SplashLib PUBLIC SDL2-static SDL2main imgui NekoCore)
 target_include_directories(SplashLib PUBLIC include/ externals/include)
+#fmod
+set(FMOD_DIR externals/Fmod)
+target_include_directories(SplashLib PUBLIC ${FMOD_DIR}/fsbank/inc ${FMOD_DIR}/lowlevel/inc ${FMOD_DIR}/studio/inc)
+link_directories(${FMOD_DIR}/fsbank/lib ${FMOD_DIR}/lowlevel/lib ${FMOD_DIR}/studio/lib)
+
+if(MSVC)
+    target_link_libraries(SplashLib PUBLIC fmodstudio64_vc.lib)
+    file(COPY ${FMOD_DIR}/studio/lib/fmodstudio64.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+    file(COPY ${FMOD_DIR}/lowlevel/lib/fmod64.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+else ()
+
+endif ()
+
 
 #attach data to SplashLib
 file(GLOB_RECURSE data_files "${CMAKE_CURRENT_SOURCE_DIR}/data/*")
