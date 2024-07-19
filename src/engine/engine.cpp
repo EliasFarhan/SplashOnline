@@ -1,4 +1,5 @@
 #include "engine/engine.h"
+#include "utils/log.h"
 
 #include <SDL.h>
 
@@ -36,7 +37,8 @@ void Engine::Begin()
 	*/
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0)
 	{
-		fprintf(stderr, "SDL failed to initialise: %s\n", SDL_GetError());
+		LogError("SDL failed to initialise");
+		//fprintf(stderr, "SDL failed to initialise: %s\n", SDL_GetError());
 		return;
 	}
 	window_.Begin();

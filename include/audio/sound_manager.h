@@ -1,0 +1,8 @@
+//
+// Created by unite on 19.07.2024.
+//
+
+#ifndef SPLASHONLINE_SOUND_MANAGER_H
+#define SPLASHONLINE_SOUND_MANAGER_H
+
+#endif //SPLASHONLINE_SOUND_MANAGER_H
