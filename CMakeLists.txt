@@ -42,6 +42,11 @@ if(MSVC)
     target_link_libraries(SplashLib PUBLIC fmodstudio64_vc.lib)
     file(COPY ${FMOD_DIR}/studio/lib/fmodstudio64.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
     file(COPY ${FMOD_DIR}/lowlevel/lib/fmod64.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+elseif(APPLE)
+    target_link_libraries(SplashLib PUBLIC libfmodstudio.dylib)
+
+    file(COPY ${FMOD_DIR}/studio/lib/libfmodstudio.dylib DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+    file(COPY ${FMOD_DIR}/lowlevel/lib/libfmod.dylib DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 else ()
 
 endif ()
