@@ -36,7 +36,7 @@ target_include_directories(SplashLib PUBLIC include/ externals/include)
 #fmod
 set(FMOD_DIR externals/Fmod)
 target_include_directories(SplashLib PUBLIC ${FMOD_DIR}/fsbank/inc ${FMOD_DIR}/lowlevel/inc ${FMOD_DIR}/studio/inc)
-link_directories(${FMOD_DIR}/fsbank/lib ${FMOD_DIR}/lowlevel/lib ${FMOD_DIR}/studio/lib)
+link_directories(${FMOD_DIR}/lowlevel/lib ${FMOD_DIR}/studio/lib)
 
 if(MSVC)
     target_link_libraries(SplashLib PUBLIC fmodstudio64_vc.lib)
@@ -47,7 +47,13 @@ elseif(APPLE)
 
     file(COPY ${FMOD_DIR}/studio/lib/libfmodstudio.dylib DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
     file(COPY ${FMOD_DIR}/lowlevel/lib/libfmod.dylib DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
-else ()
+elseif (UNIX)
+    link_directories(${CMAKE_CURRENT_BINARY_DIR}/)
+
+    target_link_libraries(SplashLib PUBLIC libfmodstudio.so libfmod.so)
+    file(COPY ${FMOD_DIR}/lowlevel/lib/libfmod.so DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+    file(COPY ${FMOD_DIR}/lowlevel/lib/libfmod.so.9 DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+    file(COPY ${FMOD_DIR}/lowlevel/lib/libfmod.so.9.5 DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 
 endif ()
 
