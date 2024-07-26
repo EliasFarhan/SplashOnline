@@ -60,7 +60,7 @@ void AddDrawInterface(DrawInterface* drawInterface)
 	instance->AddDrawInterface(drawInterface);
 }
 
-void GraphicsManager::Update(float dt)
+void GraphicsManager::Update([[maybe_unused]]float dt)
 {
 	if(!textureManager_.IsLoaded())
 	{

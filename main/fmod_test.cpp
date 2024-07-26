@@ -9,7 +9,7 @@
 #include <string_view>
 #include <iostream>
 
-int main(int argc, char** argv)
+int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
 {
 	FMOD::Studio::System* system;
 	if(FMOD::Studio::System::create(&system) != FMOD_OK)
