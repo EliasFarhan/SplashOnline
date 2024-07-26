@@ -1,6 +1,7 @@
 #include "engine/engine.h"
 #include "utils/log.h"
 
+#include <fmt/format.h>
 #include <SDL.h>
 
 namespace splash
@@ -37,17 +38,18 @@ void Engine::Begin()
 	*/
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0)
 	{
-		LogError("SDL failed to initialise");
-		//fprintf(stderr, "SDL failed to initialise: %s\n", SDL_GetError());
+		LogError(fmt::format("SDL failed to initialise: {}", SDL_GetError()));
 		return;
 	}
 	window_.Begin();
+	inputManager_.Begin();
 	graphicsManager_.Begin();
 }
 
 void Engine::End()
 {
 	graphicsManager_.End();
+	inputManager_.End();
 	window_.End();
 	jobSystem_.End();
 

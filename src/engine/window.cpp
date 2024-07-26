@@ -1,6 +1,7 @@
 #include "engine/window.h"
 
 #include "utils/log.h"
+#include <fmt/format.h>
 
 namespace splash
 {
@@ -21,7 +22,7 @@ void Window::Begin()
 /* Checks if window has been created; if not, exits program */
 	if (window_ == nullptr)
 	{
-		LogError("SDL window failed to initialise\n");
+		LogError(fmt::format("SDL window failed to initialise: {}\n", SDL_GetError()));
 		return;
 	}
     isOpen_ = true;

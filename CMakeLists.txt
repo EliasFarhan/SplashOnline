@@ -25,6 +25,10 @@ add_library(imgui ${IMGUI_FILES})
 target_include_directories(imgui PUBLIC ${IMGUI_DIR} ${IMGUI_DIR}/backends/)
 target_link_libraries(imgui PUBLIC SDL2-static)
 
+#fmt format
+add_compile_definitions(FMT_HEADER_ONLY=1)
+set(FMT_DIR externals/fmt)
+add_subdirectory(${FMT_DIR})
 
 
 
@@ -32,7 +36,7 @@ file(GLOB_RECURSE GAME_FILES src/*.cpp include/*.h)
 
 add_library(SplashLib ${GAME_FILES})
 target_link_libraries(SplashLib PUBLIC SDL2-static SDL2main imgui NekoCore)
-target_include_directories(SplashLib PUBLIC include/ externals/include)
+target_include_directories(SplashLib PUBLIC include/ externals/include ${FMT_DIR}/include)
 #fmod
 set(FMOD_DIR externals/Fmod)
 target_include_directories(SplashLib PUBLIC ${FMOD_DIR}/fsbank/inc ${FMOD_DIR}/lowlevel/inc ${FMOD_DIR}/studio/inc)

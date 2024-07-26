@@ -10,3 +10,6 @@
 [submodule "externals/tracy"]
 	path = externals/tracy
 	url = https://github.com/wolfpld/tracy.git
+[submodule "externals/fmt"]
+	path = externals/fmt
+	url = https://github.com/fmtlib/fmt.git
