@@ -95,3 +95,17 @@ foreach (MAIN_FILE ${MAIN_FILES})
     add_executable(${MAIN_NAME} ${MAIN_FILE})
     target_link_libraries(${MAIN_NAME} PUBLIC SplashLib)
 endforeach ()
+
+option(SPLASH_TEST "Enable unit test" OFF)
+
+if(SPLASH_TEST)
+    set(CATCH2_DIR "externals/Catch2/")
+    add_subdirectory("${CATCH2_DIR}")
+    file(GLOB TEST_FILES tests/*.cpp)
+    foreach (TEST_FILE ${TEST_FILES})
+        get_filename_component(TEST_NAME ${TEST_FILE} NAME_WE)
+        add_executable(${TEST_NAME} ${TEST_FILE})
+        target_link_libraries(${TEST_NAME} PUBLIC SplashLib Catch2::Catch2WithMain)
+    endforeach ()
+
+endif()
