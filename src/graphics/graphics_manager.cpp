@@ -4,8 +4,10 @@
 
 #include "graphics/graphics_manager.h"
 #include "engine/window.h"
+#include "utils/log.h"
 
-#include <iostream>
+#include <fmt/format.h>
+
 
 namespace splash
 {
@@ -16,14 +18,14 @@ void GraphicsManager::Begin()
 	renderer_ = SDL_CreateRenderer(window, -1, 0);
 	if(renderer_ == nullptr)
 	{
-		fprintf(stderr, "SDL renderer failed to initialise: %s\n", SDL_GetError());
+		LogError(fmt::format("SDL renderer failed to initialise: {}\n", SDL_GetError()));
 
 		return;
 	}
 	SDL_RendererInfo info;
 	SDL_GetRendererInfo(renderer_, &info);
 
-	std::cout << "SDL Renderer name: " << info.name << '\n';
+	LogDebug(fmt::format("Renderer: {}", info.name));
 
 	textureManager_.Begin();
 	guiRenderer_.Begin();
@@ -58,7 +60,7 @@ void AddDrawInterface(DrawInterface* drawInterface)
 	instance->AddDrawInterface(drawInterface);
 }
 
-void GraphicsManager::Update(float dt)
+void GraphicsManager::Update([[maybe_unused]]float dt)
 {
 	if(!textureManager_.IsLoaded())
 	{

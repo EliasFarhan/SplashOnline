@@ -25,6 +25,10 @@ add_library(imgui ${IMGUI_FILES})
 target_include_directories(imgui PUBLIC ${IMGUI_DIR} ${IMGUI_DIR}/backends/)
 target_link_libraries(imgui PUBLIC SDL2-static)
 
+#fmt format
+add_compile_definitions(FMT_HEADER_ONLY=1)
+set(FMT_DIR externals/fmt)
+add_subdirectory(${FMT_DIR})
 
 
 
@@ -32,17 +36,29 @@ file(GLOB_RECURSE GAME_FILES src/*.cpp include/*.h)
 
 add_library(SplashLib ${GAME_FILES})
 target_link_libraries(SplashLib PUBLIC SDL2-static SDL2main imgui NekoCore)
-target_include_directories(SplashLib PUBLIC include/ externals/include)
+target_include_directories(SplashLib PUBLIC include/ externals/include ${FMT_DIR}/include)
 #fmod
 set(FMOD_DIR externals/Fmod)
 target_include_directories(SplashLib PUBLIC ${FMOD_DIR}/fsbank/inc ${FMOD_DIR}/lowlevel/inc ${FMOD_DIR}/studio/inc)
-link_directories(${FMOD_DIR}/fsbank/lib ${FMOD_DIR}/lowlevel/lib ${FMOD_DIR}/studio/lib)
+link_directories(${FMOD_DIR}/lowlevel/lib ${FMOD_DIR}/studio/lib)
 
 if(MSVC)
     target_link_libraries(SplashLib PUBLIC fmodstudio64_vc.lib)
+    target_compile_options(SplashLib PUBLIC "/utf-8" "/W4" "/WX")
     file(COPY ${FMOD_DIR}/studio/lib/fmodstudio64.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
     file(COPY ${FMOD_DIR}/lowlevel/lib/fmod64.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
-else ()
+elseif(APPLE)
+    target_link_libraries(SplashLib PUBLIC libfmodstudio.dylib)
+    target_compile_options(SplashLib PUBLIC "-Wall" "-Wextra" "-Wpedantic" "-Werror")
+    file(COPY ${FMOD_DIR}/studio/lib/libfmodstudio.dylib DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+    file(COPY ${FMOD_DIR}/lowlevel/lib/libfmod.dylib DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+elseif (UNIX)
+    link_directories(${CMAKE_CURRENT_BINARY_DIR}/)
+    target_compile_options(SplashLib PUBLIC "-Wall" "-Wextra" "-Wpedantic" "-Werror")
+    target_link_libraries(SplashLib PUBLIC libfmodstudio.so libfmod.so)
+    file(COPY ${FMOD_DIR}/lowlevel/lib/libfmod.so DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+    file(COPY ${FMOD_DIR}/lowlevel/lib/libfmod.so.9 DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+    file(COPY ${FMOD_DIR}/lowlevel/lib/libfmod.so.9.5 DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 
 endif ()
 

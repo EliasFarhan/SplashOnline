@@ -13,3 +13,7 @@
 [submodule "externals/Catch2"]
 	path = externals/Catch2
 	url = https://github.com/catchorg/Catch2.git
+[submodule "externals/fmt"]
+	path = externals/fmt
+	url = https://github.com/fmtlib/fmt.git
+

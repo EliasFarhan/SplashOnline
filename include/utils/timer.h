@@ -11,7 +11,7 @@ class Timer
 public:
     constexpr explicit Timer(T time, T period): time_(time), period_(period){}
 
-    constexpr void Update(float deltaTime) noexcept
+    constexpr void Update(T deltaTime) noexcept
     {
         if (time_ >= 0)
             time_ -= deltaTime;
@@ -21,7 +21,7 @@ public:
     {
         return time_ <= 0;
     }
-    constexpr void SetPeriod(float newPeriod) noexcept
+    constexpr void SetPeriod(T newPeriod) noexcept
     {
         if (newPeriod < time_)
         {

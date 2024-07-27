@@ -9,6 +9,7 @@
 #include <thread/job_system.h>
 #include "graphics/graphics_manager.h"
 #include "engine/window.h"
+#include "engine/input_manager.h"
 
 
 namespace splash
@@ -28,6 +29,7 @@ private:
 	neko::JobSystem jobSystem_{};
 	Window window_{};
 	GraphicsManager graphicsManager_{};
+	InputManager inputManager_;
 	int otherQueue_{};
 	int networkQueue_{};
 };

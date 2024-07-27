@@ -1,16 +1,10 @@
 #include "engine/engine.h"
 
-#include "graphics/texture_manager.h"
-
-#include <SDL.h>
-#include <imgui_impl_sdl2.h>
-#include <imgui_impl_sdlrenderer2.h>
-#include <iostream>
+#include <SDL_main.h>
 
 
-#define DELAY 3000
 
-int main(int argc, char** argv)
+int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
 {
 	splash::Engine engine;
 	engine.Run();

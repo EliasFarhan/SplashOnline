@@ -3,6 +3,7 @@
 //
 
 #include "utils/log.h"
+#include <SDL_log.h>
 #include <iostream>
 
 namespace splash
@@ -10,16 +11,16 @@ namespace splash
 
 void logError(std::string_view msg, std::string_view file, int lineNumber)
 {
-	std::cerr << "Error at "<<file<<':'<<lineNumber<<": "<<msg<<'\n';
+	SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s at %s:%d", msg.data(), file.data(), lineNumber);
 }
 
 void logWarning(std::string_view msg, std::string_view file, int lineNumber)
 {
-	std::cerr << "Error at "<<file<<':'<<lineNumber<<": "<<msg<<'\n';
+	SDL_LogWarn(SDL_LOG_CATEGORY_ERROR,"%s at %s:%d", msg.data(), file.data(), lineNumber);
 }
 
 void logDebug(std::string_view msg, std::string_view file, int lineNumber)
 {
-	std::cout << "Error at "<<file<<':'<<lineNumber<<": "<<msg<<'\n';
+	SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "%s at %s:%d", msg.data(), file.data(), lineNumber);
 }
 }
