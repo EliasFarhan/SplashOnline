@@ -17,3 +17,6 @@
 	path = externals/fmt
 	url = https://github.com/fmtlib/fmt.git
 
+[submodule "externals/NekoPhysics"]
+	path = externals/NekoPhysics
+	url = https://github.com/EliasFarhan/NekoPhysics.git

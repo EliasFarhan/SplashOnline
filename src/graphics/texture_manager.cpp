@@ -88,7 +88,7 @@ void TextureManager::Begin()
 {
 	renderer_ = GetRenderer();
 	loadingJob = std::make_unique<neko::FuncJob>([](){
-		for(int i = 0; i < texturePaths.size(); i++)
+		for(int i = 0; i < (int)texturePaths.size(); i++)
 		{
 			images[i] = LoadImageFromFile(texturePaths[i]);
 			surfaces[i] = CreateSurfaceFromImage(images[i]);

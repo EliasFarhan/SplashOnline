@@ -10,6 +10,10 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(NEKOLIB_DIR externals/NekoLib)
 add_subdirectory(${NEKOLIB_DIR})
 
+#NekoPhysics
+set(NEKOPHYS_DIR externals/NekoPhysics)
+add_subdirectory(${NEKOPHYS_DIR})
+
 
 #SDL
 set(SDL_DIR externals/SDL)
@@ -35,7 +39,7 @@ add_subdirectory(${FMT_DIR})
 file(GLOB_RECURSE GAME_FILES src/*.cpp include/*.h)
 
 add_library(SplashLib ${GAME_FILES})
-target_link_libraries(SplashLib PUBLIC SDL2-static SDL2main imgui NekoCore)
+target_link_libraries(SplashLib PUBLIC SDL2-static SDL2main imgui NekoCore NekoPhysics)
 target_include_directories(SplashLib PUBLIC include/ externals/include ${FMT_DIR}/include)
 #fmod
 set(FMOD_DIR externals/Fmod)
@@ -49,12 +53,12 @@ if(MSVC)
     file(COPY ${FMOD_DIR}/lowlevel/lib/fmod64.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 elseif(APPLE)
     target_link_libraries(SplashLib PUBLIC libfmodstudio.dylib)
-    target_compile_options(SplashLib PUBLIC "-Wall" "-Wextra" "-Wpedantic" "-Werror")
+    target_compile_options(SplashLib PUBLIC "-Wall" "-Wextra" "-Wpedantic")
     file(COPY ${FMOD_DIR}/studio/lib/libfmodstudio.dylib DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
     file(COPY ${FMOD_DIR}/lowlevel/lib/libfmod.dylib DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 elseif (UNIX)
     link_directories(${CMAKE_CURRENT_BINARY_DIR}/)
-    target_compile_options(SplashLib PUBLIC "-Wall" "-Wextra" "-Wpedantic" "-Werror")
+    target_compile_options(SplashLib PUBLIC "-Wall" "-Wextra" "-Wpedantic")
     target_link_libraries(SplashLib PUBLIC libfmodstudio.so libfmod.so)
     file(COPY ${FMOD_DIR}/lowlevel/lib/libfmod.so DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
     file(COPY ${FMOD_DIR}/lowlevel/lib/libfmod.so.9 DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)

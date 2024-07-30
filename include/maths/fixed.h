@@ -1,6 +1,9 @@
 #ifndef SPLASHONLINE_FIXED_H
 #define SPLASHONLINE_FIXED_H
 
+#include <cmath>
+#include <cstdint>
+
 namespace splash
 {
     
@@ -17,14 +20,20 @@ public:
         underlyingValue_ = static_cast<T>((f) * (1 << Exp));
     }
 
-    constexpr explicit Fixed(std::size_t n)
+    constexpr explicit Fixed(unsigned int n)
     {
         underlyingValue_ = static_cast<T>(n) << Exp;
     }
 
-    constexpr explicit Fixed(T i)
+    constexpr explicit Fixed(int i)
     {
         underlyingValue_ = i * (1 << Exp); //for negative value of i, left shift is undefined behavior
+    }
+
+    template<typename OtherT, T OtherExp, typename OtherMulT>
+    constexpr explicit Fixed(Fixed<OtherT, OtherExp, OtherMulT> f)
+    {
+        //TODO implement 
     }
 
     constexpr explicit Fixed(T up, T down)
@@ -174,7 +183,7 @@ private:
 
 using Fixed16 = Fixed<std::int32_t, 16, std::int64_t>;
 using Fixed8 = Fixed<std::int8_t, 6, std::int16_t>;
-constexpr Fixed16 pi = Fixed16::fromUnderlyingValue(205887);
+constexpr Fixed16 pi16 = Fixed16::fromUnderlyingValue(205887);
 
 
 } // namespace splash
