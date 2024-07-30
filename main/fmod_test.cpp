@@ -27,7 +27,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
 		"data/music/Music.bank"
 	}};
 	std::array<FMOD::Studio::Bank*, 3> banks{};
-	for(int i = 0; i < banks.size(); i++)
+	for(int i = 0; i < (int)banks.size(); i++)
 	{
 		if(system->loadBankFile(bankNames[i].data(), FMOD_STUDIO_LOAD_BANK_NORMAL, &banks[i]) != FMOD_OK)
 		{
