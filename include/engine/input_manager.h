@@ -8,7 +8,7 @@
 #include <SDL_gamecontroller.h>
 #include <SDL_events.h>
 
-#include "maths/fixed.h"
+#include "math/fixed.h"
 #include <cstdint>
 
 namespace splash
@@ -22,11 +22,18 @@ struct PlayerInput
 		CONFIRM = 1u << 1u,
 		CANCEL = 1u << 2u
 	};
-	Fixed8 moveDirX{};
-	Fixed8 moveDirY{};
-	Fixed8 targetDirX{};
-	Fixed8 targetDirY{};
+	neko::Fixed8 moveDirX{};
+	neko::Fixed8 moveDirY{};
+	neko::Fixed8 targetDirX{};
+	neko::Fixed8 targetDirY{};
 	std::uint8_t buttons{};
+
+	[[nodiscard]] constexpr bool GetStomp() const { return (buttons & STOMP) == STOMP; }
+	[[nodiscard]] constexpr bool GetConfirm() const { return (buttons & CONFIRM) == CONFIRM; }
+	[[nodiscard]] constexpr bool GetCancel() const { return (buttons & CANCEL) == CANCEL; }
+	constexpr void SetStomp(bool stomp) { stomp ? buttons |= STOMP : buttons &= ~STOMP; }
+	constexpr void SetConfirm(bool confirm) { confirm ? buttons |= CONFIRM : buttons &= ~CONFIRM; }
+	constexpr void SetCancel(bool cancel) { cancel ? buttons |= CANCEL : buttons &= ~CANCEL; }
 };
 
 class InputManager
