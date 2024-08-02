@@ -36,7 +36,7 @@ public:
 	void ManageEvent(const SDL_Event& event);
 	void End();
 
-	[[nodiscard]] PlayerInput GetPlayerInput();
+	[[nodiscard]] PlayerInput GetPlayerInput() const;
 
 private:
 	static SDL_GameController* FindGameController();

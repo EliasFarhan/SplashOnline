@@ -50,6 +50,7 @@ private:
 	std::array<SDL_Texture*, (int)TextureId::LENGTH> textures_{};
 };
 
+
 }
 
 #endif //SPLASHONLINE_TEXTURE_MANAGER_H

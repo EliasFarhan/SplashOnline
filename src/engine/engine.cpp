@@ -3,7 +3,9 @@
 
 #include <fmt/format.h>
 #include <SDL.h>
-
+#ifdef TRACY_ENABLE
+#include <tracy/Tracy.hpp>
+#endif
 namespace splash
 {
 Engine* instance = nullptr;
@@ -24,6 +26,9 @@ void Engine::Run()
 		graphicsManager_.PreDraw();
 		graphicsManager_.Draw();
 		graphicsManager_.PostDraw();
+#ifdef TRACY_ENABLE
+		FrameMark;
+#endif
 	}
 	End();
 

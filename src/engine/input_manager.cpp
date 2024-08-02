@@ -71,4 +71,8 @@ void InputManager::End()
 		controller_ = nullptr;
 	}
 }
+PlayerInput InputManager::GetPlayerInput() const
+{
+	return {};
+}
 }

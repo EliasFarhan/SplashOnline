@@ -10,6 +10,10 @@
 
 #include <thread/job_system.h>
 
+#ifdef TRACY_ENABLE
+#include <tracy/Tracy.hpp>
+#endif
+
 #include <string_view>
 #include <array>
 #include <atomic>
@@ -90,6 +94,9 @@ void TextureManager::Begin()
 	loadingJob = std::make_unique<neko::FuncJob>([](){
 		for(int i = 0; i < (int)texturePaths.size(); i++)
 		{
+#ifdef TRACY_ENABLE
+			ZoneNamedN(loadingTexture, "Loading Image File", true);
+#endif
 			images[i] = LoadImageFromFile(texturePaths[i]);
 			surfaces[i] = CreateSurfaceFromImage(images[i]);
 			loadingIndex.store(i, std::memory_order_release);
@@ -114,6 +121,9 @@ bool TextureManager::IsLoaded() const
 
 void TextureManager::UpdateLoad()
 {
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
 	if(IsLoaded())
 	{
 		return;
@@ -121,6 +131,9 @@ void TextureManager::UpdateLoad()
 	for(int i = 0; i <= loadingIndex.load(std::memory_order_consume); i++)
 	{
 		if(textures_[i] != nullptr) continue;
+#ifdef TRACY_ENABLE
+		ZoneNamedN(loadingTexture, "Loading SDL Texture", true);
+#endif
 		textures_[i] = CreateTextureFromSurface(renderer_, surfaces[i]);
 		SDL_FreeSurface(surfaces[i]);
 		stbi_image_free(images[i].pixels);

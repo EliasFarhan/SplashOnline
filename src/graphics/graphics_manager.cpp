@@ -8,14 +8,20 @@
 
 #include <fmt/format.h>
 
+#ifdef TRACY_ENABLE
+#include <tracy/Tracy.hpp>
+#endif
 
 namespace splash
 {
 
 void GraphicsManager::Begin()
 {
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
 	auto* window = GetWindow();
-	renderer_ = SDL_CreateRenderer(window, -1, 0);
+	renderer_ = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
 	if(renderer_ == nullptr)
 	{
 		LogError(fmt::format("SDL renderer failed to initialise: {}\n", SDL_GetError()));
@@ -33,6 +39,9 @@ void GraphicsManager::Begin()
 
 void GraphicsManager::End()
 {
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
 	guiRenderer_.End();
 	textureManager_.End();
 	SDL_DestroyRenderer(renderer_);
@@ -60,6 +69,11 @@ void AddDrawInterface(DrawInterface* drawInterface)
 	instance->AddDrawInterface(drawInterface);
 }
 
+void RemoveDrawInterface(DrawInterface* drawInterface)
+{
+	instance->RemoveDrawInterface(drawInterface);
+}
+
 void GraphicsManager::Update([[maybe_unused]]float dt)
 {
 	if(!textureManager_.IsLoaded())
@@ -84,6 +98,10 @@ void GraphicsManager::Draw()
 				nullptr,
 				&texture_rect);
 	}
+	for(auto* drawInterface: drawInterfaces_)
+	{
+		drawInterface->Draw();
+	}
 	guiRenderer_.Draw();
 }
 void GraphicsManager::PreDraw()
@@ -93,11 +111,31 @@ void GraphicsManager::PreDraw()
 }
 void GraphicsManager::PostDraw()
 {
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
 	// Rendering
 	SDL_RenderPresent(renderer_);
 }
 void GraphicsManager::AddDrawInterface(DrawInterface* drawInterface)
 {
-	drawInterfaces_.push_back(drawInterface);
+	int index = -1;
+	auto it = std::find(drawInterfaces_.begin(), drawInterfaces_.end(), nullptr);
+	if(it == drawInterfaces_.end())
+	{
+		index = (int)drawInterfaces_.size();
+		drawInterfaces_.push_back(drawInterface);
+	}
+	else
+	{
+		*it = drawInterface;
+		index = (int)std::distance(drawInterfaces_.begin(), it);
+	}
+
+	drawInterface->SetIndex(index);
+}
+void GraphicsManager::RemoveDrawInterface(DrawInterface* drawInterface)
+{
+	drawInterfaces_[drawInterface->GetIndex()] = nullptr;
 }
 }

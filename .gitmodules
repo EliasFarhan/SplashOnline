@@ -20,3 +20,6 @@
 [submodule "externals/NekoPhysics"]
 	path = externals/NekoPhysics
 	url = https://github.com/EliasFarhan/NekoPhysics.git
+[submodule "externals/spine-runtimes"]
+	path = externals/spine-runtimes
+	url = https://github.com/EsotericSoftware/spine-runtimes.git
