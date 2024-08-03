@@ -8,6 +8,7 @@
 #include <fmod_studio.hpp>
 
 #include <string_view>
+#include <atomic>
 
 namespace splash
 {
@@ -23,10 +24,12 @@ public:
 	void SetSystemIndex(int index) override;
 
 	FMOD::Studio::EventDescription* GetEventDescription(std::string_view eventName);
+	[[nodiscard]] bool IsLoaded() const { return isLoaded_.load(std::memory_order_consume); }
 private:
 	MusicManager musicManager_;
 	FMOD::Studio::System* system_ = nullptr;
 	int systemIndex_ = 0;
+	std::atomic<bool> isLoaded_{false};
 };
 
 FMOD::Studio::EventDescription* GetEventDescription(std::string_view eventName);

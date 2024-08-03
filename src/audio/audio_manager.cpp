@@ -4,35 +4,61 @@
 #include <string_view>
 #include <array>
 
+#ifdef TRACY_ENABLE
+#include <tracy/Tracy.hpp>
+#include <tracy/TracyC.h>
+#endif
+
 namespace splash
 {
 static AudioManager* instance = nullptr;
 
 void AudioManager::Begin()
 {
-	if(FMOD::Studio::System::create(&system_) != FMOD_OK)
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
+	static std::unique_ptr<neko::FuncJob> loadingJob = std::make_unique<neko::FuncJob>([this]()
 	{
-		std::terminate();
-	}
-	if(system_->initialize(1024, FMOD_STUDIO_INIT_NORMAL, FMOD_INIT_NORMAL, nullptr))
-	{
-		std::terminate();
-	}
-	static constexpr std::array<std::string_view, 3> bankNames =
-		{{
-			 "data/sounds/Master Bank.bank",
-			 "data/sounds/Master Bank.strings.bank",
-			 "data/music/Music.bank"
-		 }};
-	std::array<FMOD::Studio::Bank*, 3> banks{};
-	for(int i = 0; i < banks.size(); i++)
-	{
-		if(system_->loadBankFile(bankNames[i].data(), FMOD_STUDIO_LOAD_BANK_NORMAL, &banks[i]) != FMOD_OK)
-		{
-			std::terminate();
-		}
-	}
-	musicManager_.Begin();
+#ifdef TRACY_ENABLE
+	  TracyCZoneN(systemCreate, "Create Fmod Studio System", true);
+#endif
+	  if(FMOD::Studio::System::create(&system_) != FMOD_OK)
+	  {
+		  std::terminate();
+	  }
+#ifdef TRACY_ENABLE
+	  TracyCZoneEnd(systemCreate);
+	  TracyCZoneN(systemInit, "Init Fmod Studio System", true);
+#endif
+	  if(system_->initialize(1024, FMOD_STUDIO_INIT_NORMAL, FMOD_INIT_NORMAL, nullptr))
+	  {
+		  std::terminate();
+	  }
+#ifdef TRACY_ENABLE
+	  TracyCZoneEnd(systemInit);
+#endif
+	  static constexpr std::array<std::string_view, 3> bankNames =
+		  {{
+			   "data/sounds/Master Bank.bank",
+			   "data/sounds/Master Bank.strings.bank",
+			   "data/music/Music.bank"
+		   }};
+	  std::array<FMOD::Studio::Bank*, 3> banks{};
+	  for (int i = 0; i < banks.size(); i++)
+	  {
+#ifdef TRACY_ENABLE
+		  ZoneNamedN(loadBank, "Load Bank", true);
+#endif
+		  if (system_->loadBankFile(bankNames[i].data(), FMOD_STUDIO_LOAD_BANK_NORMAL, &banks[i]) != FMOD_OK)
+		  {
+			  std::terminate();
+		  }
+	  }
+	  musicManager_.Begin();
+	  isLoaded_.store(true, std::memory_order_release);
+	});
+	ScheduleAsyncJob(loadingJob.get());
 }
 void AudioManager::End()
 {
@@ -42,7 +68,10 @@ void AudioManager::End()
 }
 void AudioManager::Update([[maybe_unused]]float dt)
 {
-	system_->update();
+	if(isLoaded_.load(std::memory_order_consume))
+	{
+		system_->update();
+	}
 }
 int AudioManager::GetSystemIndex() const
 {

@@ -12,13 +12,15 @@ Engine* instance = nullptr;
 
 void Engine::Run()
 {
-	instance = this;
 	otherQueue_ = jobSystem_.SetupNewQueue(1);
 	networkQueue_ = jobSystem_.SetupNewQueue(1);
 
 	Begin();
 	while (window_.IsOpen())
 	{
+#ifdef TRACY_ENABLE
+		ZoneNamedN(engineLoop, "Engine Loop", true);
+#endif
 		float dt = 0.0f;
 		window_.Update();
 
