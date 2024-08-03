@@ -43,6 +43,7 @@ add_compile_definitions(FMT_HEADER_ONLY=1)
 set(FMT_DIR externals/fmt)
 add_subdirectory(${FMT_DIR})
 
+
 #tracy profiler
 if(ENABLE_PROFILER)
     set(TRACY_DIR externals/tracy)
@@ -66,7 +67,7 @@ link_directories(${FMOD_DIR}/lowlevel/lib ${FMOD_DIR}/studio/lib)
 
 if(MSVC)
     target_link_libraries(SplashLib PUBLIC fmodstudio64_vc.lib)
-    target_compile_options(SplashLib PUBLIC "/utf-8" "/W4" "/WX")
+    target_compile_options(SplashLib PUBLIC "/utf-8" "/W4")
     file(COPY ${FMOD_DIR}/studio/lib/fmodstudio64.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
     file(COPY ${FMOD_DIR}/lowlevel/lib/fmod64.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 elseif(APPLE)
@@ -83,6 +84,24 @@ elseif (UNIX)
     file(COPY ${FMOD_DIR}/lowlevel/lib/libfmod.so.9.5 DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 
 endif ()
+#neko net
+set(NEKONET_DIR externals/NekoNet)
+target_include_directories(SplashLib PUBLIC ${NEKONET_DIR}/include)
+link_directories(${NEKONET_DIR}/lib/)
+if(MSVC)
+    target_link_libraries(SplashLib PUBLIC
+            debug NekoNet_d.lib
+            debug Photon_d.lib
+            debug Photon-cpp_vc17_debug_windows_md_x64.lib
+            debug Common-cpp_vc17_debug_windows_md_x64.lib
+            optimized NekoNet.lib
+            optimized Photon.lib
+            optimized Photon-cpp_vc17_release_windows_md_x64.lib
+            optimized Common-cpp_vc17_release_windows_md_x64.lib
+    )
+elseif(APPLE)
+elseif (UNIX)
+endif()
 
 
 #attach data to SplashLib

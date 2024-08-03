@@ -50,16 +50,23 @@ public:
 	{
 		ImGui::Begin("Fmod Test Window");
 
-		if(ImGui::Button("Play Gun Sound"))
+		if(IsFmodLoaded())
 		{
-			FMOD::Studio::EventDescription* eventDescription = GetEventDescription(GetPlayerSoundEvent(PlayerSoundId::GUN).data());
-
-			FMOD::Studio::EventInstance* eventInstance = nullptr;
-			if(eventDescription->createInstance(&eventInstance))
+			if(ImGui::Button("Play Gun Sound"))
 			{
-				std::terminate();
+				FMOD::Studio::EventDescription* eventDescription = GetEventDescription(GetPlayerSoundEvent(PlayerSoundId::GUN).data());
+
+				FMOD::Studio::EventInstance* eventInstance = nullptr;
+				if(eventDescription->createInstance(&eventInstance))
+				{
+					std::terminate();
+				}
+				eventInstance->start();
 			}
-			eventInstance->start();
+		}
+		else
+		{
+			ImGui::Text("Loading...");
 		}
 		ImGui::End();
 	}

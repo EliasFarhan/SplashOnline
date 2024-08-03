@@ -33,6 +33,7 @@ private:
 };
 
 FMOD::Studio::EventDescription* GetEventDescription(std::string_view eventName);
+bool IsFmodLoaded();
 
 }
 

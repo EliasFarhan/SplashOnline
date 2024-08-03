@@ -68,8 +68,14 @@ void AudioManager::End()
 }
 void AudioManager::Update([[maybe_unused]]float dt)
 {
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
 	if(isLoaded_.load(std::memory_order_consume))
 	{
+#ifdef TRACY_ENABLE
+		ZoneNamedN(updateFmodSystem, "Update Fmod", true);
+#endif
 		system_->update();
 	}
 }
@@ -98,5 +104,9 @@ AudioManager::AudioManager()
 FMOD::Studio::EventDescription* GetEventDescription(std::string_view eventName)
 {
 	return instance->GetEventDescription(eventName);
+}
+bool IsFmodLoaded()
+{
+	return instance->IsLoaded();
 }
 }
