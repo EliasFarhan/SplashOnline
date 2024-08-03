@@ -34,9 +34,15 @@ public:
 	void AddGuiInterface(OnGuiInterface* guiInterface);
 	void RemoveGuiInterface(OnGuiInterface* guiInterface);
 	void OnEvent(const SDL_Event& event) override;
+
+	int GetEventListenerIndex() const override;
+
+	void SetEventListenerIndex(int index) override;
+
 private:
 	SDL_Renderer* renderer_;
 	std::vector<OnGuiInterface*> guiInterfaces_;
+	int eventListenerIndex_ = -1;
 };
 
 void AddGuiInterface(OnGuiInterface* guiInterface);

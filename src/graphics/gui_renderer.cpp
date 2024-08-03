@@ -14,6 +14,14 @@
 namespace splash
 {
 static GuiRenderer* instance = nullptr;
+
+
+GuiRenderer::GuiRenderer()
+{
+	instance = this;
+	AddEventListener(this);
+}
+
 void GuiRenderer::Begin()
 {
 	renderer_ = GetRenderer();
@@ -29,7 +37,6 @@ void GuiRenderer::Begin()
 	ImGui_ImplSDL2_InitForSDLRenderer(GetWindow(), renderer_);
 	ImGui_ImplSDLRenderer2_Init(renderer_);
 
-	AddEventListener(this);
 }
 
 void GuiRenderer::End()
@@ -90,9 +97,14 @@ void GuiRenderer::Update()
 	}
 }
 
-GuiRenderer::GuiRenderer()
+int GuiRenderer::GetEventListenerIndex() const
 {
-	instance = this;
+	return eventListenerIndex_;
+}
+
+void GuiRenderer::SetEventListenerIndex(int index)
+{
+	eventListenerIndex_ = index;
 }
 
 void AddGuiInterface(OnGuiInterface* guiInterface)

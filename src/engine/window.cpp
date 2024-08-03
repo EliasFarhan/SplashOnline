@@ -66,7 +66,17 @@ void Window::Update()
 
 void Window::AddEventListener(OnEventInterface *eventInterface)
 {
-    eventInterfaces_.push_back(eventInterface);
+	auto it = std::find(eventInterfaces_.begin(), eventInterfaces_.end(), nullptr);
+	if(it != eventInterfaces_.end())
+	{
+		eventInterface->SetEventListenerIndex((int)std::distance(eventInterfaces_.begin(), it));
+		*it = eventInterface;
+	}
+	else
+	{
+		eventInterface->SetEventListenerIndex((int)eventInterfaces_.size());
+		eventInterfaces_.push_back(eventInterface);
+	}
 }
 bool Window::IsOpen() const noexcept
 {
@@ -80,7 +90,12 @@ std::pair<int, int> Window::GetWindowSize() const
     return windowSize;
 }
 
-    SDL_Window* GetWindow()
+void Window::RemoveEventListener(OnEventInterface* eventInterface)
+{
+	eventInterfaces_[eventInterface->GetEventListenerIndex()] = nullptr;
+}
+
+SDL_Window* GetWindow()
 {
 	return instance->GetWindow();
 }
