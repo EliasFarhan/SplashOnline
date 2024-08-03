@@ -132,10 +132,10 @@ void GraphicsManager::AddDrawInterface(DrawInterface* drawInterface)
 		index = (int)std::distance(drawInterfaces_.begin(), it);
 	}
 
-	drawInterface->SetIndex(index);
+	drawInterface->SetGraphicsIndex(index);
 }
 void GraphicsManager::RemoveDrawInterface(DrawInterface* drawInterface)
 {
-	drawInterfaces_[drawInterface->GetIndex()] = nullptr;
+	drawInterfaces_[drawInterface->GetGraphicsIndex()] = nullptr;
 }
 }

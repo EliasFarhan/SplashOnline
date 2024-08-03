@@ -49,6 +49,7 @@ private:
 	static SDL_GameController* FindGameController();
 	static SDL_JoystickID GetControllerInstanceId(SDL_GameController *controller);
 	SDL_GameController* controller_ = nullptr;
+	static constexpr float deadZone = 0.1f;
 };
 }
 

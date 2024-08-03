@@ -19,8 +19,8 @@ public:
 	void Update(float dt);
 	void End();
 	void Draw() override;
-	void SetIndex(int index) override;
-	int GetIndex() const override;
+	void SetGraphicsIndex(int index) override;
+	int GetGraphicsIndex() const override;
 public:
 
 private:

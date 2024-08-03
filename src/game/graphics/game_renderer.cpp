@@ -11,11 +11,11 @@ void GameRenderer::Draw()
 	playerRenderer_.Draw();
 	bulletRenderer_.Draw();
 }
-void GameRenderer::SetIndex(int index)
+void GameRenderer::SetGraphicsIndex(int index)
 {
 	graphicIndex = index;
 }
-int GameRenderer::GetIndex() const
+int GameRenderer::GetGraphicsIndex() const
 {
 	return graphicIndex;
 }

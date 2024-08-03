@@ -15,8 +15,8 @@ class DrawInterface
 {
 public:
 	virtual void Draw() = 0;
-	virtual void SetIndex(int index) = 0;
-	[[nodiscard]] virtual int GetIndex() const = 0;
+	virtual void SetGraphicsIndex(int index) = 0;
+	[[nodiscard]] virtual int GetGraphicsIndex() const = 0;
 };
 
 class GraphicsManager
@@ -30,7 +30,7 @@ public:
 	void PreDraw();
 	void Draw();
 	void PostDraw();
-	[[nodiscard]] void AddDrawInterface(DrawInterface* drawInterface);
+	void AddDrawInterface(DrawInterface* drawInterface);
 	void RemoveDrawInterface(DrawInterface* drawInterface);
 private:
 	TextureManager textureManager_;

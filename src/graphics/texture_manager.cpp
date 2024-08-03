@@ -102,7 +102,7 @@ void TextureManager::Begin()
 			loadingIndex.store(i, std::memory_order_release);
 		}
 	});
-	GetEngine()->ScheduleJob(loadingJob.get());
+	ScheduleAsyncJob(loadingJob.get());
 }
 
 void TextureManager::End()

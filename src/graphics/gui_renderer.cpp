@@ -10,9 +10,10 @@
 #include <imgui_impl_sdlrenderer2.h>
 #include <imgui_impl_sdl2.h>
 
+
 namespace splash
 {
-
+static GuiRenderer* instance = nullptr;
 void GuiRenderer::Begin()
 {
 	renderer_ = GetRenderer();
@@ -33,6 +34,7 @@ void GuiRenderer::Begin()
 
 void GuiRenderer::End()
 {
+	instance = nullptr;
 	ImGui_ImplSDLRenderer2_Shutdown();
 	ImGui_ImplSDL2_Shutdown();
 	ImGui::DestroyContext();
@@ -49,11 +51,26 @@ void GuiRenderer::Draw()
 	ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer_);
 }
 
-void GuiRenderer::AddListener(OnGuiInterface* guiInterface)
+void GuiRenderer::AddGuiInterface(OnGuiInterface* guiInterface)
 {
+	auto it = std::find(guiInterfaces_.begin(), guiInterfaces_.end(), nullptr);
+	if(it != guiInterfaces_.end())
+	{
+		guiInterface->SetGuiIndex((int)std::distance(guiInterfaces_.begin(), it));
+		*it = guiInterface;
+	}
+	else
+	{
+		guiInterface->SetGuiIndex((int)guiInterfaces_.size());
+		guiInterfaces_.push_back(guiInterface);
+	}
 	guiInterfaces_.push_back(guiInterface);
 }
 
+void GuiRenderer::RemoveGuiInterface(OnGuiInterface* guiInterface)
+{
+	guiInterfaces_[guiInterface->GetGuiIndex()] = nullptr;
+}
 void GuiRenderer::OnEvent(const SDL_Event& event)
 {
 	ImGui_ImplSDL2_ProcessEvent(&event);
@@ -71,5 +88,20 @@ void GuiRenderer::Update()
 	{
 		guiInterface->OnGui();
 	}
+}
+
+GuiRenderer::GuiRenderer()
+{
+	instance = this;
+}
+
+void AddGuiInterface(OnGuiInterface* guiInterface)
+{
+	instance->AddGuiInterface(guiInterface);
+}
+
+void RemoveGuiInterface(OnGuiInterface* guiInterface)
+{
+	instance->RemoveGuiInterface(guiInterface);
 }
 }
