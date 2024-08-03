@@ -100,6 +100,7 @@ void GraphicsManager::Draw()
 	}
 	for(auto* drawInterface: drawInterfaces_)
 	{
+		if(drawInterface == nullptr) continue;
 		drawInterface->Draw();
 	}
 	guiRenderer_.Draw();

@@ -71,7 +71,6 @@ void GuiRenderer::AddGuiInterface(OnGuiInterface* guiInterface)
 		guiInterface->SetGuiIndex((int)guiInterfaces_.size());
 		guiInterfaces_.push_back(guiInterface);
 	}
-	guiInterfaces_.push_back(guiInterface);
 }
 
 void GuiRenderer::RemoveGuiInterface(OnGuiInterface* guiInterface)
@@ -93,6 +92,7 @@ void GuiRenderer::Update()
 	ImGui::End();
 	for(auto* guiInterface : guiInterfaces_)
 	{
+		if(guiInterface == nullptr) continue;
 		guiInterface->OnGui();
 	}
 }

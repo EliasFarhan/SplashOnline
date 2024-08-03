@@ -25,6 +25,7 @@ void Engine::Run()
 		graphicsManager_.Update(dt);
 		for(auto* system : systems_)
 		{
+			if(system == nullptr) continue;
 			system->Update(dt);
 		}
 
@@ -54,10 +55,20 @@ void Engine::Begin()
 	window_.Begin();
 	inputManager_.Begin();
 	graphicsManager_.Begin();
+	for(auto* system : systems_)
+	{
+		if(system == nullptr) continue;
+		system->Begin();
+	}
 }
 
 void Engine::End()
 {
+	for(auto* system : systems_)
+	{
+		if(system == nullptr) continue;
+		system->End();
+	}
 	graphicsManager_.End();
 	inputManager_.End();
 	window_.End();
