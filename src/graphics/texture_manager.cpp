@@ -12,6 +12,7 @@
 
 #ifdef TRACY_ENABLE
 #include <tracy/Tracy.hpp>
+#include <tracy/TracyC.h>
 #endif
 
 #include <string_view>
@@ -97,8 +98,18 @@ void TextureManager::Begin()
 #ifdef TRACY_ENABLE
 			ZoneNamedN(loadingTexture, "Loading Image File", true);
 #endif
+#ifdef TRACY_ENABLE
+			TracyCZoneN(imageLoad, "Load Image From File", true);
+#endif
 			images[i] = LoadImageFromFile(texturePaths[i]);
+#ifdef TRACY_ENABLE
+			TracyCZoneEnd(imageLoad);
+			TracyCZoneN(surfaceCreate, "Create Surface From Image", true);
+#endif
 			surfaces[i] = CreateSurfaceFromImage(images[i]);
+#ifdef TRACY_ENABLE
+			TracyCZoneEnd(surfaceCreate);
+#endif
 			loadingIndex.store(i, std::memory_order_release);
 		}
 	});

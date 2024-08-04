@@ -44,6 +44,9 @@ void Engine::Run()
 
 void Engine::Begin()
 {
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
 	jobSystem_.Begin();
 	/*
 	* Initialises the SDL video subsystem (as well as the events subsystem).
@@ -66,6 +69,9 @@ void Engine::Begin()
 
 void Engine::End()
 {
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
 	for(auto* system : systems_)
 	{
 		if(system == nullptr) continue;
@@ -114,6 +120,10 @@ Engine::Engine()
 {
 	instance = this;
 }
+void Engine::ScheduleNetJob(neko::Job* pJob)
+{
+	jobSystem_.AddJob(pJob, networkQueue_);
+}
 
 void AddSystem(SystemInterface* system)
 {
@@ -133,5 +143,9 @@ void ScheduleAsyncJob(neko::Job* job)
 PlayerInput GetPlayerInput()
 {
 	return instance->GetPlayerInput();
+}
+void ScheduleNetJob(neko::Job* job)
+{
+	instance->ScheduleNetJob(job);
 }
 }

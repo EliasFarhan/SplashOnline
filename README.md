@@ -8,3 +8,5 @@ All visual and audio assets are property of Team KwaKwa. You are not allowed to 
 - [stb image](https://github.com/nothings/stb) ([MIT license](https://github.com/nothings/stb/blob/master/LICENSE))
 - [Photon Realtime](https://www.photonengine.com/realtime) (Proprietary license)
 - [Fmod](https://www.fmod.com/) (Proprietary license)
+- [fmt](https://github.com/fmtlib/fmt) (open source license [here](https://github.com/fmtlib/fmt/blob/master/LICENSE))
+- [tracy](https://github.com/wolfpld/tracy) (3-clause BSD license)

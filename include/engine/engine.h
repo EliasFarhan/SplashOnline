@@ -27,6 +27,7 @@ public:
 	void AddSystem(SystemInterface* system);
 	void RemoveSystem(SystemInterface* system);
 	PlayerInput GetPlayerInput() const;
+	void ScheduleNetJob(neko::Job* pJob);
 private:
 
 	void Begin();
@@ -42,6 +43,7 @@ private:
 };
 
 void ScheduleAsyncJob(neko::Job* job);
+void ScheduleNetJob(neko::Job* job);
 void AddSystem(SystemInterface* system);
 void RemoveSystem(SystemInterface* system);
 PlayerInput GetPlayerInput();
