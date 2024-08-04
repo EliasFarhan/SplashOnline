@@ -5,6 +5,8 @@
 #include "audio/music_manager.h"
 #include "audio/audio_manager.h"
 
+#include <exception>
+
 namespace splash
 {
 

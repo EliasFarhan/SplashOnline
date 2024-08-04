@@ -101,6 +101,13 @@ if(MSVC)
     )
 elseif(APPLE)
 elseif (UNIX)
+    target_compile_definitions(SplashLib PUBLIC _EG_LINUX_PLATFORM=1)
+    target_link_libraries(SplashLib PUBLIC
+            debug NekoNet_d.so
+            optimized NekoNet.so
+            debug libCommonDebug64.a
+            optimized libCommonRelease64.a
+    )
 endif()
 
 
