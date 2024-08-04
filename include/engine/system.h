@@ -8,13 +8,15 @@
 namespace splash
 {
 
-    class System
-    {
-    public:
-        virtual void Begin() = 0;
-        virtual void End() = 0;
-        virtual void Update(float dt) = 0;
-    };
+class SystemInterface
+{
+public:
+	virtual void Begin() = 0;
+	virtual void End() = 0;
+	virtual void Update(float dt) = 0;
+	[[nodiscard]] virtual int GetSystemIndex() const = 0;
+	virtual void SetSystemIndex(int index) = 0;
+};
 
 }
 

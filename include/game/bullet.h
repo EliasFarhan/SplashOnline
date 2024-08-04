@@ -5,5 +5,9 @@
 #ifndef SPLASHONLINE_BULLET_H
 #define SPLASHONLINE_BULLET_H
 
+class BulletManager
+{
+
+};
 
 #endif //SPLASHONLINE_BULLET_H

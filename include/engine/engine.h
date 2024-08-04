@@ -6,21 +6,27 @@
 #define SPLASHONLINE_ENGINE_H_
 
 #include "graphics/graphics_manager.h"
-#include <thread/job_system.h>
-#include "graphics/graphics_manager.h"
 #include "engine/window.h"
 #include "engine/input_manager.h"
+#include "engine/system.h"
+#include <thread/job_system.h>
 
 
 namespace splash
 {
 
+
+
 class Engine
 {
 public:
+	Engine();
 	void Run();
 
 	void ScheduleJob(neko::Job* job);
+	void AddSystem(SystemInterface* system);
+	void RemoveSystem(SystemInterface* system);
+	PlayerInput GetPlayerInput() const;
 private:
 
 	void Begin();
@@ -30,12 +36,15 @@ private:
 	Window window_{};
 	GraphicsManager graphicsManager_{};
 	InputManager inputManager_;
+	std::vector<SystemInterface*> systems_;
 	int otherQueue_{};
 	int networkQueue_{};
 };
 
-Engine* GetEngine();
-
+void ScheduleAsyncJob(neko::Job* job);
+void AddSystem(SystemInterface* system);
+void RemoveSystem(SystemInterface* system);
+PlayerInput GetPlayerInput();
 }
 
 #endif //SPLASHONLINE_ENGINE_H_

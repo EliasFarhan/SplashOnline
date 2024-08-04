@@ -3,27 +3,40 @@
 
 #include <fmt/format.h>
 #include <SDL.h>
-
+#ifdef TRACY_ENABLE
+#include <tracy/Tracy.hpp>
+#endif
 namespace splash
 {
 Engine* instance = nullptr;
 
 void Engine::Run()
 {
-	instance = this;
 	otherQueue_ = jobSystem_.SetupNewQueue(1);
 	networkQueue_ = jobSystem_.SetupNewQueue(1);
 
 	Begin();
 	while (window_.IsOpen())
 	{
+#ifdef TRACY_ENABLE
+		ZoneNamedN(engineLoop, "Engine Loop", true);
+#endif
+		float dt = 0.0f;
 		window_.Update();
 
-		graphicsManager_.Update(0.0f);
+		graphicsManager_.Update(dt);
+		for(auto* system : systems_)
+		{
+			if(system == nullptr) continue;
+			system->Update(dt);
+		}
 
 		graphicsManager_.PreDraw();
 		graphicsManager_.Draw();
 		graphicsManager_.PostDraw();
+#ifdef TRACY_ENABLE
+		FrameMark;
+#endif
 	}
 	End();
 
@@ -44,10 +57,20 @@ void Engine::Begin()
 	window_.Begin();
 	inputManager_.Begin();
 	graphicsManager_.Begin();
+	for(auto* system : systems_)
+	{
+		if(system == nullptr) continue;
+		system->Begin();
+	}
 }
 
 void Engine::End()
 {
+	for(auto* system : systems_)
+	{
+		if(system == nullptr) continue;
+		system->End();
+	}
 	graphicsManager_.End();
 	inputManager_.End();
 	window_.End();
@@ -62,8 +85,53 @@ void Engine::ScheduleJob(neko::Job* job)
 	jobSystem_.AddJob(job, otherQueue_);
 }
 
-Engine* GetEngine()
+void Engine::AddSystem(SystemInterface* system)
 {
-	return instance;
+	auto it = std::find(systems_.begin(), systems_.end(), nullptr);
+	if(it != systems_.end())
+	{
+		*it = system;
+		system->SetSystemIndex((int)std::distance(systems_.begin(), it));
+	}
+	else
+	{
+		system->SetSystemIndex((int)systems_.size());
+		systems_.push_back(system);
+	}
+}
+
+void Engine::RemoveSystem(SystemInterface* system)
+{
+	systems_[system->GetSystemIndex()] = nullptr;
+}
+
+PlayerInput Engine::GetPlayerInput() const
+{
+	return inputManager_.GetPlayerInput();
+}
+
+Engine::Engine()
+{
+	instance = this;
+}
+
+void AddSystem(SystemInterface* system)
+{
+	instance->AddSystem(system);
+}
+
+void RemoveSystem(SystemInterface* system)
+{
+	instance->RemoveSystem(system);
+}
+
+void ScheduleAsyncJob(neko::Job* job)
+{
+	instance->ScheduleJob(job);
+}
+
+PlayerInput GetPlayerInput()
+{
+	return instance->GetPlayerInput();
 }
 }

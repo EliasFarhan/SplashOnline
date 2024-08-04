@@ -6,6 +6,8 @@ set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+option(ENABLE_PROFILER "Enable Tracy Profiling" OFF)
+
 #NekoLib
 set(NEKOLIB_DIR externals/NekoLib)
 add_subdirectory(${NEKOLIB_DIR})
@@ -29,17 +31,34 @@ add_library(imgui ${IMGUI_FILES})
 target_include_directories(imgui PUBLIC ${IMGUI_DIR} ${IMGUI_DIR}/backends/)
 target_link_libraries(imgui PUBLIC SDL2-static)
 
+#spine sdl
+set(SPINE_DIR externals/spine-runtimes)
+file(GLOB_RECURSE SPINE_SRC ${SPINE_DIR}/spine-cpp/spine-cpp/src/*.cpp {SPINE_DIR}/spine-sdl/src/*.cpp)
+add_library(spine_sdl STATIC ${SPINE_SRC})
+target_include_directories(spine_sdl PUBLIC ${SPINE_DIR}/spine-cpp/spine-cpp/include ${SPINE_DIR}/spine-sdl/src)
+target_link_libraries(spine_sdl PUBLIC SDL2-static)
+
 #fmt format
 add_compile_definitions(FMT_HEADER_ONLY=1)
 set(FMT_DIR externals/fmt)
 add_subdirectory(${FMT_DIR})
 
 
+#tracy profiler
+if(ENABLE_PROFILER)
+    set(TRACY_DIR externals/tracy)
+    add_subdirectory(${TRACY_DIR})
+endif (ENABLE_PROFILER)
+
 
 file(GLOB_RECURSE GAME_FILES src/*.cpp include/*.h)
 
 add_library(SplashLib ${GAME_FILES})
-target_link_libraries(SplashLib PUBLIC SDL2-static SDL2main imgui NekoCore NekoPhysics)
+target_link_libraries(SplashLib PUBLIC SDL2-static SDL2main imgui spine_sdl NekoCore NekoPhysics)
+if(ENABLE_PROFILER)
+    target_compile_definitions(SplashLib PUBLIC TRACY_ENABLE=1)
+    target_link_libraries(SplashLib PUBLIC TracyClient)
+endif(ENABLE_PROFILER)
 target_include_directories(SplashLib PUBLIC include/ externals/include ${FMT_DIR}/include)
 #fmod
 set(FMOD_DIR externals/Fmod)
@@ -48,7 +67,7 @@ link_directories(${FMOD_DIR}/lowlevel/lib ${FMOD_DIR}/studio/lib)
 
 if(MSVC)
     target_link_libraries(SplashLib PUBLIC fmodstudio64_vc.lib)
-    target_compile_options(SplashLib PUBLIC "/utf-8" "/W4" "/WX")
+    target_compile_options(SplashLib PUBLIC "/utf-8" "/W4")
     file(COPY ${FMOD_DIR}/studio/lib/fmodstudio64.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
     file(COPY ${FMOD_DIR}/lowlevel/lib/fmod64.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 elseif(APPLE)
@@ -65,6 +84,31 @@ elseif (UNIX)
     file(COPY ${FMOD_DIR}/lowlevel/lib/libfmod.so.9.5 DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 
 endif ()
+#neko net
+set(NEKONET_DIR externals/NekoNet)
+target_include_directories(SplashLib PUBLIC ${NEKONET_DIR}/include)
+link_directories(${NEKONET_DIR}/lib/)
+if(MSVC)
+    target_link_libraries(SplashLib PUBLIC
+            debug NekoNet_d.lib
+            debug Photon_d.lib
+            debug Photon-cpp_vc17_debug_windows_md_x64.lib
+            debug Common-cpp_vc17_debug_windows_md_x64.lib
+            optimized NekoNet.lib
+            optimized Photon.lib
+            optimized Photon-cpp_vc17_release_windows_md_x64.lib
+            optimized Common-cpp_vc17_release_windows_md_x64.lib
+    )
+elseif(APPLE)
+elseif (UNIX)
+    target_compile_definitions(SplashLib PUBLIC _EG_LINUX_PLATFORM=1)
+    target_link_libraries(SplashLib PUBLIC
+            debug NekoNet_d.so
+            optimized NekoNet.so
+            debug libCommonDebug64.a
+            optimized libCommonRelease64.a
+    )
+endif()
 
 
 #attach data to SplashLib

@@ -15,6 +15,8 @@ class DrawInterface
 {
 public:
 	virtual void Draw() = 0;
+	virtual void SetGraphicsIndex(int index) = 0;
+	[[nodiscard]] virtual int GetGraphicsIndex() const = 0;
 };
 
 class GraphicsManager
@@ -29,14 +31,16 @@ public:
 	void Draw();
 	void PostDraw();
 	void AddDrawInterface(DrawInterface* drawInterface);
+	void RemoveDrawInterface(DrawInterface* drawInterface);
 private:
 	TextureManager textureManager_;
 	GuiRenderer guiRenderer_;
-	SDL_Renderer* renderer_;
+	SDL_Renderer* renderer_ = nullptr;
 	std::vector<DrawInterface*> drawInterfaces_;
 };
 
 void AddDrawInterface(DrawInterface* drawInterface);
+void RemoveDrawInterface(DrawInterface* drawInterface);
 SDL_Renderer* GetRenderer();
 }
 

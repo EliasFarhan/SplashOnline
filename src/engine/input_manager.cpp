@@ -36,6 +36,7 @@ void InputManager::ManageEvent(const SDL_Event& event)
 	{
 		if(controller_ == nullptr)
 		{
+			LogDebug("Controller connected");
 			controller_ = SDL_GameControllerOpen(event.cdevice.which);
 		}
 		break;
@@ -70,5 +71,28 @@ void InputManager::End()
 		SDL_GameControllerClose(controller_);
 		controller_ = nullptr;
 	}
+}
+PlayerInput InputManager::GetPlayerInput() const
+{
+	PlayerInput input{};
+	if(controller_ != nullptr)
+	{
+		const float trigger = static_cast<float>(SDL_GameControllerGetAxis(controller_, SDL_CONTROLLER_AXIS_TRIGGERRIGHT))/32767.0f;
+		if(trigger > deadZone)
+		{
+			input.SetStomp(true);
+		}
+		input.SetConfirm(SDL_GameControllerGetButton(controller_, SDL_CONTROLLER_BUTTON_A));
+		input.SetCancel(SDL_GameControllerGetButton(controller_, SDL_CONTROLLER_BUTTON_B));
+		const float leftX = static_cast<float>(SDL_GameControllerGetAxis(controller_, SDL_CONTROLLER_AXIS_LEFTX))/32767.0f;
+		const float leftY = static_cast<float>(SDL_GameControllerGetAxis(controller_, SDL_CONTROLLER_AXIS_LEFTY))/32767.0f;
+		const float rightX = static_cast<float>(SDL_GameControllerGetAxis(controller_, SDL_CONTROLLER_AXIS_RIGHTX))/32767.0f;
+		const float rightY = static_cast<float>(SDL_GameControllerGetAxis(controller_, SDL_CONTROLLER_AXIS_RIGHTY))/32767.0f;
+		input.moveDirX = neko::Fixed8{leftX};
+		input.moveDirY = neko::Fixed8{leftY};
+		input.targetDirX = neko::Fixed8{rightX};
+		input.targetDirY = neko::Fixed8{rightY};
+	}
+	return input;
 }
 }

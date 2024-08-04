@@ -10,8 +10,19 @@
 #include <imgui_impl_sdlrenderer2.h>
 #include <imgui_impl_sdl2.h>
 
+#include <algorithm>
+
+
 namespace splash
 {
+static GuiRenderer* instance = nullptr;
+
+
+GuiRenderer::GuiRenderer()
+{
+	instance = this;
+	AddEventListener(this);
+}
 
 void GuiRenderer::Begin()
 {
@@ -28,11 +39,11 @@ void GuiRenderer::Begin()
 	ImGui_ImplSDL2_InitForSDLRenderer(GetWindow(), renderer_);
 	ImGui_ImplSDLRenderer2_Init(renderer_);
 
-	AddEventListener(this);
 }
 
 void GuiRenderer::End()
 {
+	instance = nullptr;
 	ImGui_ImplSDLRenderer2_Shutdown();
 	ImGui_ImplSDL2_Shutdown();
 	ImGui::DestroyContext();
@@ -49,11 +60,25 @@ void GuiRenderer::Draw()
 	ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer_);
 }
 
-void GuiRenderer::AddListener(OnGuiInterface* guiInterface)
+void GuiRenderer::AddGuiInterface(OnGuiInterface* guiInterface)
 {
-	guiInterfaces_.push_back(guiInterface);
+	auto it = std::find(guiInterfaces_.begin(), guiInterfaces_.end(), nullptr);
+	if(it != guiInterfaces_.end())
+	{
+		guiInterface->SetGuiIndex((int)std::distance(guiInterfaces_.begin(), it));
+		*it = guiInterface;
+	}
+	else
+	{
+		guiInterface->SetGuiIndex((int)guiInterfaces_.size());
+		guiInterfaces_.push_back(guiInterface);
+	}
 }
 
+void GuiRenderer::RemoveGuiInterface(OnGuiInterface* guiInterface)
+{
+	guiInterfaces_[guiInterface->GetGuiIndex()] = nullptr;
+}
 void GuiRenderer::OnEvent(const SDL_Event& event)
 {
 	ImGui_ImplSDL2_ProcessEvent(&event);
@@ -69,7 +94,28 @@ void GuiRenderer::Update()
 	ImGui::End();
 	for(auto* guiInterface : guiInterfaces_)
 	{
+		if(guiInterface == nullptr) continue;
 		guiInterface->OnGui();
 	}
+}
+
+int GuiRenderer::GetEventListenerIndex() const
+{
+	return eventListenerIndex_;
+}
+
+void GuiRenderer::SetEventListenerIndex(int index)
+{
+	eventListenerIndex_ = index;
+}
+
+void AddGuiInterface(OnGuiInterface* guiInterface)
+{
+	instance->AddGuiInterface(guiInterface);
+}
+
+void RemoveGuiInterface(OnGuiInterface* guiInterface)
+{
+	instance->RemoveGuiInterface(guiInterface);
 }
 }
