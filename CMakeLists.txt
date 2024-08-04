@@ -87,8 +87,9 @@ endif ()
 #neko net
 set(NEKONET_DIR externals/NekoNet)
 target_include_directories(SplashLib PUBLIC ${NEKONET_DIR}/include)
-link_directories(${NEKONET_DIR}/lib/)
+
 if(MSVC)
+    link_directories(${NEKONET_DIR}/lib/windows/)
     target_link_libraries(SplashLib PUBLIC
             debug NekoNet_d.lib
             debug Photon_d.lib
@@ -100,11 +101,33 @@ if(MSVC)
             optimized Common-cpp_vc17_release_windows_md_x64.lib
     )
 elseif(APPLE)
+    link_directories(${NEKONET_DIR}/lib/macosx/)
+    target_compile_definitions(SplashLib PUBLIC _EG_IMAC_PLATFORM=1)
+    find_library(corefoundation_lib CoreFoundation)
+    find_library(cfnetwork_lib CFNetwork)
+    target_link_libraries(SplashLib PUBLIC
+        optimized "libNekoNet.a"
+        debug "libNekoNet_d.a"
+        optimized "libPhoton.a"
+        debug "libPhoton_d.a"
+        optimized "libPhoton-cpp_release_macosx.a"
+        debug "libPhoton-cpp_debug_macosx.a"
+        optimized "libCommon-cpp_release_macosx.a"
+        debug "libCommon-cpp_debug_macosx.a"
+        optimized "libcrypto_release_macosx.a"
+        debug "libcrypto_debug_macosx.a"
+        "-framework Foundation" "-framework CoreFoundation" "-framework Security" "-framework CFNetwork"
+    )
 elseif (UNIX)
+    link_directories(${NEKONET_DIR}/lib/linux/)
     target_compile_definitions(SplashLib PUBLIC _EG_LINUX_PLATFORM=1)
     target_link_libraries(SplashLib PUBLIC
-            debug NekoNet_d.so
-            optimized NekoNet.so
+            debug libNekoNet_d.a
+            optimized libNekoNet.a
+            debug libPhoton_d.a
+            optimized libPhoton.a
+            debug libPhotonDebug64.a
+            optimized libPhotonRelease64.a
             debug libCommonDebug64.a
             optimized libCommonRelease64.a
     )
