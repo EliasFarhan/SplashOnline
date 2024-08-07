@@ -1,0 +1,14 @@
+SBPkwakwa_ver4_2.png
+size:2048,2048
+filter:Linear,Linear
+pma:true
+Assets/duck1
+bounds:1924,1076,135,122
+rotate:90
+Assets/duck2
+bounds:2,2,134,127
+Assets/ducknoise
+bounds:1924,1031,27,43
+offsets:0,0,28,43
+Assets/kwakwabg
+bounds:2,131,1920,1080

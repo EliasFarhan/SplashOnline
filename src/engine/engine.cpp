@@ -3,6 +3,8 @@
 
 #include <fmt/format.h>
 #include <SDL.h>
+#include <SDL_timer.h>
+
 #ifdef TRACY_ENABLE
 #include <tracy/Tracy.hpp>
 #endif
@@ -16,19 +18,25 @@ void Engine::Run()
 	networkQueue_ = jobSystem_.SetupNewQueue(1);
 
 	Begin();
+	double freq = (double)SDL_GetPerformanceFrequency();
+	Uint64 previous = SDL_GetPerformanceCounter();
 	while (window_.IsOpen())
 	{
 #ifdef TRACY_ENABLE
 		ZoneNamedN(engineLoop, "Engine Loop", true);
 #endif
-		float dt = 0.0f;
+		auto current = SDL_GetPerformanceCounter();
+		auto delta =  (double)(current - previous);
+		previous = current;
+
+		dt_ = (float)(delta/freq);
 		window_.Update();
 
-		graphicsManager_.Update(dt);
+		graphicsManager_.Update(dt_);
 		for(auto* system : systems_)
 		{
 			if(system == nullptr) continue;
-			system->Update(dt);
+			system->Update(dt_);
 		}
 
 		graphicsManager_.PreDraw();
@@ -52,7 +60,7 @@ void Engine::Begin()
 	* Initialises the SDL video subsystem (as well as the events subsystem).
 	* Returns 0 on success or a negative error code on failure using SDL_GetError().
 	*/
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0)
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_TIMER ) != 0)
 	{
 		LogError(fmt::format("SDL failed to initialise: {}", SDL_GetError()));
 		return;
@@ -125,6 +133,11 @@ void Engine::ScheduleNetJob(neko::Job* pJob)
 	jobSystem_.AddJob(pJob, networkQueue_);
 }
 
+float Engine::GetDeltaTime()
+{
+	return dt_;
+}
+
 void AddSystem(SystemInterface* system)
 {
 	instance->AddSystem(system);
@@ -147,5 +160,10 @@ PlayerInput GetPlayerInput()
 void ScheduleNetJob(neko::Job* job)
 {
 	instance->ScheduleNetJob(job);
+}
+
+float GetDeltaTime()
+{
+	return instance->GetDeltaTime();
 }
 }

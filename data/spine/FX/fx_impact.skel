@@ -1,0 +1,226 @@
+{
+"skeleton": { "hash": "yK1WXqEH9AQ", "spine": "4.2.35", "x": -35.5, "y": -31, "width": 71, "height": 62 },
+"bones": [
+	{ "name": "root" },
+	{ "name": "main", "parent": "root" },
+	{ "name": "BN_impact", "parent": "main" },
+	{ "name": "BN_impact2", "parent": "root" }
+],
+"slots": [
+	{ "name": "SL_impact", "bone": "BN_impact", "attachment": "impact/impact1" },
+	{ "name": "SL_impact2", "bone": "BN_impact2" }
+],
+"skins": [
+	{
+		"name": "default",
+		"attachments": {
+			"SL_impact": {
+				"impact/impact1": { "width": 71, "height": 62 },
+				"impact/impact2": { "width": 95, "height": 80 },
+				"impact/impact3": { "width": 157, "height": 150 },
+				"impact/impact4": { "width": 228, "height": 181 }
+			},
+			"SL_impact2": {
+				"impact/impact8": { "width": 193, "height": 193 }
+			}
+		}
+	}
+],
+"animations": {
+	"impact1": {
+		"slots": {
+			"SL_impact": {
+				"rgba": [
+					{ "color": "000000ff", "curve": "stepped" },
+					{ "time": 0.0333, "color": "ffffffff", "curve": "stepped" },
+					{ "time": 0.0667, "color": "000000ff", "curve": "stepped" },
+					{ "time": 0.1, "color": "ffffffff" }
+				],
+				"attachment": [
+					{ "name": "impact/impact1" },
+					{ "time": 0.0667, "name": "impact/impact2" },
+					{ "time": 0.1333 }
+				]
+			},
+			"SL_impact2": {
+				"rgba": [
+					{ "color": "ffffffff" }
+				],
+				"attachment": [
+					{}
+				]
+			}
+		},
+		"bones": {
+			"root": {
+				"rotate": [
+					{}
+				],
+				"translate": [
+					{}
+				],
+				"scale": [
+					{}
+				]
+			},
+			"main": {
+				"rotate": [
+					{}
+				],
+				"translate": [
+					{}
+				],
+				"scale": [
+					{ "x": 0.629, "y": 0.629 }
+				]
+			},
+			"BN_impact": {
+				"rotate": [
+					{}
+				],
+				"translate": [
+					{}
+				],
+				"scale": [
+					{}
+				]
+			}
+		}
+	},
+	"impact2": {
+		"slots": {
+			"SL_impact": {
+				"rgba": [
+					{ "color": "000000ff", "curve": "stepped" },
+					{ "time": 0.0333, "color": "ffffffff", "curve": "stepped" },
+					{ "time": 0.0667, "color": "000000ff", "curve": "stepped" },
+					{ "time": 0.1, "color": "ffffffff" }
+				],
+				"attachment": [
+					{ "name": "impact/impact1" },
+					{ "time": 0.0667, "name": "impact/impact2" },
+					{ "time": 0.1333 }
+				]
+			},
+			"SL_impact2": {
+				"rgba": [
+					{ "color": "ffffffff" }
+				],
+				"attachment": [
+					{}
+				]
+			}
+		},
+		"bones": {
+			"root": {
+				"rotate": [
+					{}
+				],
+				"translate": [
+					{}
+				],
+				"scale": [
+					{}
+				]
+			},
+			"main": {
+				"rotate": [
+					{}
+				],
+				"translate": [
+					{}
+				],
+				"scale": [
+					{}
+				]
+			},
+			"BN_impact": {
+				"rotate": [
+					{}
+				],
+				"translate": [
+					{}
+				],
+				"scale": [
+					{}
+				]
+			}
+		}
+	},
+	"impact3": {
+		"slots": {
+			"SL_impact": {
+				"rgba": [
+					{ "color": "000000ff", "curve": "stepped" },
+					{ "time": 0.0333, "color": "ffffffff", "curve": "stepped" },
+					{ "time": 0.0667, "color": "000000ff", "curve": "stepped" },
+					{ "time": 0.1, "color": "ffffffff", "curve": "stepped" },
+					{ "time": 0.1333, "color": "000000ff", "curve": "stepped" },
+					{ "time": 0.1667, "color": "ffffffff" }
+				],
+				"attachment": [
+					{ "name": "impact/impact1" },
+					{ "time": 0.0667, "name": "impact/impact3" },
+					{ "time": 0.1333, "name": "impact/impact4" },
+					{ "time": 0.2 }
+				]
+			},
+			"SL_impact2": {
+				"rgba": [
+					{ "color": "ffffffba" },
+					{ "time": 0.0333, "color": "ffffff8c" },
+					{ "time": 0.2667, "color": "ffffff00" }
+				],
+				"attachment": [
+					{ "name": "impact/impact8" }
+				]
+			}
+		},
+		"bones": {
+			"root": {
+				"rotate": [
+					{}
+				],
+				"translate": [
+					{}
+				],
+				"scale": [
+					{}
+				]
+			},
+			"main": {
+				"rotate": [
+					{}
+				],
+				"translate": [
+					{}
+				],
+				"scale": [
+					{ "x": 1.3, "y": 1.3 }
+				]
+			},
+			"BN_impact": {
+				"rotate": [
+					{}
+				],
+				"translate": [
+					{}
+				],
+				"scale": [
+					{}
+				]
+			},
+			"BN_impact2": {
+				"scale": [
+					{
+						"x": 0.816,
+						"y": 0.816,
+						"curve": [ 0.114, 1.072, 0.005, 2.628, 0.114, 1.072, 0.005, 2.628 ]
+					},
+					{ "time": 0.2667, "x": 2.72, "y": 2.72 }
+				]
+			}
+		}
+	}
+}
+}

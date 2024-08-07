@@ -5,6 +5,7 @@
 #include "graphics/gui_renderer.h"
 #include "graphics/graphics_manager.h"
 #include "engine/window.h"
+#include "engine/engine.h"
 
 #include <imgui.h>
 #include <imgui_impl_sdlrenderer2.h>
@@ -91,6 +92,7 @@ void GuiRenderer::Update()
 	ImGui::NewFrame();
 
 	ImGui::Begin("Splash Online");
+	ImGui::Text("FPS %f", 1.0f/GetDeltaTime());
 	ImGui::End();
 	for(auto* guiInterface : guiInterfaces_)
 	{

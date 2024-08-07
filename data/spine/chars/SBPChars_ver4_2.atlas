@@ -1,0 +1,271 @@
+SBPChars_ver4_2.png
+size:4096,2048
+filter:Linear,Linear
+pma:true
+assets/body
+bounds:997,8,182,152
+assets/dash
+bounds:3758,1070,334,301
+rotate:90
+assets/dashprep
+bounds:1284,571,332,286
+rotate:90
+assets/head
+bounds:1880,217,194,174
+rotate:90
+assets/head2
+bounds:1915,21,194,173
+offsets:0,1,194,174
+rotate:90
+assets/head3
+bounds:2041,545,194,173
+offsets:0,1,194,174
+assets/leftarm
+bounds:1496,180,62,72
+rotate:90
+assets/leftleg
+bounds:2342,525,38,45
+assets/leg2
+bounds:2907,696,62,49
+assets/leg3
+bounds:2347,420,52,47
+assets/rightleg
+bounds:2398,503,44,45
+assets/run
+bounds:2041,720,223,79
+offsets:0,0,223,80
+assets/superprep1
+bounds:1572,645,330,287
+assets/superprep2
+bounds:1589,1370,703,676
+assets/superprep3
+bounds:2294,1370,703,676
+assets/sweat1
+bounds:1181,2,183,37
+assets/sweat2
+bounds:4030,1660,189,58
+rotate:90
+assets/tail1
+bounds:2266,704,138,95
+assets/tail2
+bounds:2090,63,121,160
+offsets:0,0,121,161
+assets/whisk1
+bounds:2572,613,75,70
+assets/whisk2
+bounds:2230,267,98,40
+offsets:0,1,98,41
+rotate:90
+assets/whisk3
+bounds:720,804,99,40
+offsets:0,0,99,41
+rotate:90
+lucha assets/armleft
+bounds:2224,367,56,73
+offsets:0,0,56,76
+lucha assets/armleft2
+bounds:2406,550,73,56
+offsets:4,0,77,56
+lucha assets/body
+bounds:2532,685,97,116
+offsets:0,0,102,116
+rotate:90
+lucha assets/dash
+bounds:2701,747,287,247
+rotate:90
+lucha assets/dashprep
+bounds:417,10,260,314
+offsets:0,0,261,314
+rotate:90
+lucha assets/eyes1
+bounds:2237,525,103,45
+offsets:0,1,103,47
+lucha assets/eyes2
+bounds:1940,944,99,22
+offsets:0,0,100,22
+lucha assets/eyes3
+bounds:2650,690,92,49
+rotate:90
+lucha assets/eyes4
+bounds:2802,698,103,47
+offsets:0,0,103,48
+lucha assets/handleft1
+bounds:2260,167,57,53
+offsets:0,1,57,54
+rotate:90
+lucha assets/handleft2
+bounds:2406,608,82,75
+lucha assets/handleft3
+bounds:1208,412,74,65
+offsets:0,3,75,74
+lucha assets/head
+bounds:1723,7,190,166
+lucha assets/head2
+bounds:2056,353,190,166
+rotate:90
+lucha assets/leg2
+bounds:4030,1946,100,64
+offsets:0,1,100,65
+rotate:90
+lucha assets/leg3
+bounds:4030,1522,64,64
+lucha assets/legdash
+bounds:2835,1036,68,124
+rotate:90
+lucha assets/legdashprep
+bounds:2224,442,67,81
+lucha assets/legleft
+bounds:2490,611,72,80
+rotate:90
+lucha assets/legright
+bounds:4030,1588,64,70
+lucha assets/superprep1
+bounds:1572,413,230,324
+rotate:90
+lucha assets/superprep2
+bounds:2999,1471,389,575
+lucha assets/superprep3
+bounds:3390,1471,389,575
+lucha assets/superprep4
+bounds:720,1014,389,748
+rotate:90
+lucha assets/superprep5
+bounds:337,793,381,1253
+offsets:1,0,382,1253
+lucha assets/superprep6
+bounds:2,249,333,1797
+offsets:0,1,333,1798
+omni/goldpack
+bounds:2041,801,210,165
+offsets:0,0,210,166
+omni/jetpack
+bounds:2253,801,130,165
+offsets:0,0,130,166
+omni/jetpackfire1
+bounds:720,905,652,107
+offsets:0,0,653,107
+omni/jetpackfire2
+bounds:3781,1406,247,640
+omni/jetpackfire3
+bounds:1470,934,468,434
+offsets:0,2,469,437
+omni/jetpackfire4
+bounds:3408,1095,374,348
+offsets:0,0,375,348
+rotate:90
+omni/jetpackfire5
+bounds:2999,1135,407,334
+omni/jetpackfire6
+bounds:2407,1036,426,332
+omni/jetpackglow
+bounds:763,162,443,315
+offsets:5,4,453,323
+owl assets/armleft
+bounds:4030,1851,64,93
+owl assets/armleft2
+bounds:2362,584,118,42
+rotate:90
+owl assets/armright_flap1
+bounds:1374,908,104,83
+offsets:0,0,105,83
+rotate:90
+owl assets/armright_flap2
+bounds:2237,617,123,85
+owl assets/bag
+bounds:2293,447,76,52
+offsets:1,0,77,52
+rotate:90
+owl assets/body
+bounds:2406,685,97,124
+rotate:90
+owl assets/dash
+bounds:2,22,225,413
+offsets:0,0,229,415
+rotate:90
+owl assets/dashprep
+bounds:2407,784,292,250
+offsets:0,0,292,251
+owl assets/flap
+bounds:2237,572,43,123
+offsets:1,0,44,124
+rotate:90
+owl assets/head
+bounds:2835,1106,262,127
+rotate:90
+owl assets/head2
+bounds:733,33,262,127
+owl assets/jetpack
+bounds:2056,225,172,126
+owl assets/leg2
+bounds:1496,244,74,60
+owl assets/leg3
+bounds:2220,23,56,58
+owl assets/legdash
+bounds:2701,693,52,99
+offsets:0,0,53,99
+rotate:90
+owl assets/legdashprep
+bounds:2263,111,54,53
+offsets:0,0,54,54
+rotate:90
+owl assets/legleft
+bounds:2213,83,48,66
+owl assets/legright
+bounds:2213,151,45,72
+owl assets/pupil
+bounds:1450,3,36,36
+owl assets/superprep
+bounds:1284,306,263,286
+rotate:90
+owl assets/superprep_white
+bounds:1208,41,263,286
+rotate:90
+robo assets/antenna
+bounds:1470,1381,22,78
+rotate:90
+robo assets/armleft
+bounds:2347,469,49,54
+offsets:1,2,50,57
+robo assets/body
+bounds:1208,324,86,72
+rotate:90
+robo assets/body2
+bounds:1407,3,41,36
+offsets:0,0,41,37
+robo assets/body3
+bounds:4030,1421,99,56
+offsets:0,0,102,56
+rotate:90
+robo assets/dash
+bounds:1572,175,236,306
+rotate:90
+robo assets/dashprep
+bounds:1940,968,465,400
+robo assets/handleft
+bounds:1880,180,32,35
+offsets:0,1,32,36
+robo assets/handleft2
+bounds:1366,2,37,39
+rotate:90
+robo assets/head
+bounds:1496,38,225,135
+robo assets/head2
+bounds:1904,707,225,135
+rotate:90
+robo assets/superprep
+bounds:720,1405,867,641
+robo assets/superprep2
+bounds:337,272,519,424
+rotate:90
+robo assets/superprep3
+bounds:763,479,519,424
+robo assets/track1
+bounds:1904,646,127,59
+robo assets/track2
+bounds:2090,2,128,59
+robo assets/wheel1
+bounds:2230,226,39,43
+offsets:0,0,39,44
+rotate:90
+robo assets/wheel2
+bounds:2263,83,23,26

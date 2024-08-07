@@ -33,7 +33,7 @@ target_link_libraries(imgui PUBLIC SDL2-static)
 
 #spine sdl
 set(SPINE_DIR externals/spine-runtimes)
-file(GLOB_RECURSE SPINE_SRC ${SPINE_DIR}/spine-cpp/spine-cpp/src/*.cpp {SPINE_DIR}/spine-sdl/src/*.cpp)
+file(GLOB_RECURSE SPINE_SRC ${SPINE_DIR}/spine-cpp/spine-cpp/src/*.cpp ${SPINE_DIR}/spine-sdl/src/*.cpp)
 add_library(spine_sdl STATIC ${SPINE_SRC})
 target_include_directories(spine_sdl PUBLIC ${SPINE_DIR}/spine-cpp/spine-cpp/include ${SPINE_DIR}/spine-sdl/src)
 target_link_libraries(spine_sdl PUBLIC SDL2-static)

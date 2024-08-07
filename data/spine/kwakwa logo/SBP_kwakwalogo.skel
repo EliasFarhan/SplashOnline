@@ -1,0 +1,107 @@
+{
+"skeleton": { "hash": "lspOpuchPJU", "spine": "4.2.35", "x": -960, "y": -540, "width": 1920, "height": 1080 },
+"bones": [
+	{ "name": "root" },
+	{ "name": "main", "parent": "root" },
+	{ "name": "BN_duck", "parent": "main", "x": 80.48, "y": 69.04 },
+	{ "name": "Duckscream", "parent": "main", "x": 170.13, "y": 113.08 }
+],
+"slots": [
+	{ "name": "SL_kwakwabg", "bone": "main", "attachment": "Assets/kwakwabg" },
+	{ "name": "SL_duck", "bone": "BN_duck", "attachment": "Assets/duck1" },
+	{ "name": "SL_ducknoise", "bone": "Duckscream" }
+],
+"skins": [
+	{
+		"name": "default",
+		"attachments": {
+			"SL_duck": {
+				"Assets/duck1": { "width": 135, "height": 122 },
+				"Assets/duck2": { "x": -0.47, "y": 2.58, "width": 134, "height": 127 }
+			},
+			"SL_ducknoise": {
+				"Assets/ducknoise": { "width": 28, "height": 43 }
+			},
+			"SL_kwakwabg": {
+				"Assets/kwakwabg": { "width": 1920, "height": 1080 }
+			}
+		}
+	}
+],
+"animations": {
+	"kwakwa": {
+		"slots": {
+			"SL_duck": {
+				"attachment": [
+					{ "name": "Assets/duck1" },
+					{ "time": 1, "name": "Assets/duck2" },
+					{ "time": 1.1, "name": "Assets/duck1" },
+					{ "time": 2, "name": "Assets/duck1" }
+				]
+			},
+			"SL_ducknoise": {
+				"attachment": [
+					{},
+					{ "time": 1, "name": "Assets/ducknoise" },
+					{ "time": 1.1333 },
+					{ "time": 2 }
+				]
+			}
+		},
+		"bones": {
+			"main": {
+				"rotate": [
+					{ "curve": "stepped" },
+					{ "time": 2 }
+				],
+				"translate": [
+					{ "curve": "stepped" },
+					{ "time": 2 }
+				],
+				"scale": [
+					{ "curve": "stepped" },
+					{ "time": 2 }
+				]
+			},
+			"BN_duck": {
+				"rotate": [
+					{ "curve": "stepped" },
+					{ "time": 0.9667, "curve": "stepped" },
+					{ "time": 2 }
+				],
+				"translate": [
+					{ "curve": "stepped" },
+					{ "time": 0.9667, "curve": "stepped" },
+					{ "time": 2 }
+				],
+				"scale": [
+					{ "curve": "stepped" },
+					{ "time": 0.9667 },
+					{ "time": 1, "x": 1.11, "y": 1.11 },
+					{ "time": 1.1, "curve": "stepped" },
+					{ "time": 2 }
+				]
+			},
+			"Duckscream": {
+				"rotate": [
+					{ "curve": "stepped" },
+					{ "time": 1, "curve": "stepped" },
+					{ "time": 2 }
+				],
+				"translate": [
+					{ "curve": "stepped" },
+					{ "time": 1, "curve": "stepped" },
+					{ "time": 1.0667, "x": 6.4, "curve": "stepped" },
+					{ "time": 2 }
+				],
+				"scale": [
+					{ "curve": "stepped" },
+					{ "time": 1, "curve": "stepped" },
+					{ "time": 1.0667, "x": 1.286, "y": 1.286, "curve": "stepped" },
+					{ "time": 2 }
+				]
+			}
+		}
+	}
+}
+}

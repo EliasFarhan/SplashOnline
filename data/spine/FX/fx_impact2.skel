@@ -1,0 +1,156 @@
+{
+"skeleton": { "hash": "R1Gm1goWul0", "spine": "4.2.35", "x": -334.5, "y": -334.5, "width": 669, "height": 669 },
+"bones": [
+	{ "name": "root" },
+	{ "name": "main", "parent": "root" },
+	{ "name": "BN_imp1", "parent": "main" },
+	{ "name": "BN_imp2", "parent": "main" }
+],
+"slots": [
+	{ "name": "SL_imp1", "bone": "BN_imp1", "attachment": "impact/impact9" },
+	{ "name": "SL_imp2", "bone": "BN_imp2", "attachment": "impact/impact9" }
+],
+"skins": [
+	{
+		"name": "default",
+		"attachments": {
+			"SL_imp1": {
+				"impact/impact9": { "width": 669, "height": 669 }
+			},
+			"SL_imp2": {
+				"impact/impact9": { "width": 669, "height": 669 }
+			}
+		}
+	}
+],
+"animations": {
+	"impact1": {
+		"slots": {
+			"SL_imp1": {
+				"rgba": [
+					{ "color": "ffffffff" }
+				],
+				"attachment": [
+					{}
+				]
+			}
+		},
+		"bones": {
+			"root": {
+				"rotate": [
+					{}
+				],
+				"translate": [
+					{}
+				],
+				"scale": [
+					{}
+				]
+			},
+			"BN_imp2": {
+				"rotate": [
+					{
+						"curve": [ 0.016, -135, 0.2, -135 ]
+					},
+					{ "time": 0.2667, "value": -135 }
+				],
+				"translate": [
+					{}
+				],
+				"scale": [
+					{ "x": 0.629, "y": 0.629 },
+					{ "time": 0.2667, "x": 1.301, "y": 1.301 }
+				]
+			}
+		}
+	},
+	"impact2": {
+		"slots": {
+			"SL_imp1": {
+				"rgba": [
+					{
+						"color": "ffffffff",
+						"curve": [ 0.457, 1, 0.492, 1, 0.457, 1, 0.492, 1, 0.457, 1, 0.492, 1, 0.457, 1, 0.492, 0.31 ]
+					},
+					{ "time": 0.5, "color": "ffffff00" }
+				]
+			},
+			"SL_imp2": {
+				"rgba": [
+					{ "color": "ffffffff" },
+					{ "time": 0.5, "color": "ffffff00" }
+				]
+			}
+		},
+		"bones": {
+			"BN_imp1": {
+				"scale": [
+					{
+						"x": 0.059,
+						"y": 0.059,
+						"curve": [ 0.05, 0.356, 0.375, 0.437, 0.05, 0.356, 0.375, 0.437 ]
+					},
+					{ "time": 0.5, "x": 0.437, "y": 0.437 }
+				]
+			},
+			"BN_imp2": {
+				"scale": [
+					{
+						"x": 0.02,
+						"y": 0.02,
+						"curve": [ 0.294, 0.039, 0.152, 0.913, 0.294, 0.042, 0.152, 1.034 ]
+					},
+					{ "time": 0.5, "x": 0.918, "y": 1.039 }
+				]
+			}
+		}
+	},
+	"impact3": {
+		"slots": {
+			"SL_imp1": {
+				"rgba": [
+					{ "color": "ffffffba" },
+					{ "time": 0.0333, "color": "ffffff8c" },
+					{ "time": 0.2667, "color": "ffffff00" }
+				]
+			}
+		},
+		"bones": {
+			"root": {
+				"rotate": [
+					{}
+				],
+				"translate": [
+					{}
+				],
+				"scale": [
+					{}
+				]
+			},
+			"BN_imp2": {
+				"rotate": [
+					{},
+					{ "time": 0.2667, "value": -135 }
+				],
+				"translate": [
+					{}
+				],
+				"scale": [
+					{ "x": 1.151, "y": 1.151 },
+					{ "time": 0.2667, "x": 2.968, "y": 2.968 }
+				]
+			},
+			"BN_imp1": {
+				"scale": [
+					{
+						"x": 0.816,
+						"y": 0.816,
+						"curve": [ 0.114, 1.072, 0.005, 2.628, 0.114, 1.072, 0.005, 2.628 ]
+					},
+					{ "time": 0.2667, "x": 2.72, "y": 2.72 }
+				]
+			}
+		}
+	}
+}
+}

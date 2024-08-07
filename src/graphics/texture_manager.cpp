@@ -2,7 +2,7 @@
 // Created by unite on 11.07.2024.
 //
 
-#define STB_IMAGE_IMPLEMENTATION
+//#define STB_IMAGE_IMPLEMENTATION //already defined in spine-sdl
 #include <stb_image.h>
 
 #include "graphics/texture_manager.h"
@@ -39,6 +39,10 @@ static std::array<std::string_view, (int)TextureManager::TextureId::LENGTH> text
 		"data/sprites/kittymanjaro/plat1.png",
 		"data/sprites/kittymanjaro/plat2.png",
 		"data/sprites/kittymanjaro/plat3.png",
+		"data/spine/arms/cat_rightarm.png",
+		"data/spine/arms/lucha_rightarm.png",
+		"data/spine/arms/owl_rightarm.png",
+		"data/spine/arms/robot_rightarm.png",
 	}};
 
 struct Image

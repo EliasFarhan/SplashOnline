@@ -1,0 +1,11 @@
+SBPwater_ver4_2.png
+size:128,64
+filter:Linear,Linear
+pma:true
+assets/dropnormal1
+bounds:45,5,38,37
+assets/dropnormal2
+bounds:2,2,41,40
+offsets:1,0,42,40
+assets/dropnormal3
+bounds:85,5,36,37

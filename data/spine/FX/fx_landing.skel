@@ -1,0 +1,52 @@
+{
+"skeleton": { "hash": "smwOYClYpM4", "spine": "4.2.35", "x": -192.2, "y": -18.66, "width": 384.39, "height": 53.7 },
+"bones": [
+	{ "name": "root" },
+	{ "name": "main", "parent": "root", "scaleX": 1.4132, "scaleY": 1.4132 }
+],
+"slots": [
+	{ "name": "SL_land", "bone": "main", "attachment": "land/land4" }
+],
+"skins": [
+	{
+		"name": "default",
+		"attachments": {
+			"SL_land": {
+				"land/land1": { "y": 13.25, "width": 122, "height": 43 },
+				"land/land2": { "y": 9.11, "width": 157, "height": 36 },
+				"land/land3": { "y": 6.62, "width": 214, "height": 36 },
+				"land/land4": { "y": 5.8, "width": 272, "height": 38 }
+			}
+		}
+	}
+],
+"animations": {
+	"land": {
+		"slots": {
+			"SL_land": {
+				"rgba": [
+					{ "color": "ffffffff", "curve": "stepped" },
+					{ "time": 0.1, "color": "ffffffff" },
+					{ "time": 0.1333, "color": "ffffff00" }
+				],
+				"attachment": [
+					{ "name": "land/land1" },
+					{ "time": 0.0333, "name": "land/land2" },
+					{ "time": 0.0667, "name": "land/land3" },
+					{ "time": 0.1, "name": "land/land4" }
+				]
+			}
+		},
+		"bones": {
+			"main": {
+				"scale": [
+					{
+						"curve": [ 0.021, 1.048, 0.1, 1.132, 0.021, 1, 0.1, 1 ]
+					},
+					{ "time": 0.1333, "x": 1.132 }
+				]
+			}
+		}
+	}
+}
+}

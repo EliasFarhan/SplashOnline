@@ -4,3 +4,4 @@ cmake-build-*/
 [bB]uild/
 out/
 .vscode/
+/**/desktop.ini

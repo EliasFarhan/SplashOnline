@@ -1,0 +1,256 @@
+{
+"skeleton": { "hash": "hwomGAigt3k", "spine": "4.2.35", "x": -45.33, "y": -224.11, "width": 103, "height": 263.1 },
+"bones": [
+	{ "name": "root" },
+	{ "name": "main", "parent": "root", "length": 50, "rotation": -90, "x": 8.18, "y": 12.14 },
+	{ "name": "BN_canon", "parent": "main", "length": 26.47, "rotation": 0.91, "x": 58.13, "y": 9.53 },
+	{
+		"name": "BN_fx",
+		"parent": "main",
+		"rotation": 0.91,
+		"x": 162.98,
+		"y": 2.57,
+		"scaleX": 1.0099,
+		"scaleY": 1.0099
+	}
+],
+"slots": [
+	{ "name": "SL_fx", "bone": "BN_fx", "attachment": "weaponequip_assets/FX/splash1" },
+	{ "name": "SL_canon", "bone": "BN_canon", "attachment": "weaponequip_assets/basegun_cannon" },
+	{ "name": "SL_basegun", "bone": "main", "attachment": "weaponequip_assets/basegun" }
+],
+"skins": [
+	{
+		"name": "default",
+		"attachments": {
+			"SL_basegun": {
+				"weaponequip_assets/basegun": { "x": 19.65, "y": -2.01, "width": 93, "height": 103 }
+			},
+			"SL_canon": {
+				"weaponequip_assets/basegun_cannon": { "x": 12.07, "y": -1.12, "rotation": -0.91, "width": 45, "height": 34 }
+			},
+			"SL_fx": {
+				"weaponequip_assets/FX/splash1": { "x": -4.45, "y": 0.07, "rotation": -0.91, "width": 154, "height": 91 },
+				"weaponequip_assets/FX/splash2": { "x": 21.76, "y": 4.17, "rotation": -0.91, "width": 142, "height": 170 },
+				"weaponequip_assets/FX/splash3": { "x": 32.29, "y": 2.5, "rotation": -0.91, "width": 180, "height": 234 },
+				"weaponequip_assets/FX/splash4": { "x": 78.05, "y": -1.24, "rotation": -0.91, "width": 180, "height": 368 }
+			}
+		}
+	}
+],
+"animations": {
+	"idle": {
+		"slots": {
+			"SL_fx": {
+				"attachment": [
+					{}
+				]
+			}
+		},
+		"bones": {
+			"root": {
+				"rotate": [
+					{}
+				],
+				"translate": [
+					{}
+				],
+				"scale": [
+					{}
+				]
+			},
+			"main": {
+				"rotate": [
+					{}
+				],
+				"translate": [
+					{}
+				],
+				"scale": [
+					{}
+				]
+			},
+			"BN_canon": {
+				"rotate": [
+					{}
+				],
+				"translate": [
+					{}
+				],
+				"scale": [
+					{}
+				]
+			}
+		}
+	},
+	"reloading": {
+		"slots": {
+			"SL_fx": {
+				"attachment": [
+					{}
+				]
+			}
+		},
+		"bones": {
+			"root": {
+				"rotate": [
+					{}
+				],
+				"translate": [
+					{}
+				],
+				"scale": [
+					{}
+				]
+			},
+			"main": {
+				"rotate": [
+					{}
+				],
+				"translate": [
+					{}
+				],
+				"scale": [
+					{
+						"curve": [ 0.028, 1, 0.04, 1.405, 0.028, 1, 0.04, 1 ]
+					},
+					{
+						"time": 0.0667,
+						"x": 1.423,
+						"curve": [ 0.087, 1.423, 0.097, 1.018, 0.087, 1, 0.097, 1.408 ]
+					},
+					{
+						"time": 0.1167,
+						"y": 1.427,
+						"curve": [ 0.137, 1, 0.147, 1, 0.137, 1.427, 0.147, 1.018 ]
+					},
+					{
+						"time": 0.1667,
+						"curve": [ 0.194, 1, 0.207, 1.405, 0.194, 1, 0.207, 1 ]
+					},
+					{
+						"time": 0.2333,
+						"x": 1.423,
+						"curve": [ 0.254, 1.423, 0.264, 1.018, 0.254, 1, 0.264, 1.408 ]
+					},
+					{
+						"time": 0.2833,
+						"y": 1.427,
+						"curve": [ 0.304, 1, 0.314, 1, 0.304, 1.427, 0.314, 1.018 ]
+					},
+					{
+						"time": 0.3333,
+						"curve": [ 0.347, 1, 0.354, 1.405, 0.347, 1, 0.354, 1 ]
+					},
+					{
+						"time": 0.3667,
+						"x": 1.423,
+						"curve": [ 0.38, 1.423, 0.387, 1.018, 0.38, 1, 0.387, 1.408 ]
+					},
+					{
+						"time": 0.4,
+						"y": 1.427,
+						"curve": [ 0.407, 1, 0.41, 1, 0.407, 1.427, 0.41, 1.018 ]
+					},
+					{
+						"time": 0.4167,
+						"curve": [ 0.43, 1, 0.437, 1.405, 0.43, 1, 0.437, 1 ]
+					},
+					{
+						"time": 0.45,
+						"x": 1.423,
+						"curve": [ 0.464, 1.423, 0.47, 1.018, 0.464, 1, 0.47, 1.408 ]
+					},
+					{
+						"time": 0.4833,
+						"y": 1.427,
+						"curve": [ 0.49, 1, 0.493, 1, 0.49, 1.427, 0.493, 1.018 ]
+					},
+					{ "time": 0.5 }
+				]
+			},
+			"BN_canon": {
+				"rotate": [
+					{}
+				],
+				"translate": [
+					{}
+				],
+				"scale": [
+					{}
+				]
+			}
+		}
+	},
+	"shoot": {
+		"slots": {
+			"SL_fx": {
+				"attachment": [
+					{ "name": "weaponequip_assets/FX/splash1" },
+					{ "time": 0.0167, "name": "weaponequip_assets/FX/splash2" },
+					{ "time": 0.0333, "name": "weaponequip_assets/FX/splash3" },
+					{ "time": 0.05, "name": "weaponequip_assets/FX/splash4" },
+					{ "time": 0.0667 }
+				]
+			}
+		},
+		"bones": {
+			"root": {
+				"rotate": [
+					{}
+				],
+				"translate": [
+					{}
+				],
+				"scale": [
+					{}
+				]
+			},
+			"main": {
+				"rotate": [
+					{
+						"curve": [ 0.002, 3.8, 0.013, 4.81 ]
+					},
+					{
+						"time": 0.0167,
+						"value": 4.81,
+						"curve": [ 0.07, 4.81, 0.081, 1.96 ]
+					},
+					{ "time": 0.0833 }
+				],
+				"translate": [
+					{
+						"curve": [ 0.002, 0, 0.013, 0, 0.002, 1.88, 0.013, 2.38 ]
+					},
+					{
+						"time": 0.0167,
+						"y": 2.38,
+						"curve": [ 0.07, 0, 0.081, 0, 0.07, 2.38, 0.081, 0.97 ]
+					},
+					{ "time": 0.0833 }
+				],
+				"scale": [
+					{}
+				]
+			},
+			"BN_canon": {
+				"rotate": [
+					{}
+				],
+				"translate": [
+					{},
+					{
+						"time": 0.0167,
+						"x": -19.85,
+						"curve": [ 0.07, -19.85, 0.081, -8.11, 0.07, 0, 0.081, 0 ]
+					},
+					{ "time": 0.0833 }
+				],
+				"scale": [
+					{}
+				]
+			}
+		}
+	}
+}
+}

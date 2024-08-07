@@ -1,0 +1,36 @@
+SBPCharArms_ver4_2.png
+size:1024,128
+filter:Linear,Linear
+pma:true
+assets/armright_shoot
+bounds:266,78,48,156
+offsets:2,0,51,157
+rotate:90
+assets/rightarm
+bounds:552,42,84,96
+rotate:90
+lucha assets/armright
+bounds:266,2,74,97
+rotate:90
+lucha assets/armright_shoot
+bounds:130,55,71,134
+offsets:0,0,71,135
+rotate:90
+omni/waterpistol
+bounds:2,23,103,126
+rotate:90
+owl assets/armright
+bounds:650,48,78,96
+rotate:90
+owl assets/armright_shoot
+bounds:130,2,51,123
+offsets:1,1,52,125
+rotate:90
+robo assets/armright
+bounds:748,64,62,81
+offsets:0,5,62,86
+rotate:90
+robo assets/armright-shoot
+bounds:424,84,42,126
+offsets:0,2,42,128
+rotate:90

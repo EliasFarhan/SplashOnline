@@ -1,0 +1,80 @@
+{
+"skeleton": { "hash": "5OhEWjAe3d4", "spine": "4.2.35", "x": -19, "y": -18.5, "width": 38, "height": 37 },
+"bones": [
+	{ "name": "root" },
+	{ "name": "main", "parent": "root" }
+],
+"slots": [
+	{ "name": "SL_drops", "bone": "main", "attachment": "assets/dropnormal1" }
+],
+"skins": [
+	{
+		"name": "default",
+		"attachments": {
+			"SL_drops": {
+				"assets/dropnormal1": { "width": 38, "height": 37 },
+				"assets/dropnormal2": { "width": 42, "height": 40 },
+				"assets/dropnormal3": { "y": 3.07, "width": 36, "height": 37 }
+			}
+		}
+	}
+],
+"animations": {
+	"water_destroy": {
+		"slots": {
+			"SL_drops": {
+				"rgba": [
+					{ "color": "00000000", "curve": "stepped" },
+					{ "time": 0.2, "color": "00000000" }
+				],
+				"attachment": [
+					{ "name": "assets/dropnormal1" },
+					{ "time": 0.0333, "name": "assets/dropnormal2" },
+					{ "time": 0.1, "name": "assets/dropnormal3" },
+					{ "time": 0.1667 }
+				]
+			}
+		},
+		"bones": {
+			"main": {
+				"rotate": [
+					{}
+				],
+				"translate": [
+					{}
+				],
+				"scale": [
+					{ "x": 0.441, "y": 0.441 },
+					{ "time": 0.0333, "x": 1.038, "y": 1.038 },
+					{ "time": 0.2, "x": 1.229, "y": 1.229 }
+				]
+			}
+		}
+	},
+	"water_fly": {
+		"slots": {
+			"SL_drops": {
+				"rgba": [
+					{ "color": "00000000" }
+				]
+			}
+		},
+		"bones": {
+			"main": {
+				"rotate": [
+					{}
+				],
+				"translate": [
+					{}
+				],
+				"scale": [
+					{},
+					{ "time": 0.1, "y": 1.211 },
+					{ "time": 0.2, "x": 1.184, "y": 0.997 },
+					{ "time": 0.3333 }
+				]
+			}
+		}
+	}
+}
+}

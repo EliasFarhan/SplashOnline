@@ -28,6 +28,7 @@ public:
 	void RemoveSystem(SystemInterface* system);
 	PlayerInput GetPlayerInput() const;
 	void ScheduleNetJob(neko::Job* pJob);
+	float GetDeltaTime();
 private:
 
 	void Begin();
@@ -40,6 +41,7 @@ private:
 	std::vector<SystemInterface*> systems_;
 	int otherQueue_{};
 	int networkQueue_{};
+	float dt_ = 0.0f;
 };
 
 void ScheduleAsyncJob(neko::Job* job);
@@ -47,6 +49,7 @@ void ScheduleNetJob(neko::Job* job);
 void AddSystem(SystemInterface* system);
 void RemoveSystem(SystemInterface* system);
 PlayerInput GetPlayerInput();
+float GetDeltaTime();
 }
 
 #endif //SPLASHONLINE_ENGINE_H_
