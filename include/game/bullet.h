@@ -5,9 +5,20 @@
 #ifndef SPLASHONLINE_BULLET_H
 #define SPLASHONLINE_BULLET_H
 
-class BulletManager
+namespace splash
+{
+struct Bullet
 {
 
 };
 
+class GameSystems;
+class BulletManager
+{
+public:
+	explicit BulletManager(GameSystems* gameSystems);
+private:
+	GameSystems* gameSystems_ = nullptr;
+};
+}
 #endif //SPLASHONLINE_BULLET_H

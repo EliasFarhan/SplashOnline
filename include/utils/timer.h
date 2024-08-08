@@ -5,7 +5,9 @@
 #ifndef SPLASHONLINE_TIMER_H
 #define SPLASHONLINE_TIMER_H
 
-template<typename T=float>
+#include <math/fixed.h>
+
+template<typename T=neko::Fixed16>
 class Timer
 {
 public:

@@ -6,4 +6,8 @@
 namespace splash
 {
 
+GameSystems::GameSystems(): playerManager_(this), bulletManager_(this)
+{
+
+}
 }
