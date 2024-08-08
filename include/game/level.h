@@ -5,7 +5,8 @@
 #ifndef SPLASHONLINE_GAME_LEVEL_H_
 #define SPLASHONLINE_GAME_LEVEL_H_
 
-#include "math/vec2.h"
+#include <math/vec2.h>
+#include <container/span.h>
 
 #include <array>
 namespace splash
@@ -26,7 +27,7 @@ private:
 
 };
 
-
+neko::Span<Platform> GetPlatforms();
 
 }
 
