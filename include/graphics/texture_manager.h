@@ -16,6 +16,7 @@ namespace splash
 class TextureManager
 {
 public:
+	TextureManager();
     void Begin();
 
 	void End();
@@ -41,10 +42,21 @@ public:
 		PLAT1,
 		PLAT2,
 		PLAT3,
+
 		CAT_RIGHTARM,
 		LUCHA_RIGHTARM,
 		OWL_RIGHTARM,
 		ROBOT_RIGHTARM,
+
+		//Spine pages
+		KWAKWA_LOGO,
+		ANNOUCERS,
+		CHARS_NOARM,
+		CHARS_ARM,
+		GUN,
+		CLOUD_ANIM,
+		FX,
+
 		LENGTH
 	};
 
@@ -54,6 +66,8 @@ private:
 	std::array<SDL_Texture*, (int)TextureId::LENGTH> textures_{};
 };
 
+[[nodiscard]] SDL_Texture* GetTexture(TextureManager::TextureId textureId);
+bool IsTextureLoaded();
 
 }
 

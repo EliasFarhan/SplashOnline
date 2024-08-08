@@ -37,7 +37,7 @@ void NetworkClient::joinRoomEventAction(int playerNr,
 	const ExitGames::Common::JVector<int>& playernrs,
 	const ExitGames::LoadBalancing::Player& player)
 {
-
+	state_ = State::IN_ROOM;
 }
 void NetworkClient::leaveRoomEventAction(int playerNr, bool isInactive)
 {

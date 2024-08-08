@@ -1,7 +1,11 @@
 #include "engine/window.h"
-
 #include "utils/log.h"
+
 #include <fmt/format.h>
+
+#ifdef TRACY_ENABLE
+#include <tracy/Tracy.hpp>
+#endif
 
 namespace splash
 {
@@ -11,6 +15,9 @@ namespace splash
 
 void Window::Begin()
 {
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
 /* Creates a SDL window */
 	window_ = SDL_CreateWindow("Splash Online", /* Title of the SDL window */
 		SDL_WINDOWPOS_UNDEFINED, /* Position x of the window */
@@ -47,6 +54,9 @@ SDL_Window* Window::GetWindow()
 
 void Window::Update()
 {
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
     SDL_Event e;
     //Handle events on queue
     while (SDL_PollEvent(&e) != 0)
@@ -56,7 +66,6 @@ void Window::Update()
         {
             isOpen_ = false;
         }
-        //TODO do something for event
         for(auto* eventInterface : eventInterfaces_)
         {
             eventInterface->OnEvent(e);

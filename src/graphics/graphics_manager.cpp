@@ -80,6 +80,10 @@ void GraphicsManager::Update([[maybe_unused]]float dt)
 	{
 		textureManager_.UpdateLoad();
 	}
+	if(!spineManager_.IsLoaded())
+	{
+		spineManager_.UpdateLoad();
+	}
 	guiRenderer_.Update();
 }
 

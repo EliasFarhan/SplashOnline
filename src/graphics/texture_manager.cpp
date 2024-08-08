@@ -21,7 +21,10 @@
 
 namespace splash
 {
-static std::array<std::string_view, (int)TextureManager::TextureId::LENGTH> texturePaths =
+
+static TextureManager* instance = nullptr;
+
+static constexpr std::array<std::string_view, (int)TextureManager::TextureId::LENGTH> texturePaths =
 	{{
 		"data/sprites/kittymanjaro/backfog.png",
 		"data/sprites/kittymanjaro/bg.png",
@@ -39,10 +42,20 @@ static std::array<std::string_view, (int)TextureManager::TextureId::LENGTH> text
 		"data/sprites/kittymanjaro/plat1.png",
 		"data/sprites/kittymanjaro/plat2.png",
 		"data/sprites/kittymanjaro/plat3.png",
+
 		"data/spine/arms/cat_rightarm.png",
 		"data/spine/arms/lucha_rightarm.png",
 		"data/spine/arms/owl_rightarm.png",
 		"data/spine/arms/robot_rightarm.png",
+
+		"data/spine/kwakwalogo/SBPkwakwa_ver4_2.png",
+		"data/spine/announcer/SBPannouncers_ver4_2.png",
+		"data/spine/chars/SBPChars_ver4_2.png",
+		"data/spine/arms/SBPCharArms_ver4_2.png",
+		"data/spine/gun/SBPweapons_ver4_2.png",
+		"data/spine/cloud/SBPCloud_ver_4_2.png",
+		"data/spine/FX/SBPfx_ver4_2.png",
+
 	}};
 
 struct Image
@@ -153,5 +166,17 @@ void TextureManager::UpdateLoad()
 		SDL_FreeSurface(surfaces[i]);
 		stbi_image_free(images[i].pixels);
 	}
+}
+TextureManager::TextureManager()
+{
+	instance = this;
+}
+SDL_Texture* GetTexture(TextureManager::TextureId textureId)
+{
+	return instance->GetTexture(textureId);
+}
+bool IsTextureLoaded()
+{
+	return instance->IsLoaded();
 }
 }

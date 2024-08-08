@@ -7,6 +7,9 @@
 
 #include "graphics/texture_manager.h"
 #include "graphics/gui_renderer.h"
+#include "graphics/spine_manager.h"
+
+#include <vector>
 
 namespace splash
 {
@@ -34,6 +37,7 @@ public:
 	void RemoveDrawInterface(DrawInterface* drawInterface);
 private:
 	TextureManager textureManager_;
+	SpineManager spineManager_;
 	GuiRenderer guiRenderer_;
 	SDL_Renderer* renderer_ = nullptr;
 	std::vector<DrawInterface*> drawInterfaces_;
