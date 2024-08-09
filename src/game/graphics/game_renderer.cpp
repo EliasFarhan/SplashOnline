@@ -10,6 +10,7 @@ void GameRenderer::Draw()
 {
 	playerRenderer_.Draw();
 	bulletRenderer_.Draw();
+	levelRenderer_.Draw();
 }
 void GameRenderer::SetGraphicsIndex(int index)
 {
@@ -24,16 +25,23 @@ void GameRenderer::Begin()
 	AddDrawInterface(this);
 	playerRenderer_.Begin();
 	bulletRenderer_.Begin();
+	levelRenderer_.Begin();
 }
 void GameRenderer::Update(float dt)
 {
 	playerRenderer_.Update(dt);
 	bulletRenderer_.Update(dt);
+	levelRenderer_.Update();
 }
 void GameRenderer::End()
 {
 	RemoveDrawInterface(this);
+	levelRenderer_.End();
 	bulletRenderer_.End();
 	playerRenderer_.End();
+}
+GameRenderer::GameRenderer(GameSystems* gameSystems)
+{
+
 }
 }

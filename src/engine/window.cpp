@@ -24,13 +24,13 @@ void Window::Begin()
 		SDL_WINDOWPOS_UNDEFINED, /* Position y of the window */
 		WIDTH, /* Width of the window in pixels */
 		HEIGHT, /* Height of the window in pixels */
-		0); /* Additional flag(s) */
+		SDL_WINDOW_RESIZABLE ); /* Additional flag(s) */
 
 /* Checks if window has been created; if not, exits program */
 	if (window_ == nullptr)
 	{
 		LogError(fmt::format("SDL window failed to initialise: {}\n", SDL_GetError()));
-		return;
+		std::terminate();
 	}
     isOpen_ = true;
 }

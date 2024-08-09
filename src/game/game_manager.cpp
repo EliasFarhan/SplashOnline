@@ -4,6 +4,7 @@
 
 #include "game/game_manager.h"
 #include "game/const.h"
+#include "engine/engine.h"
 
 namespace splash
 {
@@ -11,6 +12,7 @@ namespace splash
 void GameManager::Begin()
 {
 
+	gameRenderer_.Begin();
 }
 void GameManager::Update(float dt)
 {
@@ -21,13 +23,26 @@ void GameManager::Update(float dt)
 		Tick();
 		currentTime_ -= fixedDt;
 	}
+
+	gameRenderer_.Update(dt);
 }
 void GameManager::End()
 {
-
+	RemoveSystem(this);
 }
 void GameManager::Tick()
 {
-
+}
+GameManager::GameManager(): gameRenderer_(&gameSystems_)
+{
+	AddSystem(this);
+}
+int GameManager::GetSystemIndex() const
+{
+	return systemIndex_;
+}
+void GameManager::SetSystemIndex(int index)
+{
+	systemIndex_ = index;
 }
 }

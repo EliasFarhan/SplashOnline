@@ -5,6 +5,7 @@
 #include "graphics/graphics_manager.h"
 #include "engine/window.h"
 #include "utils/log.h"
+#include "graphics/const.h"
 
 #include <fmt/format.h>
 
@@ -25,9 +26,14 @@ void GraphicsManager::Begin()
 	if(renderer_ == nullptr)
 	{
 		LogError(fmt::format("SDL renderer failed to initialise: {}\n", SDL_GetError()));
-
-		return;
+		std::terminate();
 	}
+
+	AddEventListener(this);
+
+	SDL_GetWindowSize(window, &windowSize_.x, &windowSize_.y);
+	ReloadDrawingSize();
+
 	SDL_RendererInfo info;
 	SDL_GetRendererInfo(renderer_, &info);
 
@@ -74,6 +80,11 @@ void RemoveDrawInterface(DrawInterface* drawInterface)
 	instance->RemoveDrawInterface(drawInterface);
 }
 
+SDL_Rect GetDrawingRect(neko::Vec2f position, neko::Vec2f size)
+{
+	return instance->GetDrawingRect(position, size);
+}
+
 void GraphicsManager::Update([[maybe_unused]]float dt)
 {
 	if(!textureManager_.IsLoaded())
@@ -89,19 +100,6 @@ void GraphicsManager::Update([[maybe_unused]]float dt)
 
 void GraphicsManager::Draw()
 {
-	if(textureManager_.IsLoaded())
-	{
-		auto [width, height] = GetWindowSize();
-		SDL_Rect texture_rect;
-		texture_rect.x = 0; //the x coordinate
-		texture_rect.y = 0; //the y coordinate
-		texture_rect.w = width; //the width of the texture
-		texture_rect.h = height; //the height of the texture
-		SDL_RenderCopy(renderer_,
-				textureManager_.GetTexture(splash::TextureManager::TextureId::BG),
-				nullptr,
-				&texture_rect);
-	}
 	for(auto* drawInterface: drawInterfaces_)
 	{
 		if(drawInterface == nullptr) continue;
@@ -142,5 +140,63 @@ void GraphicsManager::AddDrawInterface(DrawInterface* drawInterface)
 void GraphicsManager::RemoveDrawInterface(DrawInterface* drawInterface)
 {
 	drawInterfaces_[drawInterface->GetGraphicsIndex()] = nullptr;
+}
+SDL_Rect GraphicsManager::GetDrawingRect(neko::Vec2f position, neko::Vec2f size)
+{
+	const auto newPosition = neko::Vec2<float>((float)position.x, (float)-position.y)*pixelPerMeter*scale_;
+	const auto newSize = neko::Vec2<float>((float)size.x, (float) size.y)*pixelPerMeter*scale_;
+
+	const auto pixelSize = neko::Vec2i(newSize);
+	const auto pixelPosition = neko::Vec2i(newPosition)+offset_+actualSize_/2-pixelSize/2;
+	return SDL_Rect{pixelPosition.x, pixelPosition.y, pixelSize.x, pixelSize.y};
+}
+
+int GraphicsManager::GetEventListenerIndex() const
+{
+	return eventListenerIndex;
+}
+void GraphicsManager::SetEventListenerIndex(int index)
+{
+	eventListenerIndex = index;
+}
+void GraphicsManager::OnEvent(const SDL_Event& event)
+{
+	if (event.type == SDL_WINDOWEVENT)
+	{
+		if(event.window.event == SDL_WINDOWEVENT_RESIZED)
+		{
+			windowSize_ = {event.window.data1, event.window.data2};
+			ReloadDrawingSize();
+		}
+	}
+}
+void GraphicsManager::ReloadDrawingSize()
+{
+	constexpr float aspectRatio = (float)gameWindowSize.x/(float)gameWindowSize.y;
+	const float newAspectRatio = (float)windowSize_.x/(float)windowSize_.y;
+	if(neko::Abs(newAspectRatio-aspectRatio) < 0.001f)
+	{
+		//Same aspect ratio
+		actualSize_ = windowSize_;
+		offset_ = {};
+	}
+	else
+	{
+		//Add two black bars
+		if(newAspectRatio > aspectRatio)
+		{
+			//vertical black bars
+			offset_ = {(windowSize_.x-(int)((float)windowSize_.y*aspectRatio))/2, 0};
+			actualSize_ = {windowSize_.x-offset_.x*2, windowSize_.y};
+		}
+		else
+		{
+			//horizontal black bars
+			offset_ = {0,(windowSize_.y-(int)((float)windowSize_.x/aspectRatio))/2};
+			actualSize_ = {windowSize_.x, windowSize_.y-offset_.y*2};
+		}
+	}
+	scale_ = (float)actualSize_.y/gameWindowSize.y;
+
 }
 }

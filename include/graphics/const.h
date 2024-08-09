@@ -10,8 +10,9 @@
 namespace splash
 {
 
-static constexpr neko::Vec2u gameWindowSize{1920u, 1080u};
+static constexpr neko::Vec2i gameWindowSize{1920, 1080};
 
+static constexpr float pixelPerMeter = 100.0f; //At full resolution
 }
 
 #endif //SPLASHONLINE_GRAPHICS_CONST_H_

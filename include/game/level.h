@@ -7,6 +7,8 @@
 
 #include <math/vec2.h>
 #include <container/span.h>
+#include <physics/physics_type.h>
+#include <physics/physics.h>
 
 #include <array>
 namespace splash
@@ -22,9 +24,12 @@ struct Platform
 class Level
 {
 public:
-
+	explicit Level(neko::PhysicsWorld* world);
+	void Begin();
+	void End();
 private:
-
+	neko::PhysicsWorld* world_;
+	std::array<std::pair<neko::BodyIndex, neko::ColliderIndex>, 3> platformPhysics_;
 };
 
 neko::Span<Platform> GetPlatforms();

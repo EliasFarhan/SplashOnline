@@ -8,6 +8,8 @@
 #include "graphics/graphics_manager.h"
 #include "game/graphics/player_renderer.h"
 #include "game/graphics/bullet_renderer.h"
+#include "game/game_systems.h"
+#include "game/graphics/level_renderer.h"
 
 namespace splash
 {
@@ -15,17 +17,19 @@ namespace splash
 class GameRenderer : public DrawInterface
 {
 public:
+	explicit GameRenderer(GameSystems* gameSystems);
 	void Begin();
 	void Update(float dt);
 	void End();
 	void Draw() override;
 	void SetGraphicsIndex(int index) override;
-	int GetGraphicsIndex() const override;
+	[[nodiscard]] int GetGraphicsIndex() const override;
 public:
 
 private:
 	PlayerRenderer playerRenderer_;
 	BulletRenderer bulletRenderer_;
+	LevelRenderer levelRenderer_;
 	int graphicIndex = -1;
 };
 
