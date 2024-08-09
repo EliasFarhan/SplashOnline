@@ -17,6 +17,8 @@ class GameSystems
 public:
 	GameSystems();
 
+	PlayerManager& GetPlayerManager(){return playerManager_;}
+	BulletManager& GetBulletManager(){return bulletManager_;}
 private:
 	PlayerManager playerManager_;
 	BulletManager bulletManager_;
