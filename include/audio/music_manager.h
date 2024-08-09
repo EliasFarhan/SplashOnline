@@ -14,6 +14,8 @@ class MusicManager
 public:
 	void Begin();
 	void End();
+	void Play();
+
 private:
 	FMOD::Studio::EventInstance* eventInstance_ = nullptr;
 };

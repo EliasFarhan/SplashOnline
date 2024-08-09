@@ -9,13 +9,12 @@
 #include "engine/window.h"
 #include "engine/input_manager.h"
 #include "engine/system.h"
+#include "audio/audio_manager.h"
 #include <thread/job_system.h>
 
 
 namespace splash
 {
-
-
 
 class Engine
 {

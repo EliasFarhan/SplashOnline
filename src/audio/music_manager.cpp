@@ -18,12 +18,19 @@ void MusicManager::Begin()
 	{
 		std::terminate();
 	}
-	eventInstance_->start();
 
 }
 void MusicManager::End()
 {
 	eventInstance_->stop(FMOD_STUDIO_STOP_IMMEDIATE);
 	eventInstance_->release();
+}
+
+void MusicManager::Play()
+{
+	if(eventInstance_ != nullptr)
+	{
+		eventInstance_->start();
+	}
 }
 }
