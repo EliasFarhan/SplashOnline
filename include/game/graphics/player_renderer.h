@@ -3,6 +3,10 @@
 
 #include "game/game_systems.h"
 
+#include <spine-sdl-cpp.h>
+#include <array>
+#include <memory>
+
 namespace splash
 {
 
@@ -18,6 +22,7 @@ public:
 
 private:
 	const GameSystems* gameSystems_ = nullptr;
+	std::array<std::unique_ptr<spine::SkeletonDrawable>, MaxPlayerNmb> playerSkeletonDrawables_{};
 };
 
 }

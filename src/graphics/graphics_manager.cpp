@@ -85,6 +85,16 @@ SDL_Rect GetDrawingRect(neko::Vec2f position, neko::Vec2f size)
 	return instance->GetDrawingRect(position, size);
 }
 
+float GetGraphicsScale()
+{
+	return instance->GetScale();
+}
+
+neko::Vec2i GetGraphicsPosition(neko::Vec2f position)
+{
+	return instance->GetGraphicsPosition(position);
+}
+
 void GraphicsManager::Update([[maybe_unused]]float dt)
 {
 	if(!textureManager_.IsLoaded())
@@ -143,7 +153,7 @@ void GraphicsManager::RemoveDrawInterface(DrawInterface* drawInterface)
 {
 	drawInterfaces_[drawInterface->GetGraphicsIndex()] = nullptr;
 }
-SDL_Rect GraphicsManager::GetDrawingRect(neko::Vec2f position, neko::Vec2f size)
+SDL_Rect GraphicsManager::GetDrawingRect(neko::Vec2f position, neko::Vec2f size) const
 {
 	const auto newPosition = neko::Vec2<float>((float)position.x, (float)-position.y)*pixelPerMeter*scale_;
 	const auto newSize = neko::Vec2<float>((float)size.x, (float) size.y)*pixelPerMeter*scale_;
@@ -200,5 +210,16 @@ void GraphicsManager::ReloadDrawingSize()
 	}
 	scale_ = (float)actualSize_.y/gameWindowSize.y;
 
+}
+
+float GraphicsManager::GetScale() const
+{
+	return scale_;
+}
+
+neko::Vec2i GraphicsManager::GetGraphicsPosition(neko::Vec2f position) const
+{
+	const auto newPosition = neko::Vec2<float>((float)position.x, (float)-position.y)*pixelPerMeter*scale_;
+	return neko::Vec2i(newPosition)+offset_+actualSize_/2;
 }
 }

@@ -58,6 +58,9 @@ struct PlayerCharacter
 
 };
 
+
+static constexpr float playerScale = 0.3f;
+
 struct PlayerPhysic
 {
 	neko::BodyIndex bodyIndex = neko::INVALID_BODY_INDEX;
@@ -65,8 +68,8 @@ struct PlayerPhysic
 	static constexpr Box box
 		{
 			{},
-			{neko::Scalar{0.3f*-0.001866817f}, neko::Scalar{0.3f*1.066903f}},
-			{neko::Scalar{0.3f*1.280593f}, neko::Scalar{0.3f*2.113744f}}
+			{neko::Scalar{playerScale*-0.001866817f}, neko::Scalar{playerScale*1.066903f}},
+			{neko::Scalar{playerScale*1.280593f}, neko::Scalar{playerScale*2.113744f}}
 		};
 };
 
