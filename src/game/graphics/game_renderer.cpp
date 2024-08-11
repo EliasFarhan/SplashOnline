@@ -5,12 +5,12 @@
 
 namespace splash
 {
-
+static GameRenderer* instance = nullptr;
 void GameRenderer::Draw()
 {
+	levelRenderer_.Draw();
 	playerRenderer_.Draw();
 	bulletRenderer_.Draw();
-	levelRenderer_.Draw();
 }
 void GameRenderer::SetGraphicsIndex(int index)
 {
@@ -29,9 +29,10 @@ void GameRenderer::Begin()
 }
 void GameRenderer::Update(float dt)
 {
+	timeSinceTick_ += dt;
+	levelRenderer_.Update();
 	playerRenderer_.Update(dt);
 	bulletRenderer_.Update(dt);
-	levelRenderer_.Update();
 }
 void GameRenderer::End()
 {
@@ -40,8 +41,20 @@ void GameRenderer::End()
 	bulletRenderer_.End();
 	playerRenderer_.End();
 }
-GameRenderer::GameRenderer(GameSystems* gameSystems)
-{
 
+GameRenderer::GameRenderer(const GameSystems* gameSystems): playerRenderer_(gameSystems)
+{
+	instance = this;
+}
+
+void GameRenderer::Tick()
+{
+	timeSinceTick_ -= (float)fixedDeltaTime;
+	playerRenderer_.Tick();
+}
+
+float GameRenderer::GetTimeSinceTick() const
+{
+	return timeSinceTick_;
 }
 }

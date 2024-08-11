@@ -17,8 +17,17 @@ class GameSystems
 public:
 	GameSystems();
 
+	void Begin();
+	void Tick();
+	void End();
+
 	PlayerManager& GetPlayerManager(){return playerManager_;}
+	const PlayerManager& GetPlayerManager() const{return playerManager_;}
 	BulletManager& GetBulletManager(){return bulletManager_;}
+
+	neko::PhysicsWorld& GetPhysicsWorld(){return physicsManager_;}
+	const neko::PhysicsWorld& GetPhysicsWorld() const {return physicsManager_;}
+
 private:
 	PlayerManager playerManager_;
 	BulletManager bulletManager_;

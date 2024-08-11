@@ -23,7 +23,26 @@ PlayerManager::PlayerManager(GameSystems* gameSystems): gameSystems_(gameSystems
 }
 void PlayerManager::Begin()
 {
+	auto& physicsWorld = gameSystems_->GetPhysicsWorld();
+	for(int playerIndex = 0; playerIndex < MaxPlayerNmb; playerIndex++)
+	{
+		auto& playerPhysic = playerPhysics_[playerIndex];
+		playerPhysic.bodyIndex = physicsWorld.AddBody();
+		playerPhysic.colliderIndex = physicsWorld.AddAabbCollider(playerPhysic.bodyIndex);
 
+		auto& body = physicsWorld.body(playerPhysic.bodyIndex);
+		body.position = spawnPositions[playerIndex];
+		body.type = neko::BodyType::DYNAMIC;
+		body.inverseMass = neko::Scalar{1};
+
+		auto& collider = physicsWorld.collider(playerPhysic.colliderIndex);
+		collider.isTrigger = false;
+		collider.offset = PlayerPhysic::box.offset;
+		collider.restitution = {};
+		auto& box = physicsWorld.aabb(collider.shapeIndex);
+		box.halfSize = PlayerPhysic::box.size/neko::Scalar{2};
+
+	}
 }
 void PlayerManager::Tick()
 {

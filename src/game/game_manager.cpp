@@ -11,7 +11,7 @@ namespace splash
 
 void GameManager::Begin()
 {
-
+	gameSystems_.Begin();
 	gameRenderer_.Begin();
 }
 void GameManager::Update(float dt)
@@ -32,6 +32,8 @@ void GameManager::End()
 }
 void GameManager::Tick()
 {
+	gameSystems_.Tick();
+	gameRenderer_.Tick();
 }
 GameManager::GameManager(): gameRenderer_(&gameSystems_)
 {

@@ -36,7 +36,7 @@ void LevelRenderer::Draw()
 		nullptr,
 		&bgRect);
 
-	const auto& platforms = GetPlatforms();
+	const auto& platforms = Level::platforms;
 	for(std::size_t i = 0 ; i < platformTextures_.size(); i++)
 	{
 		const auto platformRect = GetDrawingRect(platforms[i].position+platforms[i].offset, platforms[i].size);

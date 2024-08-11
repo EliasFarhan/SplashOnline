@@ -110,6 +110,8 @@ void GraphicsManager::Draw()
 void GraphicsManager::PreDraw()
 {
 	//Clear screen
+
+	SDL_SetRenderDrawColor(renderer_,0,0,0, 255);
 	SDL_RenderClear(renderer_);
 }
 void GraphicsManager::PostDraw()

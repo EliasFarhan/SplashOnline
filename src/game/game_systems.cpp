@@ -10,4 +10,21 @@ GameSystems::GameSystems(): playerManager_(this), bulletManager_(this)
 {
 
 }
+
+void GameSystems::Begin()
+{
+	playerManager_.Begin();
+}
+
+void GameSystems::Tick()
+{
+	physicsManager_.Step(fixedDeltaTime);
+	playerManager_.Tick();
+}
+
+void GameSystems::End()
+{
+	playerManager_.End();
+}
+
 }

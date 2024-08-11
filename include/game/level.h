@@ -5,6 +5,8 @@
 #ifndef SPLASHONLINE_GAME_LEVEL_H_
 #define SPLASHONLINE_GAME_LEVEL_H_
 
+#include "game/const.h"
+
 #include <math/vec2.h>
 #include <container/span.h>
 #include <physics/physics_type.h>
@@ -14,12 +16,7 @@
 namespace splash
 {
 
-struct Platform
-{
-	neko::Vec2f position{};
-	neko::Vec2f offset{};
-	neko::Vec2f size{};
-};
+
 
 class Level
 {
@@ -27,12 +24,30 @@ public:
 	explicit Level(neko::PhysicsWorld* world);
 	void Begin();
 	void End();
+
+	static constexpr std::array<Box, 3> platforms
+		{
+			{
+				{neko::Vec2f{neko::Fixed16 {0}, neko::Fixed16 {0}},
+				 neko::Vec2f{neko::Fixed16{-0.04f}, neko::Fixed16{-0.05741876f}},
+				 neko::Vec2f {neko::Fixed16 {4.973756f}, neko::Fixed16 {0.7651642f}}},
+
+				{neko::Vec2f{neko::Fixed16 {-5.1f}, neko::Fixed16 {-2.62f}},
+				 neko::Vec2f{neko::Fixed16{0}, neko::Fixed16{-0.02366066f}},
+				 neko::Vec2f {neko::Fixed16 {3.62f}, neko::Fixed16 {1.684614f}}},
+
+				{neko::Vec2f{neko::Fixed16 {5.1f}, neko::Fixed16 {-2.59f}},
+				 neko::Vec2f{neko::Fixed16{-0.02076483f}, neko::Fixed16{-0.01601195f}},
+				 neko::Vec2f {neko::Fixed16 {3.52847f}, neko::Fixed16 {1.428922f}}},
+			}
+		};
+
 private:
 	neko::PhysicsWorld* world_;
 	std::array<std::pair<neko::BodyIndex, neko::ColliderIndex>, 3> platformPhysics_;
 };
 
-neko::Span<Platform> GetPlatforms();
+
 
 }
 

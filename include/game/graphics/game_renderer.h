@@ -17,21 +17,24 @@ namespace splash
 class GameRenderer : public DrawInterface
 {
 public:
-	explicit GameRenderer(GameSystems* gameSystems);
+	explicit GameRenderer(const GameSystems* gameSystems);
 	void Begin();
 	void Update(float dt);
+	void Tick();
 	void End();
 	void Draw() override;
 	void SetGraphicsIndex(int index) override;
 	[[nodiscard]] int GetGraphicsIndex() const override;
-public:
+	float GetTimeSinceTick() const;
 
 private:
 	PlayerRenderer playerRenderer_;
 	BulletRenderer bulletRenderer_;
 	LevelRenderer levelRenderer_;
 	int graphicIndex = -1;
+	float timeSinceTick_ = 0.0f;
 };
 
+float GetTimeSinceTick();
 }
 #endif //SPLASHONLINE_GAME_RENDERER_H_

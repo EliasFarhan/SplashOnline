@@ -9,6 +9,7 @@
 #include "game/const.h"
 
 #include <math/vec2.h>
+#include <physics/physics_type.h>
 
 #include <array>
 
@@ -53,20 +54,38 @@ struct PlayerCharacter
 	Timer<> burstTimer{neko::Fixed16{1}, neko::Fixed16{0.1f}};
 	Timer<> jumpTimer{neko::Fixed16{-1}, neko::Fixed16{1.0f}};
 	Timer<> jetBurstTimer{neko::Fixed16{-1.0f}, neko::Fixed16{0.5f}};
-	};
 
-	class GameSystems;
-	class PlayerManager
-	{
-	public:
-		explicit PlayerManager(GameSystems* gameSystems);
 
-		void Begin();
-		void Tick();
-		void End();
-	private:
-		GameSystems* gameSystems_ = nullptr;
-		std::array<PlayerCharacter, MaxPlayerNmb> playerCharacters_{};
-	};
+};
+
+struct PlayerPhysic
+{
+	neko::BodyIndex bodyIndex = neko::INVALID_BODY_INDEX;
+	neko::ColliderIndex colliderIndex = neko::INVALID_COLLIDER_INDEX;
+	static constexpr Box box
+		{
+			{},
+			{neko::Scalar{0.3f*-0.001866817f}, neko::Scalar{0.3f*1.066903f}},
+			{neko::Scalar{0.3f*1.280593f}, neko::Scalar{0.3f*2.113744f}}
+		};
+};
+
+class GameSystems;
+class PlayerManager
+{
+public:
+	explicit PlayerManager(GameSystems* gameSystems);
+
+	void Begin();
+	void Tick();
+	void End();
+
+	[[nodiscard]] const auto& GetPlayerCharacter() const {return playerCharacters_;}
+	[[nodiscard]] const auto& GetPlayerPhysics()const {return playerPhysics_;}
+private:
+	GameSystems* gameSystems_ = nullptr;
+	std::array<PlayerCharacter, MaxPlayerNmb> playerCharacters_{};
+	std::array<PlayerPhysic, MaxPlayerNmb> playerPhysics_{};
+};
 }
 #endif //SPLASHONLINE_PLAYER_CHARACTER_H
