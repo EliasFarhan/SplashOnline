@@ -15,11 +15,11 @@ class GameManager : public SystemInterface
 {
 public:
 	GameManager();
-	void Begin();
-	void Update(float dt);
-	void End();
+	void Begin() override;
+	void Update(float dt) override;
+	void End() override;
 	void Tick();
-	int GetSystemIndex() const override;
+	[[nodiscard]] int GetSystemIndex() const override;
 	void SetSystemIndex(int index) override;
 private:
 	GameSystems gameSystems_;

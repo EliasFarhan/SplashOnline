@@ -19,9 +19,12 @@ void Level::Begin()
 		auto& body = world_->body(pair.first);
 		body.position = platform.position;
 		body.type = neko::BodyType::STATIC;
+		body.inverseMass = neko::Scalar {0};
 
 		auto& collider = world_->collider(pair.second);
 		collider.offset = platform.offset;
+		collider.isTrigger = false;
+		collider.restitution = neko::Scalar{0};
 		auto& aabb = world_->aabb(collider.shapeIndex);
 		aabb.halfSize = platform.size/neko::Scalar{2};
 		i++;

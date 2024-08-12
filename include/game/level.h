@@ -16,8 +16,6 @@
 namespace splash
 {
 
-
-
 class Level
 {
 public:

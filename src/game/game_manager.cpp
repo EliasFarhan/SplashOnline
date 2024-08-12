@@ -16,6 +16,10 @@ void GameManager::Begin()
 }
 void GameManager::Update(float dt)
 {
+	if(!IsSpineLoaded() || !IsTextureLoaded())
+	{
+		return;
+	}
 	currentTime_ += dt;
 	constexpr auto fixedDt = (float)fixedDeltaTime;
 	while (currentTime_ > fixedDt)
