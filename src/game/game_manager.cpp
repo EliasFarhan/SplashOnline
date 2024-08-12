@@ -5,6 +5,7 @@
 #include "game/game_manager.h"
 #include "game/const.h"
 #include "engine/engine.h"
+#include "network/client.h"
 
 namespace splash
 {
@@ -20,6 +21,17 @@ void GameManager::Update(float dt)
 	{
 		return;
 	}
+
+	auto* netClient = GetNetworkClient();
+	if(netClient == nullptr)
+	{
+		playerInputs_[0] = GetPlayerInput();
+	}
+	else
+	{
+		// import network inputs
+	}
+
 	currentTime_ += dt;
 	constexpr auto fixedDt = (float)fixedDeltaTime;
 	while (currentTime_ > fixedDt)

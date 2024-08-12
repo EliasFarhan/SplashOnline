@@ -16,22 +16,51 @@ void PlayerRenderer::End()
 }
 void PlayerRenderer::Update([[maybe_unused]]float dt)
 {
-	if(IsSpineLoaded())
+	if (!IsSpineLoaded())
+		return;
+	if(playerSkeletonDrawables_[0] == nullptr)
 	{
-		if(playerSkeletonDrawables_[0]== nullptr)
+		for(int i = 0; i < MaxPlayerNmb; i++)
 		{
-			for(int i = 0; i < MaxPlayerNmb; i++)
-			{
-				playerSkeletonDrawables_[i] = CreateSkeletonDrawable((SpineManager::SkeletonId)((int)SpineManager::CAT_NOARM+i));
-				playerSkeletonDrawables_[i]->animationState->setAnimation(0, "idle", true);
-			}
+			playerSkeletonDrawables_[i] = CreateSkeletonDrawable((SpineManager::SkeletonId)((int)SpineManager::CAT_NOARM+i));
+			playerSkeletonDrawables_[i]->animationState->setAnimation(0, "idle", true);
 		}
-		else
+	}
+	else
+	{
+
+		const auto& playerManager = gameSystems_->GetPlayerManager();
+
+		auto& playerCharacters = playerManager.GetPlayerCharacter();
+		for(int i = 0; i < MaxPlayerNmb; i++)
 		{
-			for(int i = 0; i < MaxPlayerNmb; i++)
+			switch(playerRenderDatas_[i].state)
 			{
-				playerSkeletonDrawables_[i]->update(dt, spine::Physics_Update);
+
+			case PlayerRenderState::IDLE:
+			{
+				if(playerCharacters[i].footCount <= 0)
+				{
+					playerSkeletonDrawables_[i]->animationState->setAnimation(0, "fall", true);
+					playerRenderDatas_[i].state = PlayerRenderState::IN_AIR;
+				}
+				break;
 			}
+			case PlayerRenderState::WALK:
+			{
+				break;
+			}
+			case PlayerRenderState::IN_AIR:
+			{
+				if(playerCharacters[i].footCount <= 0)
+				{
+					playerSkeletonDrawables_[i]->animationState->setAnimation(0, "idle", true);
+					playerRenderDatas_[i].state = PlayerRenderState::IDLE;
+				}
+				break;
+			}
+			}
+			playerSkeletonDrawables_[i]->update(dt, spine::Physics_Update);
 		}
 	}
 }

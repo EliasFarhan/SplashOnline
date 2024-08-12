@@ -9,25 +9,27 @@ namespace splash
 
 void Level::Begin()
 {
-	int i = 0;
-	for(const auto& platform : platforms)
+	for(std::size_t i = 0; i < platformPhysics_.size(); i++)
 	{
-		auto& pair = platformPhysics_[i];
-		pair.first = world_->AddBody();
-		pair.second = world_->AddAabbCollider(pair.first);
+		auto& platform = platformPhysics_[i];
+		platform.bodyIndex = world_->AddBody();
+		platform.colliderIndex = world_->AddAabbCollider(platform.bodyIndex);
 
-		auto& body = world_->body(pair.first);
-		body.position = platform.position;
+		auto& body = world_->body(platform.bodyIndex);
+		body.position = platforms[i].position;
 		body.type = neko::BodyType::STATIC;
 		body.inverseMass = neko::Scalar {0};
 
-		auto& collider = world_->collider(pair.second);
-		collider.offset = platform.offset;
+		auto& collider = world_->collider(platform.colliderIndex);
+		collider.offset = platforms[i].offset;
 		collider.isTrigger = false;
 		collider.restitution = neko::Scalar{0};
+		collider.userData = &platform.userData;
 		auto& aabb = world_->aabb(collider.shapeIndex);
-		aabb.halfSize = platform.size/neko::Scalar{2};
-		i++;
+		aabb.halfSize = platforms[i].size/neko::Scalar{2};
+
+		platform.userData.type = ColliderType::PLATFORM;
+
 	}
 }
 void Level::End()

@@ -27,6 +27,7 @@ private:
 	RollbackManager rollbackManager_;
 	float currentTime_ = 0.0f;
 	int systemIndex_ = 0;
+	std::array<PlayerInput, MaxPlayerNmb> playerInputs_;
 };
 }
 #endif //SPLASHONLINE_GAME_GAME_MANAGER_H_

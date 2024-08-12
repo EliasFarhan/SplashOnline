@@ -13,6 +13,7 @@
 namespace splash
 {
 
+static NetworkClient* instance = nullptr;
 void NetworkClient::debugReturn(int debugLevel, const ExitGames::Common::JString& string)
 {
 	LogDebug(fmt::format("Debug Return: {} with msg: {}", debugLevel, string.ASCIIRepresentation().cstr()));
@@ -141,6 +142,7 @@ int NetworkClient::GetGuiIndex() const
 }
 NetworkClient::NetworkClient() : networkManager_(this), networkJob_([this](){RunNetwork();})
 {
+	instance = this;
 	AddGuiInterface(this);
 	AddSystem(this);
 }
@@ -167,5 +169,9 @@ void NetworkClient::RunNetwork()
 #ifdef TRACY_ENABLE
 	TracyCZoneEnd(netEnd);
 #endif
+}
+NetworkClient* GetNetworkClient()
+{
+	return instance;
 }
 }

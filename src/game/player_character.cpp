@@ -11,10 +11,10 @@ namespace splash
 
 static constexpr std::array<neko::Vec2f, MaxPlayerNmb> spawnPositions
 	{{
-		 {neko::Fixed16{-4.77f}, neko::Fixed16{-1.6f}},
+		 {neko::Fixed16{-4.77f}, neko::Fixed16{-1.79f}},
 		 {neko::Fixed16{4.13f}, neko::Fixed16{-1.79f}},
-		 {neko::Fixed16{-1.65f}, neko::Fixed16{0.86f}},
-		 {neko::Fixed16{1.38f}, neko::Fixed16{0.53f}},
+		 {neko::Fixed16{-1.65f}, neko::Fixed16{0.96f}},
+		 {neko::Fixed16{1.38f}, neko::Fixed16{0.96f}},
 	}};
 
 PlayerManager::PlayerManager(GameSystems* gameSystems): gameSystems_(gameSystems)
@@ -39,8 +39,21 @@ void PlayerManager::Begin()
 		collider.isTrigger = false;
 		collider.offset = PlayerPhysic::box.offset;
 		collider.restitution = {};
+		collider.userData = &playerPhysic.userData;
 		auto& box = physicsWorld.aabb(collider.shapeIndex);
 		box.halfSize = PlayerPhysic::box.size/neko::Scalar{2};
+
+		playerPhysic.footColliderIndex = physicsWorld.AddAabbCollider(playerPhysic.bodyIndex);
+		auto& footCollider = physicsWorld.collider(playerPhysic.footColliderIndex);
+		footCollider.isTrigger = true;
+		footCollider.offset = PlayerPhysic::footBox.offset;
+		footCollider.userData = &playerPhysic.userData;
+		auto& footBox = physicsWorld.aabb(footCollider.shapeIndex);
+		footBox.halfSize = PlayerPhysic::footBox.size/neko::Scalar{2};
+
+		playerPhysic.userData.type = ColliderType::PLAYER;
+		playerPhysic.userData.playerNumber = playerIndex;
+
 
 	}
 }
@@ -51,5 +64,30 @@ void PlayerManager::Tick()
 void PlayerManager::End()
 {
 
+}
+void PlayerManager::SetPlayerInput(neko::Span<PlayerInput> playerInputs)
+{
+	for(int i = 0; i < MaxPlayerNmb; i++)
+	{
+		playerInputs_[i] = playerInputs[i];
+	}
+}
+void PlayerManager::OnTriggerExit(neko::ColliderIndex playerIndex,
+	int playerNumber,
+	const neko::Collider& otherCollider)
+{
+	const auto* otherUserData = static_cast<ColliderUserData*>(otherCollider.userData);
+	if(playerIndex == playerPhysics_[playerNumber].footColliderIndex && otherUserData->type == ColliderType::PLATFORM)
+	{
+		playerCharacters_[playerNumber].footCount--;
+	}
+}
+void PlayerManager::OnTriggerEnter(neko::ColliderIndex playerIndex, int playerNumber, const neko::Collider& otherCollider)
+{
+	const auto* otherUserData = static_cast<ColliderUserData*>(otherCollider.userData);
+	if(playerIndex == playerPhysics_[playerNumber].footColliderIndex && otherUserData->type == ColliderType::PLATFORM)
+	{
+		playerCharacters_[playerNumber].footCount++;
+	}
 }
 }

@@ -7,6 +7,9 @@
 
 #include "utils/timer.h"
 #include "game/const.h"
+#include "engine/input_manager.h"
+#include "container/span.h"
+#include "physics/physics.h"
 
 #include <math/vec2.h>
 #include <physics/physics_type.h>
@@ -55,6 +58,7 @@ struct PlayerCharacter
 	Timer<> jumpTimer{neko::Fixed16{-1}, neko::Fixed16{1.0f}};
 	Timer<> jetBurstTimer{neko::Fixed16{-1.0f}, neko::Fixed16{0.5f}};
 
+	int footCount = 0;
 
 };
 
@@ -71,6 +75,15 @@ struct PlayerPhysic
 			{neko::Scalar{playerScale*-0.001866817f}, neko::Scalar{playerScale*1.066903f}},
 			{neko::Scalar{playerScale*1.280593f}, neko::Scalar{playerScale*2.113744f}}
 		};
+
+	neko::ColliderIndex footColliderIndex = neko::INVALID_COLLIDER_INDEX;
+	static constexpr Box footBox
+		{
+			{},
+			{neko::Scalar{playerScale*0.04818996f}, neko::Scalar{playerScale*0.09242455f}},
+			{neko::Scalar{playerScale*0.6595958f}, neko::Scalar{playerScale*0.3909828f}}
+		};
+	ColliderUserData userData{};
 };
 
 class GameSystems;
@@ -83,10 +96,15 @@ public:
 	void Tick();
 	void End();
 
+	void OnTriggerEnter(neko::ColliderIndex playerIndex, int playerNumber, const neko::Collider& otherCollider);
+	void OnTriggerExit(neko::ColliderIndex playerIndex, int playerNumber, const neko::Collider& otherCollider);
+
 	[[nodiscard]] const auto& GetPlayerCharacter() const {return playerCharacters_;}
 	[[nodiscard]] const auto& GetPlayerPhysics()const {return playerPhysics_;}
+	void SetPlayerInput(neko::Span<PlayerInput> playerInputs);
 private:
 	GameSystems* gameSystems_ = nullptr;
+	std::array<PlayerInput, MaxPlayerNmb> playerInputs_{};
 	std::array<PlayerCharacter, MaxPlayerNmb> playerCharacters_{};
 	std::array<PlayerPhysic, MaxPlayerNmb> playerPhysics_{};
 };

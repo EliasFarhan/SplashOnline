@@ -63,6 +63,7 @@ private:
 	std::atomic<bool> isRunning_ = true;
 };
 
+NetworkClient* GetNetworkClient();
 }
 
 #endif //SPLASHONLINE_NETWORK_CLIENT_H_

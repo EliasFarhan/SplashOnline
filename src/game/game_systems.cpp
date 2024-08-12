@@ -36,11 +36,36 @@ void GameSystems::End()
 }
 void GameSystems::OnTriggerEnter(const neko::ColliderPair& p)
 {
-	LogDebug(fmt::format("On Trigger Enter: c{} c{}", p.c1.index, p.c2.index));
+	const auto& c1 = physicsManager_.collider(p.c1);
+	const auto* userData1 = static_cast<ColliderUserData*>(c1.userData);
+	const auto& c2 = physicsManager_.collider(p.c2);
+	const auto* userData2 = static_cast<ColliderUserData*>(c1.userData);
+
+	if(userData1->type == ColliderType::PLAYER)
+	{
+		playerManager_.OnTriggerEnter(p.c1, userData1->playerNumber, c2);
+	}
+	if(userData2->type == ColliderType::PLAYER)
+	{
+		playerManager_.OnTriggerEnter(p.c2, userData2->playerNumber, c1);
+	}
+
 }
 void GameSystems::OnTriggerExit(const neko::ColliderPair& p)
 {
-	LogDebug(fmt::format("On Trigger Exit: c{} c{}", p.c1.index, p.c2.index));
+	const auto& c1 = physicsManager_.collider(p.c1);
+	const auto* userData1 = static_cast<ColliderUserData*>(c1.userData);
+	const auto& c2 = physicsManager_.collider(p.c2);
+	const auto* userData2 = static_cast<ColliderUserData*>(c1.userData);
+
+	if(userData1->type == ColliderType::PLAYER)
+	{
+		playerManager_.OnTriggerExit(p.c1, userData1->playerNumber, c2);
+	}
+	if(userData2->type == ColliderType::PLAYER)
+	{
+		playerManager_.OnTriggerExit(p.c2, userData2->playerNumber, c1);
+	}
 }
 void GameSystems::OnCollisionEnter(const neko::ColliderPair& p)
 {
@@ -49,6 +74,10 @@ void GameSystems::OnCollisionEnter(const neko::ColliderPair& p)
 void GameSystems::OnCollisionExit(const neko::ColliderPair& p)
 {
 	LogDebug(fmt::format("On Collision Exit: c{} c{}", p.c1.index, p.c2.index));
+}
+void GameSystems::SetPlayerInput(neko::Span<PlayerInput> playerInputs)
+{
+	playerManager_.SetPlayerInput(playerInputs);
 }
 
 }

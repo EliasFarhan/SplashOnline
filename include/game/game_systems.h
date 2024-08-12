@@ -8,11 +8,14 @@
 #include "game/player_character.h"
 #include "game/bullet.h"
 #include "game/level.h"
+#include "engine/input_manager.h"
 
 #include <physics/physics.h>
 
 namespace splash
 {
+
+
 class GameSystems : public neko::ContactListener
 {
 public:
@@ -21,6 +24,8 @@ public:
 	void Begin();
 	void Tick();
 	void End();
+
+	void SetPlayerInput(neko::Span<PlayerInput> playerInputs);
 
 	[[nodiscard]] const PlayerManager& GetPlayerManager() const{return playerManager_;}
 	[[nodiscard]] const BulletManager& GetBulletManager() const {return bulletManager_;}

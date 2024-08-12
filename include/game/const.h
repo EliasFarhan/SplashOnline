@@ -39,6 +39,20 @@ static constexpr std::array<SDL_Color, MaxPlayerNmb> playerColors
 	 {238,0,126, 255},
 	 {27,255,181, 255},
 }};
+
+enum class ColliderType
+{
+	PLAYER,
+	PLATFORM,
+	BULLET,
+	NONE
+};
+struct ColliderUserData
+{
+	ColliderType type = ColliderType::NONE;
+	int playerNumber = -1; //Used by player or bullet
+};
+
 }
 
 #endif //SPLASHONLINE_GAME_CONST_H_

@@ -10,6 +10,18 @@
 namespace splash
 {
 
+enum class PlayerRenderState
+{
+	IDLE,
+	WALK,
+	IN_AIR
+};
+
+struct PlayerRenderData
+{
+	PlayerRenderState state = PlayerRenderState::IDLE;
+};
+
 class PlayerRenderer
 {
 public:
@@ -23,6 +35,7 @@ public:
 private:
 	const GameSystems* gameSystems_ = nullptr;
 	std::array<std::unique_ptr<spine::SkeletonDrawable>, MaxPlayerNmb> playerSkeletonDrawables_{};
+	std::array<PlayerRenderData, MaxPlayerNmb> playerRenderDatas_{};
 };
 
 }

@@ -19,6 +19,12 @@ namespace splash
 class Level
 {
 public:
+	struct Platform
+	{
+		neko::BodyIndex bodyIndex = neko::INVALID_BODY_INDEX;
+		neko::ColliderIndex colliderIndex = neko::INVALID_COLLIDER_INDEX;
+		ColliderUserData userData{};
+	};
 	explicit Level(neko::PhysicsWorld* world);
 	void Begin();
 	void End();
@@ -42,7 +48,7 @@ public:
 
 private:
 	neko::PhysicsWorld* world_;
-	std::array<std::pair<neko::BodyIndex, neko::ColliderIndex>, 3> platformPhysics_;
+	std::array<Platform, 3> platformPhysics_;
 };
 
 
