@@ -103,13 +103,14 @@ void SpineManager::UpdateLoad()
 #ifdef TRACY_ENABLE
 		ZoneNamedN(loadingAtlas, "Loading Atlas", true);
 #endif
+		if(atlases_[i])
+			continue;
 		atlases_[i] = std::make_unique<spine::Atlas>(atlasPaths[i].data(), this);
 		if(atlases_[i]->getPages().size() == 0)
 		{
 			LogError(fmt::format("Could not load atlas data: {}", atlasPaths[i]));
 		}
 		attachmentLoaders_[i] = std::make_unique<spine::AtlasAttachmentLoader>(atlases_[i].get());
-
 	}
 	int j = 0;
 	for(int i = 0; i < (int) SkeletonId::LENGTH; i++)

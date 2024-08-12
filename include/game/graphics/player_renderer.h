@@ -14,12 +14,21 @@ enum class PlayerRenderState
 {
 	IDLE,
 	WALK,
-	IN_AIR
+	WALK_BACK,
+	SHOOT,
+	JET,
+	JETBURST,
+	FALL,
+	DASHPREP,
+	DASH,
+	BOUNCE,
+	LENGTH
 };
 
 struct PlayerRenderData
 {
 	PlayerRenderState state = PlayerRenderState::IDLE;
+	bool faceRight = true;
 };
 
 class PlayerRenderer
@@ -33,6 +42,7 @@ public:
 	void Draw();
 
 private:
+	void SwitchToState(PlayerRenderState state, int playerNumber);
 	const GameSystems* gameSystems_ = nullptr;
 	std::array<std::unique_ptr<spine::SkeletonDrawable>, MaxPlayerNmb> playerSkeletonDrawables_{};
 	std::array<PlayerRenderData, MaxPlayerNmb> playerRenderDatas_{};

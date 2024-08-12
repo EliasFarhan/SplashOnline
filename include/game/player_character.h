@@ -20,21 +20,22 @@ namespace splash
 {
 struct PlayerCharacter
 {
-	static constexpr neko::Fixed16 WalkDeadZone{ 0.1f};
-	static constexpr neko::Fixed16 InAirForce{ 20.0f };
-	static constexpr neko::Fixed16 WaterForce{ 140.0f }; //WHen touch by water on ground, origin 100
-	static constexpr neko::Fixed16 MegaForce{ 400.0f };
-	static constexpr neko::Fixed16 RainForce{ 45.0f }; //When touch by water from rain
-	static constexpr neko::Fixed16 AttackForce{ 5.0f };  //Recoil in air
-	static constexpr neko::Fixed16 RecoilGroundFactor{ 0.6f };
-	static constexpr neko::Fixed16 WalkSpeed{ 5.0f };
-	static constexpr neko::Fixed16 MaxSpeed{ 8.0f };                    // The fastest the player can travel in the x axis.
-	static constexpr neko::Fixed16 CapMoveForce{ 50.0f };
-	static constexpr neko::Fixed16 WetCapMoveForce{ 20.0f };
-	static constexpr neko::Fixed16 ReactorForce { 22.0f };//19.0f
-	static constexpr neko::Fixed16 JumpForce{ 320.0f };//437.5
-	static constexpr neko::Fixed16 HitEffectPeriod{ 0.02f };
+	static constexpr neko::Scalar WalkDeadZone{ 0.1f};
+	static constexpr neko::Scalar InAirForce{ 20.0f };
+	static constexpr neko::Scalar WaterForce{ 140.0f }; //WHen touch by water on ground, origin 100
+	static constexpr neko::Scalar MegaForce{ 400.0f };
+	static constexpr neko::Scalar RainForce{ 45.0f }; //When touch by water from rain
+	static constexpr neko::Scalar AttackForce{ 5.0f };  //Recoil in air
+	static constexpr neko::Scalar RecoilGroundFactor{ 0.6f };
+	static constexpr neko::Scalar WalkSpeed{ 5.0f };
+	static constexpr neko::Scalar MaxSpeed{ 8.0f };                    // The fastest the player can travel in the x axis.
+	static constexpr neko::Scalar CapMoveForce{ 50.0f };
+	static constexpr neko::Scalar WetCapMoveForce{ 20.0f };
+	static constexpr neko::Scalar ReactorForce { 22.0f };//19.0f
+	static constexpr neko::Scalar JumpForce{ 320.0f };//437.5
+	static constexpr neko::Scalar HitEffectPeriod{ 0.02f };
 	static constexpr int FirstShotsCount = 3;
+	static constexpr neko::Fixed8 deadZone {InputManager::deadZone};
 
 	//Respawn
 	Timer<> respawnPauseTimer{ neko::Fixed16{ 1.0f }, neko::Fixed16{ 0.5f }};
@@ -101,6 +102,7 @@ public:
 
 	[[nodiscard]] const auto& GetPlayerCharacter() const {return playerCharacters_;}
 	[[nodiscard]] const auto& GetPlayerPhysics()const {return playerPhysics_;}
+	[[nodiscard]] const auto& GetPlayerInputs() const { return playerInputs_; }
 	void SetPlayerInput(neko::Span<PlayerInput> playerInputs);
 private:
 	GameSystems* gameSystems_ = nullptr;

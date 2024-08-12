@@ -2,9 +2,25 @@
 
 #include "graphics/graphics_manager.h"
 
+#include <math/fixed_lut.h>
+
 
 namespace splash
 {
+
+static constexpr std::array<std::string_view, (int)PlayerRenderState::LENGTH> playerAnimNames
+	{{
+		"idle",
+		"walk",
+		"walkback",
+		"shoot",
+		"jet",
+		"jetburst",
+		"fall",
+		"dashprep",
+		"dash",
+		"bounce"
+	}};
 
 void PlayerRenderer::Begin()
 {
@@ -30,37 +46,121 @@ void PlayerRenderer::Update([[maybe_unused]]float dt)
 	{
 
 		const auto& playerManager = gameSystems_->GetPlayerManager();
-
-		auto& playerCharacters = playerManager.GetPlayerCharacter();
-		for(int i = 0; i < MaxPlayerNmb; i++)
+		for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
 		{
-			switch(playerRenderDatas_[i].state)
+			const auto& playerCharacter = playerManager.GetPlayerCharacter()[playerNumber];
+			const auto& playerInput = playerManager.GetPlayerInputs()[playerNumber];
+			auto& playerRenderData = playerRenderDatas_[playerNumber];
+
+			const auto targetDir = neko::Vec2<neko::Fixed8>(playerInput.targetDirX, playerInput.targetDirY);
+			if((playerInput.moveDirX > PlayerCharacter::deadZone && !playerRenderData.faceRight) ||
+				(playerInput.moveDirX < -PlayerCharacter::deadZone && playerRenderData.faceRight))
+			{
+				playerRenderData.faceRight = !playerRenderData.faceRight;
+			}
+			float animRatio = 1.0f;
+			switch(playerRenderDatas_[playerNumber].state)
 			{
 
 			case PlayerRenderState::IDLE:
 			{
-				if(playerCharacters[i].footCount <= 0)
+				if(playerCharacter.footCount <= 0)
 				{
-					playerSkeletonDrawables_[i]->animationState->setAnimation(0, "fall", true);
-					playerRenderDatas_[i].state = PlayerRenderState::IN_AIR;
+					SwitchToState(PlayerRenderState::FALL, playerNumber);
+				}
+				if(neko::Abs<neko::Fixed8>(playerInput.moveDirX) > PlayerCharacter::deadZone)
+				{
+					SwitchToState(PlayerRenderState::WALK, playerNumber);
+				}
+				else
+				{
+					if(targetDir.SquareLength() > PlayerCharacter::deadZone)
+					{
+						SwitchToState(PlayerRenderState::SHOOT, playerNumber);
+					}
 				}
 				break;
 			}
 			case PlayerRenderState::WALK:
 			{
-				break;
-			}
-			case PlayerRenderState::IN_AIR:
-			{
-				if(playerCharacters[i].footCount <= 0)
+				if(neko::Abs(playerInput.moveDirX) < PlayerCharacter::deadZone)
 				{
-					playerSkeletonDrawables_[i]->animationState->setAnimation(0, "idle", true);
-					playerRenderDatas_[i].state = PlayerRenderState::IDLE;
+					SwitchToState(PlayerRenderState::IDLE, playerNumber);
+				}
+				else
+				{
+					if((playerRenderData.faceRight && playerInput.targetDirX < neko::Fixed8{0.0f}) ||
+						(!playerRenderData.faceRight && playerInput.targetDirX > neko::Fixed8{0.0f}))
+					{
+						SwitchToState(PlayerRenderState::WALK_BACK, playerNumber);
+					}
+					animRatio = (float)neko::Abs(playerInput.moveDirX);
 				}
 				break;
 			}
+			case PlayerRenderState::WALK_BACK:
+			{
+				if(neko::Abs<neko::Fixed8>(playerInput.moveDirX) < PlayerCharacter::deadZone)
+				{
+					SwitchToState(PlayerRenderState::IDLE, playerNumber);
+				}
+				else
+				{
+					if((!playerRenderData.faceRight && playerInput.targetDirX < neko::Fixed8{0.0f}) ||
+					   (playerRenderData.faceRight && playerInput.targetDirX > neko::Fixed8{0.0f}))
+					{
+						SwitchToState(PlayerRenderState::WALK, playerNumber);
+					}
+
+					animRatio = (float)neko::Abs(playerInput.moveDirX);
+				}
+				break;
 			}
-			playerSkeletonDrawables_[i]->update(dt, spine::Physics_Update);
+			case PlayerRenderState::FALL:
+			{
+				if(playerCharacter.footCount <= 0)
+				{
+					SwitchToState(PlayerRenderState::IDLE, playerNumber);
+				}
+				break;
+			}
+			case PlayerRenderState::SHOOT:
+			{
+				if(neko::Abs<neko::Fixed8>(playerInput.moveDirX) > PlayerCharacter::deadZone)
+				{
+					SwitchToState(PlayerRenderState::WALK, playerNumber);
+				}
+				else
+				{
+					if(targetDir.SquareLength() < PlayerCharacter::deadZone)
+					{
+						SwitchToState(PlayerRenderState::IDLE, playerNumber);
+					}
+					else
+					{
+						if((targetDir.x > PlayerCharacter::deadZone && !playerRenderData.faceRight) ||
+							(targetDir.x < -PlayerCharacter::deadZone && playerRenderData.faceRight))
+						{
+							playerRenderData.faceRight = !playerRenderData.faceRight;
+						}
+					}
+				}
+				break;
+			}
+			case PlayerRenderState::JET:
+				break;
+			case PlayerRenderState::JETBURST:
+				break;
+			case PlayerRenderState::DASHPREP:
+				break;
+			case PlayerRenderState::DASH:
+				break;
+			case PlayerRenderState::BOUNCE:
+				break;
+			case PlayerRenderState::LENGTH:
+				break;
+			}
+			playerSkeletonDrawables_[playerNumber]->update(animRatio*dt, spine::Physics_Update);
 		}
 	}
 }
@@ -78,7 +178,7 @@ void PlayerRenderer::Draw()
 			auto& playerSkeletonDrawable = playerSkeletonDrawables_[i];
 			const auto scale = playerScale * GetGraphicsScale();
 			const auto position = GetGraphicsPosition(body.position);
-			playerSkeletonDrawable->skeleton->setScaleX(scale);
+			playerSkeletonDrawable->skeleton->setScaleX((playerRenderDatas_[i].faceRight?1.0f:-1.0f)*scale);
 			playerSkeletonDrawable->skeleton->setScaleY(scale);
 			playerSkeletonDrawable->skeleton->setPosition((float)position.x, (float)position.y);
 			playerSkeletonDrawable->draw(renderer);
@@ -100,5 +200,12 @@ PlayerRenderer::PlayerRenderer(const GameSystems* gameSystems): gameSystems_(gam
 void PlayerRenderer::Tick()
 {
 
+}
+
+void PlayerRenderer::SwitchToState(PlayerRenderState state, int playerNumber)
+{
+	playerSkeletonDrawables_[playerNumber]->animationState->setAnimation(0,
+		playerAnimNames[(int)state].data(), true);
+	playerRenderDatas_[playerNumber].state = state;
 }
 }

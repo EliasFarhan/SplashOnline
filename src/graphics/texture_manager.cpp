@@ -156,6 +156,8 @@ void TextureManager::UpdateLoad()
 	{
 		return;
 	}
+	auto freq = (double)SDL_GetPerformanceFrequency();
+	Uint64 previous = SDL_GetPerformanceCounter();
 	for(int i = 0; i <= loadingIndex.load(std::memory_order_consume); i++)
 	{
 		if(textures_[i] != nullptr) continue;
@@ -165,6 +167,13 @@ void TextureManager::UpdateLoad()
 		textures_[i] = CreateTextureFromSurface(renderer_, surfaces[i]);
 		SDL_FreeSurface(surfaces[i]);
 		stbi_image_free(images[i].pixels);
+		auto current = SDL_GetPerformanceCounter();
+		auto delta =  (double)(current - previous);
+
+		if( (float)(delta/freq) > 0.01f)
+		{
+			break;
+		}
 	}
 }
 TextureManager::TextureManager()

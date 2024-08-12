@@ -26,6 +26,7 @@ void GameManager::Update(float dt)
 	if(netClient == nullptr)
 	{
 		playerInputs_[0] = GetPlayerInput();
+		gameSystems_.SetPlayerInput(playerInputs_);
 	}
 	else
 	{
