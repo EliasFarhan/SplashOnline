@@ -25,9 +25,9 @@ void Engine::Run()
 #ifdef TRACY_ENABLE
 		ZoneNamedN(engineLoop, "Engine Loop", true);
 #endif
-		auto current = SDL_GetPerformanceCounter();
-		auto delta =  (double)(current - previous);
-		previous = current;
+		current_ = SDL_GetPerformanceCounter();
+		auto delta =  (double)(current_ - previous);
+		previous = current_;
 
 		dt_ = (float)(delta/freq);
 		window_.Update();
@@ -133,10 +133,7 @@ void Engine::ScheduleNetJob(neko::Job* pJob)
 	jobSystem_.AddJob(pJob, networkQueue_);
 }
 
-float Engine::GetDeltaTime()
-{
-	return dt_;
-}
+
 
 void AddSystem(SystemInterface* system)
 {
@@ -165,5 +162,9 @@ void ScheduleNetJob(neko::Job* job)
 float GetDeltaTime()
 {
 	return instance->GetDeltaTime();
+}
+Uint64 GetCurrentFrameTime()
+{
+	return instance->GetCurrentFrameTime();
 }
 }

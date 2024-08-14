@@ -5,6 +5,7 @@
 #include "graphics/spine_manager.h"
 #include "graphics/texture_manager.h"
 #include "utils/log.h"
+#include "engine/engine.h"
 
 #include <spine-sdl-cpp.h>
 #include <fmt/format.h>
@@ -98,12 +99,19 @@ void SpineManager::UpdateLoad()
 	{
 		return;
 	}
+	auto freq = (double)SDL_GetPerformanceFrequency();
+	auto current = SDL_GetPerformanceCounter();
+	auto delta =  (double)(current - GetCurrentFrameTime());
+	if( (float)(delta/freq) > 0.01f)
+	{
+		return;
+	}
 	for(int i = 0; i < (int)AtlasId::LENGTH; i++)
 	{
 #ifdef TRACY_ENABLE
 		ZoneNamedN(loadingAtlas, "Loading Atlas", true);
 #endif
-		if(atlases_[i])
+		if(atlases_[i] != nullptr)
 			continue;
 		atlases_[i] = std::make_unique<spine::Atlas>(atlasPaths[i].data(), this);
 		if(atlases_[i]->getPages().size() == 0)
@@ -111,10 +119,41 @@ void SpineManager::UpdateLoad()
 			LogError(fmt::format("Could not load atlas data: {}", atlasPaths[i]));
 		}
 		attachmentLoaders_[i] = std::make_unique<spine::AtlasAttachmentLoader>(atlases_[i].get());
+
+		current = SDL_GetPerformanceCounter();
+		delta =  (double)(current - GetCurrentFrameTime());
+
+		if( (float)(delta/freq) > 0.01f)
+		{
+			return;
+		}
 	}
 	int j = 0;
 	for(int i = 0; i < (int) SkeletonId::LENGTH; i++)
 	{
+		if(atlases_[i] == nullptr)
+		{
+			break;
+		}
+		if(skeletonJsons_[i] != nullptr || skeletonData_[i] != nullptr)
+		{
+			switch((SkeletonId)i)
+			{
+			case CAT_NOARM:
+			case LUCHA_NOARM:
+			case OWL_NOARM:
+			case CAT_ARM:
+			case LUCHA_ARM:
+			case OWL_ARM:
+				continue;
+			default:
+				if(j < (int)AtlasId::LENGTH-1)
+				{
+					j++;
+				}
+				continue;
+			}
+		}
 #ifdef TRACY_ENABLE
 		ZoneNamedN(loadingSkeleton, "Loading Skeleton Data", true);
 #endif
@@ -136,6 +175,7 @@ void SpineManager::UpdateLoad()
 		{
 			LogError(fmt::format("Could not load skeleton data: {}", skeletonPaths[i]));
 		}
+
 		switch((SkeletonId)i)
 		{
 		case CAT_NOARM:
@@ -152,13 +192,20 @@ void SpineManager::UpdateLoad()
 			}
 			break;
 		}
+		current = SDL_GetPerformanceCounter();
+		delta =  (double)(current - GetCurrentFrameTime());
+
+		if( (float)(delta/freq) > 0.01f)
+		{
+			break;
+		}
 	}
 }
 void SpineManager::Begin()
 {
 
 }
-void SpineManager::Update(float dt)
+void SpineManager::Update([[maybe_unused]]float dt)
 {
 	UpdateLoad();
 }
