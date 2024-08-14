@@ -38,6 +38,8 @@ struct PlayerCharacter
 	static constexpr neko::Fixed8 deadZone {InputManager::deadZone};
 	static constexpr int MaxResistancePhase = 3;
 	static constexpr int MovePriority = 1;
+	static constexpr int JetPackPriority = 1;
+	static constexpr auto ReactorInAirThreshold = neko::Scalar { 0.5f};
 
 	//Respawn
 	Timer<> respawnPauseTimer{ neko::Fixed16{ 1.0f }, neko::Fixed16{ 0.5f }};

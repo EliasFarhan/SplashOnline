@@ -103,11 +103,25 @@ void PlayerManager::Tick()
 		else
 		{
 			//in air
-			playerPhysic.totalForce = {};
+			const auto reactor = neko::Scalar {playerInput.moveDirY};
+			if(reactor > PlayerCharacter::ReactorInAirThreshold)
+			{
+				const auto velY = body.velocity.y;
+				const auto decreaseFactor = velY > neko::Scalar{} ? neko::Scalar{ 0.75f } : neko::Scalar{ 1.0f };
+
+				auto force = PlayerCharacter::ReactorForce * reactor * decreaseFactor;
+				//TODO jetburst and jumping
+				if(playerPhysic.priority <= PlayerCharacter::JetPackPriority)
+				{
+					playerPhysic.totalForce.y = force;
+				}
+			}
 		}
 
 		// In the end, apply force to physics
 		body.force = playerPhysic.totalForce;
+		playerPhysic.totalForce = {};
+		playerPhysic.priority = {};
 	}
 }
 void PlayerManager::End()

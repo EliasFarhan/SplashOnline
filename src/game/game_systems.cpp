@@ -39,8 +39,9 @@ void GameSystems::OnTriggerEnter(const neko::ColliderPair& p)
 	const auto& c1 = physicsManager_.collider(p.c1);
 	const auto* userData1 = static_cast<ColliderUserData*>(c1.userData);
 	const auto& c2 = physicsManager_.collider(p.c2);
-	const auto* userData2 = static_cast<ColliderUserData*>(c1.userData);
+	const auto* userData2 = static_cast<ColliderUserData*>(c2.userData);
 
+	LogDebug(fmt::format("On Trigger Enter: c{} c{}", p.c1.index, p.c2.index));
 	if(userData1->type == ColliderType::PLAYER)
 	{
 		playerManager_.OnTriggerEnter(p.c1, userData1->playerNumber, c2);
@@ -56,8 +57,9 @@ void GameSystems::OnTriggerExit(const neko::ColliderPair& p)
 	const auto& c1 = physicsManager_.collider(p.c1);
 	const auto* userData1 = static_cast<ColliderUserData*>(c1.userData);
 	const auto& c2 = physicsManager_.collider(p.c2);
-	const auto* userData2 = static_cast<ColliderUserData*>(c1.userData);
+	const auto* userData2 = static_cast<ColliderUserData*>(c2.userData);
 
+	LogDebug(fmt::format("On Trigger Exit: c{} c{}", p.c1.index, p.c2.index));
 	if(userData1->type == ColliderType::PLAYER)
 	{
 		playerManager_.OnTriggerExit(p.c1, userData1->playerNumber, c2);

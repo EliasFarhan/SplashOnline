@@ -5,6 +5,7 @@ set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+#set(CMAKE_CXX_CLANG_TIDY clang-tidy --checks=-*,cppcoreguidelines-*)
 
 option(ENABLE_PROFILER "Enable Tracy Profiling" OFF)
 
