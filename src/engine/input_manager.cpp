@@ -89,9 +89,9 @@ PlayerInput InputManager::GetPlayerInput() const
 		const float rightX = static_cast<float>(SDL_GameControllerGetAxis(controller_, SDL_CONTROLLER_AXIS_RIGHTX))/32767.0f;
 		const float rightY = static_cast<float>(SDL_GameControllerGetAxis(controller_, SDL_CONTROLLER_AXIS_RIGHTY))/32767.0f;
 		input.moveDirX = neko::Fixed8{leftX};
-		input.moveDirY = neko::Fixed8{leftY};
+		input.moveDirY = -neko::Fixed8{leftY};
 		input.targetDirX = neko::Fixed8{rightX};
-		input.targetDirY = neko::Fixed8{rightY};
+		input.targetDirY = -neko::Fixed8{rightY};
 	}
 	return input;
 }

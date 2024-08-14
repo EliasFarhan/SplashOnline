@@ -71,27 +71,45 @@ void PlayerManager::Tick()
 		auto& body = physicsWorld.body(playerPhysic.bodyIndex);
 
 		const auto reactor = neko::Scalar {playerInput.moveDirY};
+		const auto moveX = neko::Abs(playerInput.moveDirX) > PlayerCharacter::deadZone ? neko::Scalar{playerInput.moveDirX} : neko::Scalar{};
 
+
+		if(playerCharacter.jetBurstTimer.Over() && (reactor < PlayerCharacter::ReactorInAirThreshold || body.velocity.y > neko::Scalar{0.0f}))
+		{
+			playerCharacter.burstTimer.Update(fixedDeltaTime);
+		}
+		if(!playerCharacter.jetBurstTimer.Over())
+		{
+			playerCharacter.jetBurstTimer.Update(fixedDeltaTime);
+			neko::Scalar force{};
+			if(playerCharacter.jetBurstTimer.Over())
+			{
+				const auto jumpSpeed = PlayerCharacter::JumpForce*body.inverseMass*fixedDeltaTime;
+				force = jumpSpeed-body.velocity.y / fixedDeltaTime / body.inverseMass;
+				playerCharacter.jumpTimer.Reset();
+			}
+			else
+			{
+				force = PlayerCharacter::ReactorForce;
+			}
+			if(playerPhysic.priority < PlayerCharacter::JetPackPriority )
+			{
+				playerPhysic.priority = PlayerCharacter::JetPackPriority;
+				playerPhysic.totalForce.y = force;
+			}
+		}
 		if(playerCharacter.IsGrounded())
 		{
 			//on ground
-
 			if(reactor > PlayerCharacter::ReactorInAirThreshold)
 			{
 				if(playerCharacter.burstTimer.Over() && playerCharacter.jetBurstTimer.Over())
 				{
 					playerCharacter.jetBurstTimer.Reset();
 					playerCharacter.burstTimer.Reset();
-
-				}
-				if(!playerCharacter.jetBurstTimer.Over())
-				{
-					playerCharacter.jetBurstTimer.Update(fixedDeltaTime);
-					playerPhysic.totalForce += neko::Vec2f({}, PlayerCharacter::ReactorForce);
 				}
 			}
 
-			const auto moveX = neko::Abs(playerInput.moveDirX) > PlayerCharacter::deadZone ? neko::Scalar{playerInput.moveDirX} : neko::Scalar{};
 			const auto wantedSpeed = moveX * PlayerCharacter::WalkSpeed;
 			const auto velX = body.velocity.x;
 			const auto deltaSpeed = wantedSpeed-velX;
@@ -99,7 +117,7 @@ void PlayerManager::Tick()
 			//TODO add wet cap
 			if(playerPhysic.priority <= PlayerCharacter::MovePriority)
 			{
-				if(playerPhysic.priority < PlayerCharacter::MovePriority)
+				if(playerPhysic.priority < PlayerCharacter::MovePriority )
 				{
 					playerPhysic.priority = PlayerCharacter::MovePriority;
 					//Counter gravity
@@ -119,8 +137,15 @@ void PlayerManager::Tick()
 		}
 		else
 		{
+			if(playerPhysic.priority <= PlayerCharacter::MovePriority)
+			{
+				const auto horizontalForce = PlayerCharacter::InAirForce * moveX;
+				playerPhysic.totalForce += neko::Vec2f{horizontalForce, {}};
+				playerPhysic.priority = PlayerCharacter::MovePriority;
+			}
 			//in air
-			if(reactor > PlayerCharacter::ReactorInAirThreshold)
+			if(reactor > PlayerCharacter::ReactorInAirThreshold &&
+				playerCharacter.jetBurstTimer.Over())
 			{
 				const auto velY = body.velocity.y;
 				const auto decreaseFactor = velY > neko::Scalar{} ? neko::Scalar{ 0.75f } : neko::Scalar{ 1.0f };
@@ -128,28 +153,13 @@ void PlayerManager::Tick()
 				auto force = PlayerCharacter::ReactorForce * reactor * decreaseFactor;
 				//TODO jetburst and jumping
 
-				if(!playerCharacter.jetBurstTimer.Over())
-				{
-					playerCharacter.jetBurstTimer.Update(fixedDeltaTime);
-					if(playerCharacter.jetBurstTimer.Over())
-					{
-						const auto jumpSpeed = PlayerCharacter::JumpForce*body.inverseMass*fixedDeltaTime;
-						force = jumpSpeed-body.velocity.y / fixedDeltaTime / body.inverseMass;
-						playerCharacter.jumpTimer.Reset();
-					}
-					else
-					{
-						force = PlayerCharacter::ReactorForce;
-					}
-
-				}
 
 				if(!playerCharacter.jumpTimer.Over())
 				{
 					playerCharacter.jumpTimer.Update(fixedDeltaTime);
 
 					const auto t = playerCharacter.jumpTimer.CurrentRatio();
-					force *= (t*t*t*t*t);
+					force *= (t*t*t*t);
 				}
 				if(playerPhysic.priority <= PlayerCharacter::JetPackPriority)
 				{

@@ -55,14 +55,19 @@ void PlayerRenderer::Update([[maybe_unused]]float dt)
 				playerRenderData.faceRight = !playerRenderData.faceRight;
 			}
 			float animRatio = 1.0f;
+			if(!playerCharacter.jetBurstTimer.Over())
+			{
+				SwitchToState(PlayerRenderState::JETBURST, playerNumber);
+			}
 			switch(playerRenderDatas_[playerNumber].state)
 			{
 
 			case PlayerRenderState::IDLE:
 			{
-				if(playerCharacter.footCount <= 0)
+				if(!playerCharacter.IsGrounded())
 				{
 					SwitchToState(PlayerRenderState::FALL, playerNumber);
+					break;
 				}
 				if(neko::Abs<neko::Fixed8>(playerInput.moveDirX) > PlayerCharacter::deadZone)
 				{
@@ -122,7 +127,7 @@ void PlayerRenderer::Update([[maybe_unused]]float dt)
 			}
 			case PlayerRenderState::FALL:
 			{
-				if(playerCharacter.footCount > 0)
+				if(playerCharacter.IsGrounded())
 				{
 					SwitchToState(PlayerRenderState::IDLE, playerNumber);
 				}
@@ -152,9 +157,29 @@ void PlayerRenderer::Update([[maybe_unused]]float dt)
 				break;
 			}
 			case PlayerRenderState::JET:
+			{
+				if(playerCharacter.IsGrounded())
+				{
+					SwitchToState(PlayerRenderState::IDLE, playerNumber);
+				}
 				break;
+
+			}
 			case PlayerRenderState::JETBURST:
+			{
+				if(playerCharacter.jetBurstTimer.Over())
+				{
+					if(neko::Scalar{playerInput.moveDirY} > PlayerCharacter::ReactorInAirThreshold)
+					{
+						SwitchToState(PlayerRenderState::JET, playerNumber);
+					}
+					else
+					{
+						SwitchToState(PlayerRenderState::FALL, playerNumber);
+					}
+				}
 				break;
+			}
 			case PlayerRenderState::DASHPREP:
 				break;
 			case PlayerRenderState::DASH:
@@ -187,13 +212,14 @@ void PlayerRenderer::Draw()
 			bodyDrawable->skeleton->setScaleX((playerRenderDatas_[i].faceRight ? 1.0f : -1.0f)*scale);
 			bodyDrawable->skeleton->setScaleY(scale);
 			bodyDrawable->skeleton->setPosition((float)position.x, (float)position.y);
+			bodyDrawable->skeleton->setToSetupPose();
 
 			auto& armDrawable = playerRenderDatas_[i].armDrawable;
 			armDrawable->skeleton->setScaleX((playerRenderDatas_[i].faceRight ? 1.0f : -1.0f)*scale);
 			armDrawable->skeleton->setScaleY(scale);
 			auto* shoulderBone = playerRenderDatas_[i].shoulderBone;
 			armDrawable->skeleton->setPosition(shoulderBone->getWorldX(), shoulderBone->getWorldY());
-
+			armDrawable->skeleton->setToSetupPose();
 
 			auto& gunDrawable = playerRenderDatas_[i].gunDrawable;
 			gunDrawable->skeleton->setScaleX((playerRenderDatas_[i].faceRight ? 1.0f : -1.0f)*scale);
