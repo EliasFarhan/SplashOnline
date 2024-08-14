@@ -36,6 +36,8 @@ struct PlayerCharacter
 	static constexpr neko::Scalar HitEffectPeriod{ 0.02f };
 	static constexpr int FirstShotsCount = 3;
 	static constexpr neko::Fixed8 deadZone {InputManager::deadZone};
+	static constexpr int MaxResistancePhase = 3;
+	static constexpr int MovePriority = 1;
 
 	//Respawn
 	Timer<> respawnPauseTimer{ neko::Fixed16{ 1.0f }, neko::Fixed16{ 0.5f }};
@@ -85,6 +87,9 @@ struct PlayerPhysic
 			{neko::Scalar{playerScale*0.6595958f}, neko::Scalar{playerScale*0.3909828f}}
 		};
 	ColliderUserData userData{};
+	neko::Vec2f totalForce{};
+	int priority = 0;
+
 };
 
 class GameSystems;

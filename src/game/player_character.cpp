@@ -5,6 +5,9 @@
 #include "game/player_character.h"
 #include "game/game_systems.h"
 #include "game/const.h"
+#include "utils/log.h"
+
+#include <fmt/format.h>
 
 namespace splash
 {
@@ -59,7 +62,53 @@ void PlayerManager::Begin()
 }
 void PlayerManager::Tick()
 {
+	for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
+	{
+		auto& playerCharacter = playerCharacters_[playerNumber];
+		auto& playerInput = playerInputs_[playerNumber];
+		auto& playerPhysic = playerPhysics_[playerNumber];
+		auto& physicsWorld = gameSystems_->GetPhysicsWorld();
+		auto& body = physicsWorld.body(playerPhysic.bodyIndex);
 
+
+		if(playerCharacter.footCount > 0)
+		{
+			//on ground
+			const auto moveX = neko::Abs(playerInput.moveDirX) > PlayerCharacter::deadZone ? neko::Scalar{playerInput.moveDirX} : neko::Scalar{};
+			const auto wantedSpeed = moveX * PlayerCharacter::WalkSpeed;
+			const auto velX = body.velocity.x;
+			const auto deltaSpeed = wantedSpeed-velX;
+			const auto newCap = PlayerCharacter::CapMoveForce;
+			//TODO add wet cap
+			if(playerPhysic.priority <= PlayerCharacter::MovePriority)
+			{
+				if(playerPhysic.priority < PlayerCharacter::MovePriority)
+				{
+					playerPhysic.priority = PlayerCharacter::MovePriority;
+					//Counter gravity
+					playerPhysic.totalForce = -physicsWorld.gravity()/body.inverseMass;
+				}
+
+				auto f = deltaSpeed / fixedDeltaTime / body.inverseMass;
+
+				if(newCap > neko::Fixed16{} && neko::Abs(f) > newCap)
+				{
+					f = newCap * neko::Sign(deltaSpeed) ;
+				}
+				playerPhysic.totalForce.x = f;
+
+			}
+
+		}
+		else
+		{
+			//in air
+			playerPhysic.totalForce = {};
+		}
+
+		// In the end, apply force to physics
+		body.force = playerPhysic.totalForce;
+	}
 }
 void PlayerManager::End()
 {

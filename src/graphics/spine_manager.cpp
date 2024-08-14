@@ -131,7 +131,7 @@ void SpineManager::UpdateLoad()
 	int j = 0;
 	for(int i = 0; i < (int) SkeletonId::LENGTH; i++)
 	{
-		if(atlases_[i] == nullptr)
+		if(atlases_[j] == nullptr)
 		{
 			break;
 		}
