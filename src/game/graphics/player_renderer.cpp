@@ -34,13 +34,9 @@ void PlayerRenderer::Update([[maybe_unused]]float dt)
 {
 	if (!IsSpineLoaded())
 		return;
-	if(playerSkeletonDrawables_[0] == nullptr)
+	if(playerRenderDatas_[0].bodyDrawable == nullptr)
 	{
-		for(int i = 0; i < MaxPlayerNmb; i++)
-		{
-			playerSkeletonDrawables_[i] = CreateSkeletonDrawable((SpineManager::SkeletonId)((int)SpineManager::CAT_NOARM+i));
-			playerSkeletonDrawables_[i]->animationState->setAnimation(0, "idle", true);
-		}
+		Load();
 	}
 	else
 	{
@@ -160,7 +156,9 @@ void PlayerRenderer::Update([[maybe_unused]]float dt)
 			case PlayerRenderState::LENGTH:
 				break;
 			}
-			playerSkeletonDrawables_[playerNumber]->update(animRatio*dt, spine::Physics_Update);
+			playerRenderDatas_[playerNumber].bodyDrawable->update(animRatio*dt, spine::Physics_Update);
+			playerRenderDatas_[playerNumber].armDrawable->update(dt, spine::Physics_Update);
+			playerRenderDatas_[playerNumber].gunDrawable->update(dt, spine::Physics_Update);
 		}
 	}
 }
@@ -173,15 +171,32 @@ void PlayerRenderer::Draw()
 	for(int i = 0; i < MaxPlayerNmb; i++)
 	{
 		const auto& body = physicsWorld.body(playerPhysics[i].bodyIndex);
-		if(playerSkeletonDrawables_[i])
+		if(playerRenderDatas_[i].bodyDrawable)
 		{
-			auto& playerSkeletonDrawable = playerSkeletonDrawables_[i];
+			auto& bodyDrawable = playerRenderDatas_[i].bodyDrawable;
 			const auto scale = playerScale * GetGraphicsScale();
 			const auto position = GetGraphicsPosition(body.position);
-			playerSkeletonDrawable->skeleton->setScaleX((playerRenderDatas_[i].faceRight?1.0f:-1.0f)*scale);
-			playerSkeletonDrawable->skeleton->setScaleY(scale);
-			playerSkeletonDrawable->skeleton->setPosition((float)position.x, (float)position.y);
-			playerSkeletonDrawable->draw(renderer);
+			bodyDrawable->skeleton->setScaleX((playerRenderDatas_[i].faceRight ? 1.0f : -1.0f)*scale);
+			bodyDrawable->skeleton->setScaleY(scale);
+			bodyDrawable->skeleton->setPosition((float)position.x, (float)position.y);
+
+			auto& armDrawable = playerRenderDatas_[i].armDrawable;
+			armDrawable->skeleton->setScaleX((playerRenderDatas_[i].faceRight ? 1.0f : -1.0f)*scale);
+			armDrawable->skeleton->setScaleY(scale);
+			auto* shoulderBone = playerRenderDatas_[i].shoulderBone;
+			armDrawable->skeleton->setPosition(shoulderBone->getWorldX(), shoulderBone->getWorldY());
+
+
+			auto& gunDrawable = playerRenderDatas_[i].gunDrawable;
+			gunDrawable->skeleton->setScaleX((playerRenderDatas_[i].faceRight ? 1.0f : -1.0f)*scale);
+			gunDrawable->skeleton->setScaleY(scale);
+			auto* handBone = playerRenderDatas_[i].handBone;
+			gunDrawable->skeleton->setPosition(handBone->getWorldX(), handBone->getWorldY());
+
+			// Draw in correct order
+			bodyDrawable->draw(renderer);
+			gunDrawable->draw(renderer);
+			armDrawable->draw(renderer);
 		}
 		const auto rect = GetDrawingRect(body.position+PlayerPhysic::box.offset, PlayerPhysic::box.size);
 		const auto& color = playerColors[i];
@@ -204,8 +219,26 @@ void PlayerRenderer::Tick()
 
 void PlayerRenderer::SwitchToState(PlayerRenderState state, int playerNumber)
 {
-	playerSkeletonDrawables_[playerNumber]->animationState->setAnimation(0,
+	playerRenderDatas_[playerNumber].bodyDrawable->animationState->setAnimation(0,
 		playerAnimNames[(int)state].data(), true);
 	playerRenderDatas_[playerNumber].state = state;
+}
+void PlayerRenderer::Load()
+{
+	for(int i = 0; i < MaxPlayerNmb; i++)
+	{
+		playerRenderDatas_[i].bodyDrawable = CreateSkeletonDrawable((SpineManager::SkeletonId)((int)SpineManager::CAT_NOARM+i));
+		playerRenderDatas_[i].bodyDrawable->animationState->setAnimation(0, "idle", true);
+
+		playerRenderDatas_[i].shoulderBone = playerRenderDatas_[i].bodyDrawable->skeleton->findBone("BN_armright");
+
+
+		playerRenderDatas_[i].armDrawable = CreateSkeletonDrawable((SpineManager::SkeletonId)((int)SpineManager::CAT_ARM+i));
+		playerRenderDatas_[i].armDrawable->animationState->setAnimation(0, "idle", true);
+		playerRenderDatas_[i].handBone = playerRenderDatas_[i].armDrawable->skeleton->findBone("pistolgrip");
+
+		playerRenderDatas_[i].gunDrawable = CreateSkeletonDrawable(SpineManager::BASEGUN);
+		playerRenderDatas_[i].gunDrawable->animationState->setAnimation(0, "idle", true);
+	}
 }
 }

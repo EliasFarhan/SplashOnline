@@ -27,6 +27,11 @@ enum class PlayerRenderState
 
 struct PlayerRenderData
 {
+	std::unique_ptr<spine::SkeletonDrawable> bodyDrawable{};
+	std::unique_ptr<spine::SkeletonDrawable> armDrawable{};
+	std::unique_ptr<spine::SkeletonDrawable> gunDrawable{};
+	spine::Bone* shoulderBone{};
+	spine::Bone* handBone{};
 	PlayerRenderState state = PlayerRenderState::IDLE;
 	bool faceRight = true;
 };
@@ -42,9 +47,10 @@ public:
 	void Draw();
 
 private:
+	void Load();
 	void SwitchToState(PlayerRenderState state, int playerNumber);
 	const GameSystems* gameSystems_ = nullptr;
-	std::array<std::unique_ptr<spine::SkeletonDrawable>, MaxPlayerNmb> playerSkeletonDrawables_{};
+
 	std::array<PlayerRenderData, MaxPlayerNmb> playerRenderDatas_{};
 };
 

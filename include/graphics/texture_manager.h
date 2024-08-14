@@ -43,11 +43,6 @@ public:
 		PLAT2,
 		PLAT3,
 
-		CAT_RIGHTARM,
-		LUCHA_RIGHTARM,
-		OWL_RIGHTARM,
-		ROBOT_RIGHTARM,
-
 		//Spine pages
 		KWAKWA_LOGO,
 		ANNOUCERS,

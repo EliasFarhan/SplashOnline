@@ -43,10 +43,6 @@ static constexpr std::array<std::string_view, (int)TextureManager::TextureId::LE
 		"data/sprites/kittymanjaro/plat2.png",
 		"data/sprites/kittymanjaro/plat3.png",
 
-		"data/spine/arms/cat_rightarm.png",
-		"data/spine/arms/lucha_rightarm.png",
-		"data/spine/arms/owl_rightarm.png",
-		"data/spine/arms/robot_rightarm.png",
 
 		"data/spine/kwakwalogo/SBPkwakwa_ver4_2.png",
 		"data/spine/announcer/SBPannouncers_ver4_2.png",
