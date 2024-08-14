@@ -83,7 +83,7 @@ struct PlayerPhysic
 	static constexpr Box footBox
 		{
 			{},
-			{neko::Scalar{playerScale*0.04818996f}, neko::Scalar{playerScale*0.09242455f}},
+			{neko::Scalar{playerScale*0.04818996f}, neko::Scalar{playerScale*0.0f}},
 			{neko::Scalar{playerScale*0.6595958f}, neko::Scalar{playerScale*0.3909828f}}
 		};
 	ColliderUserData userData{};

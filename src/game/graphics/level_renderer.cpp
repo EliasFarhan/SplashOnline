@@ -44,8 +44,11 @@ void LevelRenderer::Draw()
 			platformTextures_[i],
 			nullptr,
 			&platformRect);
-		SDL_SetRenderDrawColor(renderer,255,0,255,255);
-		SDL_RenderDrawRect(renderer, &platformRect);
+		if(GetDebugConfig().showPhysicsBox)
+		{
+			SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255);
+			SDL_RenderDrawRect(renderer, &platformRect);
+		}
 	}
 }
 void LevelRenderer::Update()

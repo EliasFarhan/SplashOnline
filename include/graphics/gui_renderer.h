@@ -21,6 +21,11 @@ public:
 	[[nodiscard]] virtual int GetGuiIndex() const = 0;
 };
 
+struct DebugConfig
+{
+	bool showPhysicsBox = true;
+};
+
 class GuiRenderer : public OnEventInterface
 {
 public:
@@ -39,14 +44,19 @@ public:
 
 	void SetEventListenerIndex(int index) override;
 
+	[[nodiscard]] const auto& GetDebugConfig() { return debugConfig_; }
 private:
 	SDL_Renderer* renderer_;
 	std::vector<OnGuiInterface*> guiInterfaces_;
+	DebugConfig debugConfig_{};
 	int eventListenerIndex_ = -1;
+
 };
 
 void AddGuiInterface(OnGuiInterface* guiInterface);
 void RemoveGuiInterface(OnGuiInterface* guiInterface);
+
+const DebugConfig& GetDebugConfig();
 }
 
 #endif //SPLASHONLINE_GUI_RENDERER_H_

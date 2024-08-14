@@ -93,6 +93,7 @@ void GuiRenderer::Update()
 
 	ImGui::Begin("Splash Online");
 	ImGui::Text("FPS %f", 1.0f/GetDeltaTime());
+	ImGui::Checkbox("Show Physics Box",&debugConfig_.showPhysicsBox);
 	ImGui::End();
 	for(auto* guiInterface : guiInterfaces_)
 	{
@@ -119,5 +120,9 @@ void AddGuiInterface(OnGuiInterface* guiInterface)
 void RemoveGuiInterface(OnGuiInterface* guiInterface)
 {
 	instance->RemoveGuiInterface(guiInterface);
+}
+const DebugConfig& GetDebugConfig()
+{
+	return instance->GetDebugConfig();
 }
 }

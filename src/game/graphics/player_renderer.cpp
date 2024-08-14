@@ -198,11 +198,17 @@ void PlayerRenderer::Draw()
 			gunDrawable->draw(renderer);
 			armDrawable->draw(renderer);
 		}
-		const auto rect = GetDrawingRect(body.position+PlayerPhysic::box.offset, PlayerPhysic::box.size);
-		const auto& color = playerColors[i];
-		SDL_SetRenderDrawColor(renderer,color.r, color.g, color.b, color.a);
-		SDL_RenderDrawRect(renderer,&rect);
+		if(GetDebugConfig().showPhysicsBox)
+		{
+			const auto rect = GetDrawingRect(body.position + PlayerPhysic::box.offset, PlayerPhysic::box.size);
+			const auto& color = playerColors[i];
+			SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+			SDL_RenderDrawRect(renderer, &rect);
 
+			const auto
+				footRect = GetDrawingRect(body.position + PlayerPhysic::footBox.offset, PlayerPhysic::footBox.size);
+			SDL_RenderDrawRect(renderer, &footRect);
+		}
 
 	}
 }
