@@ -65,6 +65,11 @@ struct PlayerCharacter
 
 	int footCount = 0;
 
+	[[nodiscard]] bool IsGrounded() const
+	{
+		return footCount > 0;
+	}
+
 };
 
 

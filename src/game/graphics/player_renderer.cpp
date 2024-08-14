@@ -79,6 +79,10 @@ void PlayerRenderer::Update([[maybe_unused]]float dt)
 			}
 			case PlayerRenderState::WALK:
 			{
+				if(playerCharacter.footCount <= 0)
+				{
+					SwitchToState(PlayerRenderState::FALL, playerNumber);
+				}
 				if(neko::Abs(playerInput.moveDirX) < PlayerCharacter::deadZone)
 				{
 					SwitchToState(PlayerRenderState::IDLE, playerNumber);
@@ -96,6 +100,10 @@ void PlayerRenderer::Update([[maybe_unused]]float dt)
 			}
 			case PlayerRenderState::WALK_BACK:
 			{
+				if(playerCharacter.footCount <= 0)
+				{
+					SwitchToState(PlayerRenderState::FALL, playerNumber);
+				}
 				if(neko::Abs<neko::Fixed8>(playerInput.moveDirX) < PlayerCharacter::deadZone)
 				{
 					SwitchToState(PlayerRenderState::IDLE, playerNumber);
@@ -114,7 +122,7 @@ void PlayerRenderer::Update([[maybe_unused]]float dt)
 			}
 			case PlayerRenderState::FALL:
 			{
-				if(playerCharacter.footCount <= 0)
+				if(playerCharacter.footCount > 0)
 				{
 					SwitchToState(PlayerRenderState::IDLE, playerNumber);
 				}

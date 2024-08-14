@@ -70,10 +70,27 @@ void PlayerManager::Tick()
 		auto& physicsWorld = gameSystems_->GetPhysicsWorld();
 		auto& body = physicsWorld.body(playerPhysic.bodyIndex);
 
+		const auto reactor = neko::Scalar {playerInput.moveDirY};
 
-		if(playerCharacter.footCount > 0)
+		if(playerCharacter.IsGrounded())
 		{
 			//on ground
+
+			if(reactor > PlayerCharacter::ReactorInAirThreshold)
+			{
+				if(playerCharacter.burstTimer.Over() && playerCharacter.jetBurstTimer.Over())
+				{
+					playerCharacter.jetBurstTimer.Reset();
+					playerCharacter.burstTimer.Reset();
+
+				}
+				if(!playerCharacter.jetBurstTimer.Over())
+				{
+					playerCharacter.jetBurstTimer.Update(fixedDeltaTime);
+					playerPhysic.totalForce += neko::Vec2f({}, PlayerCharacter::ReactorForce);
+				}
+			}
+
 			const auto moveX = neko::Abs(playerInput.moveDirX) > PlayerCharacter::deadZone ? neko::Scalar{playerInput.moveDirX} : neko::Scalar{};
 			const auto wantedSpeed = moveX * PlayerCharacter::WalkSpeed;
 			const auto velX = body.velocity.x;
@@ -103,7 +120,6 @@ void PlayerManager::Tick()
 		else
 		{
 			//in air
-			const auto reactor = neko::Scalar {playerInput.moveDirY};
 			if(reactor > PlayerCharacter::ReactorInAirThreshold)
 			{
 				const auto velY = body.velocity.y;
@@ -111,6 +127,30 @@ void PlayerManager::Tick()
 
 				auto force = PlayerCharacter::ReactorForce * reactor * decreaseFactor;
 				//TODO jetburst and jumping
+
+				if(!playerCharacter.jetBurstTimer.Over())
+				{
+					playerCharacter.jetBurstTimer.Update(fixedDeltaTime);
+					if(playerCharacter.jetBurstTimer.Over())
+					{
+						const auto jumpSpeed = PlayerCharacter::JumpForce*body.inverseMass*fixedDeltaTime;
+						force = jumpSpeed-body.velocity.y / fixedDeltaTime / body.inverseMass;
+						playerCharacter.jumpTimer.Reset();
+					}
+					else
+					{
+						force = PlayerCharacter::ReactorForce;
+					}
+
+				}
+
+				if(!playerCharacter.jumpTimer.Over())
+				{
+					playerCharacter.jumpTimer.Update(fixedDeltaTime);
+
+					const auto t = playerCharacter.jumpTimer.CurrentRatio();
+					force *= (t*t*t*t*t);
+				}
 				if(playerPhysic.priority <= PlayerCharacter::JetPackPriority)
 				{
 					playerPhysic.totalForce.y = force;

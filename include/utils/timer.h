@@ -15,13 +15,13 @@ public:
 
     constexpr void Update(T deltaTime) noexcept
     {
-        if (time_ >= 0)
+        if (time_ >= T{0.0f})
             time_ -= deltaTime;
 
     }
     [[nodiscard]] constexpr bool Over() const noexcept
     {
-        return time_ <= 0;
+        return time_ <= T{0.0f};
     }
     constexpr void SetPeriod(T newPeriod) noexcept
     {
@@ -42,10 +42,10 @@ public:
     [[nodiscard]] constexpr T CurrentRatio() const noexcept
     {
         T current = (period_ - time_) / period_;
-        if (current < 0)
-            current = 0;
-        if (current > 1)
-            current = 1;
+        if (current < T{0.0f})
+            current = T{0.0f};
+        if (current > T{1.0f})
+            current = T{1.0f};
         return current;
     }
     [[nodiscard]] constexpr T CurrentTime() const noexcept
