@@ -78,10 +78,11 @@ void PlayerManager::Tick()
 			{
 				body.position = spawnPositions[playerNumber];
 				body.isActive = true;
+				playerCharacter.respawnStaticTime.Stop();
 			}
 			else
 			{
-				return;
+				continue;
 			}
 		}
 		if(!playerCharacter.respawnMoveTimer.Over())
@@ -91,7 +92,7 @@ void PlayerManager::Tick()
 			{
 				playerCharacter.respawnStaticTime.Reset();
 			}
-			return;
+			continue;
 		}
 		if(!playerCharacter.respawnPauseTimer.Over())
 		{
@@ -100,7 +101,7 @@ void PlayerManager::Tick()
 			{
 				playerCharacter.respawnMoveTimer.Reset();
 			}
-			return;
+			continue;
 		}
 
 		if(playerCharacter.jetBurstTimer.Over() &&
@@ -254,6 +255,5 @@ void PlayerManager::Respawn(int playerNumber)
 
 	body.isActive = false;
 	playerCharacter.respawnPauseTimer.Reset();
-	//TODO body inactive and move to spawn position view
 }
 }

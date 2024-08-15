@@ -37,7 +37,7 @@ public:
     }
     constexpr void Stop() noexcept
     {
-        time_ = -1;
+        time_ = T{-1.0f};
     }
     [[nodiscard]] constexpr T CurrentRatio() const noexcept
     {
