@@ -52,6 +52,7 @@ void PlayerRenderer::Update([[maybe_unused]]float dt)
 		const auto& playerCharacter = playerManager.GetPlayerCharacter()[playerNumber];
 		const auto& playerInput = playerManager.GetPlayerInputs()[playerNumber];
 		auto& playerRenderData = playerRenderDatas_[playerNumber];
+		playerRenderData.bodyDrawable->skeleton->setToSetupPose();
 
 		if(!playerRenderData.isRespawning)
 		{
@@ -60,10 +61,6 @@ void PlayerRenderer::Update([[maybe_unused]]float dt)
 				(playerInput.moveDirX < -PlayerCharacter::deadZone && playerRenderData.faceRight))
 			{
 				playerRenderData.faceRight = !playerRenderData.faceRight;
-			}
-			if (!playerCharacter.jetBurstTimer.Over())
-			{
-				SwitchToState(PlayerRenderState::JETBURST, playerNumber);
 			}
 			if(!playerCharacter.respawnStaticTime.Over() ||
 				!playerCharacter.respawnMoveTimer.Over() ||
@@ -100,7 +97,7 @@ void PlayerRenderer::Update([[maybe_unused]]float dt)
 			}
 			case PlayerRenderState::WALK:
 			{
-				if (playerCharacter.footCount <= 0)
+				if (!playerCharacter.IsGrounded())
 				{
 					SwitchToState(PlayerRenderState::FALL, playerNumber);
 				}
@@ -120,7 +117,7 @@ void PlayerRenderer::Update([[maybe_unused]]float dt)
 			}
 			case PlayerRenderState::WALK_BACK:
 			{
-				if (playerCharacter.footCount <= 0)
+				if (!playerCharacter.IsGrounded())
 				{
 					SwitchToState(PlayerRenderState::FALL, playerNumber);
 				}
@@ -144,6 +141,22 @@ void PlayerRenderer::Update([[maybe_unused]]float dt)
 				{
 					SwitchToState(PlayerRenderState::IDLE, playerNumber);
 				}
+				else
+				{
+					if (neko::Scalar{ playerInput.moveDirY } > PlayerCharacter::JetBurstThreshold)
+					{
+						if(playerCharacter.jumpTimer.Over())
+						{
+							SwitchToState(PlayerRenderState::JET, playerNumber);
+						}
+						else
+						{
+							SwitchToState(PlayerRenderState::JETBURST, playerNumber);
+						}
+					}
+				}
+
+
 				break;
 			}
 			case PlayerRenderState::SHOOT:
@@ -175,12 +188,20 @@ void PlayerRenderer::Update([[maybe_unused]]float dt)
 				{
 					SwitchToState(PlayerRenderState::IDLE, playerNumber);
 				}
+				if (neko::Scalar{ playerInput.moveDirY } < PlayerCharacter::ReactorThreshold)
+				{
+					SwitchToState(PlayerRenderState::FALL, playerNumber);
+				}
+				if(!playerCharacter.jumpTimer.Over())
+				{
+					SwitchToState(PlayerRenderState::JETBURST, playerNumber);
+				}
 				break;
 
 			}
 			case PlayerRenderState::JETBURST:
 			{
-				if (playerCharacter.jetBurstTimer.Over())
+				if (playerCharacter.jumpTimer.Over())
 				{
 					if (neko::Scalar{ playerInput.moveDirY } > PlayerCharacter::JetBurstThreshold)
 					{
@@ -213,10 +234,14 @@ void PlayerRenderer::Update([[maybe_unused]]float dt)
 				playerRenderData.isRespawning = false;
 				playerRenderData.cloudEndRespawnTimer.Reset();
 				playerRenderData.cloudDrawable->animationState->setAnimation(0, "respawn destroy", false);
+
+				playerRenderData.cloudDrawable->update(dt, spine::Physics_Update);
 			}
 		}
 	}
+
 	UpdateTransforms(dt);
+
 
 }
 void PlayerRenderer::Draw()
@@ -306,23 +331,18 @@ void PlayerRenderer::UpdateTransforms(float dt)
 	const auto& physicsWorld = gameSystems_->GetPhysicsWorld();
 	const auto& playerManager = gameSystems_->GetPlayerManager();
 	const auto& playerPhysics = playerManager.GetPlayerPhysics();
-	const auto& playerInputs = playerManager.GetPlayerInputs();
 
+	const auto& playerInputs = playerManager.GetPlayerInputs();
 	const auto scale = playerScale * GetGraphicsScale();
-	for(int i = 0; i < MaxPlayerNmb; i++)
+	for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
 	{
-		auto& playerRenderData = playerRenderDatas_[i];
-		const auto& playerCharacter = playerManager.GetPlayerCharacter()[i];
-		const auto& body = physicsWorld.body(playerPhysics[i].bodyIndex);
-		const auto position = body.position;
+		auto& playerRenderData = playerRenderDatas_[playerNumber];
+		const auto& playerCharacter = playerManager.GetPlayerCharacter()[playerNumber];
+		const auto& body = physicsWorld.body(playerPhysics[playerNumber].bodyIndex);
+		const auto position = GetGraphicsPosition(body.position);
 		if (!playerRenderData.bodyDrawable)
 		{
 			continue;
-		}
-		float animRatio = 1.0f;
-		if(playerRenderData.state == PlayerRenderState::WALK || playerRenderData.state == PlayerRenderState::WALK_BACK)
-		{
-			animRatio = (float)neko::Abs(playerInputs[i].moveDirX);
 		}
 		auto& bodyDrawable = playerRenderData.bodyDrawable;
 		bodyDrawable->skeleton->setScaleX((playerRenderData.faceRight ? 1.0f : -1.0f) * scale);
@@ -340,7 +360,7 @@ void PlayerRenderer::UpdateTransforms(float dt)
 			else if (!playerCharacter.respawnMoveTimer.Over())
 			{
 
-				const auto spawnPosition = neko::Vec2<float>(GetGraphicsPosition(PlayerManager::spawnPositions[i]));
+				const auto spawnPosition = neko::Vec2<float>(GetGraphicsPosition(PlayerManager::spawnPositions[playerNumber]));
 				const auto physicsPosition = neko::Vec2<float>(position);
 				const auto midPosition = physicsPosition + (spawnPosition - physicsPosition)
 					* (float)playerCharacter.respawnMoveTimer.CurrentRatio();
@@ -348,29 +368,32 @@ void PlayerRenderer::UpdateTransforms(float dt)
 			}
 			else if (!playerCharacter.respawnStaticTime.Over())
 			{
-				const auto spawnPosition = neko::Vec2<float>(GetGraphicsPosition(PlayerManager::spawnPositions[i]));
+				const auto spawnPosition = neko::Vec2<float>(GetGraphicsPosition(PlayerManager::spawnPositions[playerNumber]));
 				bodyDrawable->skeleton->setPosition(spawnPosition.x, spawnPosition.y);
 			}
 		}
-		bodyDrawable->skeleton->setToSetupPose();
+		float animRatio = 1.0f;
+		if(playerRenderData.state == PlayerRenderState::WALK || playerRenderData.state == PlayerRenderState::WALK_BACK)
+		{
+			animRatio = (float)neko::Abs(playerInputs[playerNumber].moveDirX);
+		}
+		bodyDrawable->update(animRatio*dt, spine::Physics_Update);
 
 		auto& armDrawable = playerRenderData.armDrawable;
 		armDrawable->skeleton->setScaleX((playerRenderData.faceRight ? 1.0f : -1.0f) * scale);
 		armDrawable->skeleton->setScaleY(scale);
 		auto* shoulderBone = playerRenderData.shoulderBone;
 		armDrawable->skeleton->setPosition(shoulderBone->getWorldX(), shoulderBone->getWorldY());
-		armDrawable->skeleton->setToSetupPose();
+		armDrawable->update(dt, spine::Physics_Update);
 
 		auto& gunDrawable = playerRenderData.gunDrawable;
 		gunDrawable->skeleton->setScaleX((playerRenderData.faceRight ? 1.0f : -1.0f) * scale);
 		gunDrawable->skeleton->setScaleY(scale);
 		auto* handBone = playerRenderData.handBone;
 		gunDrawable->skeleton->setPosition(handBone->getWorldX(), handBone->getWorldY());
-		gunDrawable->skeleton->setToSetupPose();
+		gunDrawable->update(dt, spine::Physics_Update);
 
-		playerRenderData.bodyDrawable->update(animRatio*dt, spine::Physics_Update);
-		playerRenderData.armDrawable->update(dt, spine::Physics_Update);
-		playerRenderData.gunDrawable->update(dt, spine::Physics_Update);
+
 		if(playerRenderData.isRespawning || !playerRenderData.cloudEndRespawnTimer.Over())
 		{
 			auto& cloudDrawable = playerRenderData.cloudDrawable;
@@ -382,7 +405,7 @@ void PlayerRenderer::UpdateTransforms(float dt)
 			}
 			else if (!playerCharacter.respawnMoveTimer.Over())
 			{
-				const auto spawnPosition = neko::Vec2<float>(GetGraphicsPosition(PlayerManager::spawnPositions[i]));
+				const auto spawnPosition = neko::Vec2<float>(GetGraphicsPosition(PlayerManager::spawnPositions[playerNumber]));
 				const auto physicsPosition = neko::Vec2<float>(position);
 				const auto midPosition = physicsPosition + (spawnPosition - physicsPosition)
 					* (float)playerCharacter.respawnMoveTimer.CurrentRatio();
@@ -390,12 +413,12 @@ void PlayerRenderer::UpdateTransforms(float dt)
 			}
 			else if (!playerCharacter.respawnStaticTime.Over())
 			{
-				const auto spawnPosition = neko::Vec2<float>(GetGraphicsPosition(PlayerManager::spawnPositions[i]));
+				const auto spawnPosition = neko::Vec2<float>(GetGraphicsPosition(PlayerManager::spawnPositions[playerNumber]));
 				cloudDrawable->skeleton->setPosition(spawnPosition.x, spawnPosition.y);
 			}
 
 			playerRenderData.cloudEndRespawnTimer.Update(dt);
-			playerRenderData.cloudDrawable->update(dt, spine::Physics_Update);
+			cloudDrawable->update(dt, spine::Physics_Update);
 
 		}
 	}

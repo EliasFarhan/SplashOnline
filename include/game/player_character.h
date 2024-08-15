@@ -41,6 +41,8 @@ struct PlayerCharacter
 	static constexpr int JetPackPriority = 1;
 	static constexpr auto JetBurstThreshold = neko::Scalar { 0.75f};
 	static constexpr auto ReactorThreshold = neko::Scalar { 0.2f};
+	static constexpr auto GroundReactorThreshold = neko::Scalar { 0.5f};
+	static constexpr neko::Scalar JumpCancelTime{0.8f};
 
 	//Respawn
 	Timer<> respawnPauseTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 0.5f }}; // Used when touching the game limit
@@ -60,15 +62,19 @@ struct PlayerCharacter
 	bool reload = false;
 	Timer<> waterTimer{neko::Scalar{0.3f}, neko::Scalar{0.2f}};
 
-	Timer<> burstTimer{neko::Scalar{1}, neko::Scalar{0.1f}};
+	Timer<> jetBurstCoolDownTimer{ neko::Scalar{ 1}, neko::Scalar{ 0.1f}};
 	Timer<> jumpTimer{neko::Scalar{-1}, neko::Scalar{1.0f}};
-	Timer<> jetBurstTimer{neko::Scalar{-1.0f}, neko::Scalar{0.5f}};
+	Timer<> preJetBurstTimer{ neko::Scalar{ -1.0f}, neko::Scalar{ 0.5f}};
 
 	int footCount = 0;
 
 	[[nodiscard]] bool IsGrounded() const
 	{
 		return footCount > 0;
+	}
+	[[nodiscard]] bool IsJetBursting() const
+	{
+		return !preJetBurstTimer.Over();
 	}
 
 };
