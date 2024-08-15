@@ -30,10 +30,12 @@ struct PlayerRenderData
 	std::unique_ptr<spine::SkeletonDrawable> bodyDrawable{};
 	std::unique_ptr<spine::SkeletonDrawable> armDrawable{};
 	std::unique_ptr<spine::SkeletonDrawable> gunDrawable{};
+	std::unique_ptr<spine::SkeletonDrawable> cloudDrawable{};
 	spine::Bone* shoulderBone{};
 	spine::Bone* handBone{};
 	PlayerRenderState state = PlayerRenderState::IDLE;
 	bool faceRight = true;
+	bool isRespawning = false;
 };
 
 class PlayerRenderer

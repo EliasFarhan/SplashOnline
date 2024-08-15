@@ -39,11 +39,12 @@ struct PlayerCharacter
 	static constexpr int MaxResistancePhase = 3;
 	static constexpr int MovePriority = 1;
 	static constexpr int JetPackPriority = 1;
-	static constexpr auto ReactorInAirThreshold = neko::Scalar { 0.5f};
+	static constexpr auto JetBurstThreshold = neko::Scalar { 0.75f};
+	static constexpr auto ReactorThreshold = neko::Scalar { 0.2f};
 
 	//Respawn
-	Timer<> respawnPauseTimer{ neko::Fixed16{ 1.0f }, neko::Fixed16{ 0.5f }};
-	Timer<> respawnMoveTimer{ neko::Fixed16{ 1.0f }, neko::Fixed16{ 1.0f }};
+	Timer<> respawnPauseTimer{ neko::Fixed16{ -1.0f }, neko::Fixed16{ 0.5f }};
+	Timer<> respawnMoveTimer{ neko::Fixed16{ -1.0f }, neko::Fixed16{ 1.0f }};
 	Timer<> respawnStaticTime{ neko::Fixed16{ 2.0f }, neko::Fixed16{ 2.0f }};
 	Timer<> invincibleTimer{neko::Fixed16 {-1}, neko::Fixed16 {2.0f}};
 
@@ -116,11 +117,20 @@ public:
 	[[nodiscard]] const auto& GetPlayerPhysics()const {return playerPhysics_;}
 	[[nodiscard]] const auto& GetPlayerInputs() const { return playerInputs_; }
 	void SetPlayerInput(neko::Span<PlayerInput> playerInputs);
+	static constexpr std::array<neko::Vec2f, MaxPlayerNmb> spawnPositions
+		{{
+			 {neko::Fixed16{-4.77f}, neko::Fixed16{-1.79f}},
+			 {neko::Fixed16{4.13f}, neko::Fixed16{-1.79f}},
+			 {neko::Fixed16{-1.65f}, neko::Fixed16{0.96f}},
+			 {neko::Fixed16{1.38f}, neko::Fixed16{0.96f}},
+		 }};
 private:
 	GameSystems* gameSystems_ = nullptr;
 	std::array<PlayerInput, MaxPlayerNmb> playerInputs_{};
 	std::array<PlayerCharacter, MaxPlayerNmb> playerCharacters_{};
 	std::array<PlayerPhysic, MaxPlayerNmb> playerPhysics_{};
+
+	void Respawn(int playerNumber);
 };
 }
 #endif //SPLASHONLINE_PLAYER_CHARACTER_H

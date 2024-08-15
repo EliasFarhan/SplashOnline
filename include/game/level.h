@@ -46,9 +46,18 @@ public:
 			}
 		};
 
+	static constexpr std::array<std::pair<Box, ColliderUserData>, 4> gameLimits
+		{{
+			 {{{neko::Scalar {-15}, {}},{neko::Scalar{-5},{}}, {neko::Scalar{10}, neko::Scalar{40} }}, {ColliderType::GAME_LIMIT, -1}},
+			 {{{neko::Scalar {15}, {}},{neko::Scalar{5},{}}, {neko::Scalar{10}, neko::Scalar{40} }}, {ColliderType::GAME_LIMIT, -1}},
+			 {{{{}, neko::Scalar {-15}},{{},neko::Scalar {-5}}, {neko::Scalar{40}, neko::Scalar{10} }}, {ColliderType::GAME_LIMIT, -1}},
+			 {{{{}, neko::Scalar {15}},{{},neko::Scalar {5}}, {neko::Scalar{40}, neko::Scalar{10} }}, {ColliderType::GAME_LIMIT, -1}},
+		 }};
+
 private:
 	neko::PhysicsWorld* world_;
 	std::array<Platform, 3> platformPhysics_;
+
 };
 
 

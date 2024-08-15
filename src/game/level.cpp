@@ -7,6 +7,8 @@
 namespace splash
 {
 
+
+
 void Level::Begin()
 {
 	for(std::size_t i = 0; i < platformPhysics_.size(); i++)
@@ -29,6 +31,27 @@ void Level::Begin()
 		aabb.halfSize = platforms[i].size/neko::Scalar{2};
 
 		platform.userData.type = ColliderType::PLATFORM;
+
+	}
+
+	for(auto& gameLimit : gameLimits)
+	{
+		const auto bodyIndex = world_->AddBody();
+		const auto colliderIndex = world_->AddAabbCollider(bodyIndex);
+
+		auto& body = world_->body(bodyIndex);
+		body.position = gameLimit.first.position;
+		body.type = neko::BodyType::STATIC;
+		body.inverseMass = neko::Scalar {0};
+
+		auto& collider = world_->collider(colliderIndex);
+		collider.offset = gameLimit.first.offset;
+		collider.isTrigger = false;
+		collider.restitution = neko::Scalar{0};
+		collider.userData = &gameLimit.second;
+
+		auto& aabb = world_->aabb(collider.shapeIndex);
+		aabb.halfSize = gameLimit.first.size/neko::Scalar{2};
 
 	}
 }

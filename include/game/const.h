@@ -45,6 +45,7 @@ enum class ColliderType
 	PLAYER,
 	PLATFORM,
 	BULLET,
+	GAME_LIMIT,
 	NONE
 };
 struct ColliderUserData

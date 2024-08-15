@@ -12,13 +12,7 @@
 namespace splash
 {
 
-static constexpr std::array<neko::Vec2f, MaxPlayerNmb> spawnPositions
-	{{
-		 {neko::Fixed16{-4.77f}, neko::Fixed16{-1.79f}},
-		 {neko::Fixed16{4.13f}, neko::Fixed16{-1.79f}},
-		 {neko::Fixed16{-1.65f}, neko::Fixed16{0.96f}},
-		 {neko::Fixed16{1.38f}, neko::Fixed16{0.96f}},
-	}};
+
 
 PlayerManager::PlayerManager(GameSystems* gameSystems): gameSystems_(gameSystems)
 {
@@ -37,6 +31,7 @@ void PlayerManager::Begin()
 		body.position = spawnPositions[playerIndex];
 		body.type = neko::BodyType::DYNAMIC;
 		body.inverseMass = neko::Scalar{1};
+		body.isActive = false;
 
 		auto& collider = physicsWorld.collider(playerPhysic.colliderIndex);
 		collider.isTrigger = false;
@@ -74,7 +69,43 @@ void PlayerManager::Tick()
 		const auto moveX = neko::Abs(playerInput.moveDirX) > PlayerCharacter::deadZone ? neko::Scalar{playerInput.moveDirX} : neko::Scalar{};
 
 
-		if(playerCharacter.jetBurstTimer.Over() && (reactor < PlayerCharacter::ReactorInAirThreshold || body.velocity.y > neko::Scalar{0.0f}))
+		if(!playerCharacter.respawnStaticTime.Over())
+		{
+			playerCharacter.respawnStaticTime.Update(fixedDeltaTime);
+			if(playerCharacter.respawnStaticTime.Over() ||
+				neko::Abs(playerInput.moveDirX) > PlayerCharacter::deadZone ||
+				reactor > PlayerCharacter::ReactorThreshold)
+			{
+				body.position = spawnPositions[playerNumber];
+				body.isActive = true;
+			}
+			else
+			{
+				return;
+			}
+		}
+		if(!playerCharacter.respawnMoveTimer.Over())
+		{
+			playerCharacter.respawnMoveTimer.Update(fixedDeltaTime);
+			if(playerCharacter.respawnMoveTimer.Over())
+			{
+				playerCharacter.respawnStaticTime.Reset();
+			}
+			return;
+		}
+		if(!playerCharacter.respawnPauseTimer.Over())
+		{
+			playerCharacter.respawnPauseTimer.Update(fixedDeltaTime);
+			if(playerCharacter.respawnPauseTimer.Over())
+			{
+				playerCharacter.respawnMoveTimer.Reset();
+			}
+			return;
+		}
+
+		if(playerCharacter.jetBurstTimer.Over() &&
+			(reactor < PlayerCharacter::ReactorThreshold ||
+			body.velocity.y > neko::Scalar{0.0f}))
 		{
 			playerCharacter.burstTimer.Update(fixedDeltaTime);
 		}
@@ -101,7 +132,7 @@ void PlayerManager::Tick()
 		if(playerCharacter.IsGrounded())
 		{
 			//on ground
-			if(reactor > PlayerCharacter::ReactorInAirThreshold)
+			if(reactor > PlayerCharacter::JetBurstThreshold)
 			{
 				if(playerCharacter.burstTimer.Over() && playerCharacter.jetBurstTimer.Over())
 				{
@@ -144,8 +175,8 @@ void PlayerManager::Tick()
 				playerPhysic.priority = PlayerCharacter::MovePriority;
 			}
 			//in air
-			if(reactor > PlayerCharacter::ReactorInAirThreshold &&
-				playerCharacter.jetBurstTimer.Over())
+			if(reactor > PlayerCharacter::ReactorThreshold &&
+			   playerCharacter.jetBurstTimer.Over())
 			{
 				const auto velY = body.velocity.y;
 				const auto decreaseFactor = velY > neko::Scalar{} ? neko::Scalar{ 0.75f } : neko::Scalar{ 1.0f };
@@ -189,18 +220,40 @@ void PlayerManager::OnTriggerExit(neko::ColliderIndex playerIndex,
 	int playerNumber,
 	const neko::Collider& otherCollider)
 {
-	const auto* otherUserData = static_cast<ColliderUserData*>(otherCollider.userData);
-	if(playerIndex == playerPhysics_[playerNumber].footColliderIndex && otherUserData->type == ColliderType::PLATFORM)
+	const auto* otherUserData = static_cast<const ColliderUserData*>(otherCollider.userData);
+	if(playerIndex == playerPhysics_[playerNumber].footColliderIndex &&
+		otherUserData->type == ColliderType::PLATFORM)
 	{
 		playerCharacters_[playerNumber].footCount--;
+	}
+	if(otherUserData->type == ColliderType::GAME_LIMIT)
+	{
+		Respawn(playerNumber);
 	}
 }
 void PlayerManager::OnTriggerEnter(neko::ColliderIndex playerIndex, int playerNumber, const neko::Collider& otherCollider)
 {
-	const auto* otherUserData = static_cast<ColliderUserData*>(otherCollider.userData);
-	if(playerIndex == playerPhysics_[playerNumber].footColliderIndex && otherUserData->type == ColliderType::PLATFORM)
+	const auto* otherUserData = static_cast<const ColliderUserData*>(otherCollider.userData);
+	if(playerIndex == playerPhysics_[playerNumber].footColliderIndex &&
+		otherUserData->type == ColliderType::PLATFORM)
 	{
 		playerCharacters_[playerNumber].footCount++;
 	}
+}
+
+void PlayerManager::Respawn(int playerNumber)
+{
+	auto& playerCharacter = playerCharacters_[playerNumber];
+	if(!playerCharacter.respawnPauseTimer.Over() || !playerCharacter.respawnMoveTimer.Over())
+	{
+		return;
+	}
+	auto& playerPhysic = playerPhysics_[playerNumber];
+	auto& physicsWorld = gameSystems_->GetPhysicsWorld();
+	auto& body = physicsWorld.body(playerPhysic.bodyIndex);
+
+	body.isActive = false;
+	playerCharacter.respawnPauseTimer.Reset();
+	//TODO body inactive and move to spawn position view
 }
 }

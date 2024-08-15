@@ -50,6 +50,19 @@ void LevelRenderer::Draw()
 			SDL_RenderDrawRect(renderer, &platformRect);
 		}
 	}
+	const auto& gameLimits = Level::gameLimits;
+	for(const auto& gameLimit : gameLimits)
+	{
+		if(GetDebugConfig().showPhysicsBox)
+		{
+			const auto gameLimitRect = GetDrawingRect(
+				gameLimit.first.position+gameLimit.first.offset,
+				gameLimit.first.size);
+
+			SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255);
+			SDL_RenderFillRect(renderer, &gameLimitRect);
+		}
+	}
 }
 void LevelRenderer::Update()
 {
