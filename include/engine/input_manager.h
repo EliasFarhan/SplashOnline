@@ -1,14 +1,11 @@
-//
-// Created by efarhan on 26/07/24.
-//
-
 #ifndef SPLASHONLINE_INPUT_MANAGER_H
 #define SPLASHONLINE_INPUT_MANAGER_H
 
+#include "engine/window.h"
+
+#include <math/fixed.h>
 #include <SDL_gamecontroller.h>
 #include <SDL_events.h>
-
-#include "math/fixed.h"
 #include <cstdint>
 
 namespace splash
@@ -36,7 +33,7 @@ struct PlayerInput
 	constexpr void SetCancel(bool cancel) { cancel ? buttons |= CANCEL : buttons &= ~CANCEL; }
 };
 
-class InputManager
+class InputManager : public OnEventInterface
 {
 public:
 	void Begin();
@@ -44,12 +41,16 @@ public:
 	void End();
 
 	[[nodiscard]] PlayerInput GetPlayerInput() const;
+	void OnEvent(const SDL_Event& event) override;
+	[[nodiscard]] int GetEventListenerIndex() const override;
+	void SetEventListenerIndex(int index) override;
 
 	static constexpr float deadZone = 0.2f;
 private:
 	static SDL_GameController* FindGameController();
 	static SDL_JoystickID GetControllerInstanceId(SDL_GameController *controller);
 	SDL_GameController* controller_ = nullptr;
+	int eventIndex_ = -1;
 };
 }
 

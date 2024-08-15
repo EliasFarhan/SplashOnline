@@ -43,26 +43,26 @@ struct PlayerCharacter
 	static constexpr auto ReactorThreshold = neko::Scalar { 0.2f};
 
 	//Respawn
-	Timer<> respawnPauseTimer{ neko::Fixed16{ -1.0f }, neko::Fixed16{ 0.5f }};
-	Timer<> respawnMoveTimer{ neko::Fixed16{ -1.0f }, neko::Fixed16{ 1.0f }};
-	Timer<> respawnStaticTime{ neko::Fixed16{ 2.0f }, neko::Fixed16{ 2.0f }};
-	Timer<> invincibleTimer{neko::Fixed16 {-1}, neko::Fixed16 {2.0f}};
+	Timer<> respawnPauseTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 0.5f }}; // Used when touching the game limit
+	Timer<> respawnMoveTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 1.0f }}; // Used to move from game limit to spawn point
+	Timer<> respawnStaticTime{ neko::Scalar{ 2.0f }, neko::Scalar{ 2.0f }}; // Used to stay on the cloud before going back in the game
+	Timer<> invincibleTimer{neko::Scalar {-1}, neko::Scalar {2.0f}};
 
 	//Wata Hit
-	Timer<> hitTimer{neko::Fixed16{-1}, neko::Fixed16{1.5f}};
+	Timer<> hitTimer{neko::Scalar{-1}, neko::Scalar{1.5f}};
 	neko::Vec2f hitDirection{};
 	int resistancePhase = 0; //Used for the resistance to wata bullet
 
 	//Wata shoot
-	Timer<> reserveWaterTimer{neko::Fixed16{4.0f}, neko::Fixed16{4.0f}};
+	Timer<> reserveWaterTimer{neko::Scalar{4.0f}, neko::Scalar{4.0f}};
 	int firstShots = FirstShotsCount;
-	Timer<> shootAnimTimer{neko::Fixed16{-1.0f}, neko::Fixed16{0.133f}};
+	Timer<> shootAnimTimer{neko::Scalar{-1.0f}, neko::Scalar{0.133f}};
 	bool reload = false;
-	Timer<> waterTimer{neko::Fixed16{0.3f}, neko::Fixed16{0.2f}};
+	Timer<> waterTimer{neko::Scalar{0.3f}, neko::Scalar{0.2f}};
 
-	Timer<> burstTimer{neko::Fixed16{1}, neko::Fixed16{0.1f}};
-	Timer<> jumpTimer{neko::Fixed16{-1}, neko::Fixed16{1.0f}};
-	Timer<> jetBurstTimer{neko::Fixed16{-1.0f}, neko::Fixed16{0.5f}};
+	Timer<> burstTimer{neko::Scalar{1}, neko::Scalar{0.1f}};
+	Timer<> jumpTimer{neko::Scalar{-1}, neko::Scalar{1.0f}};
+	Timer<> jetBurstTimer{neko::Scalar{-1.0f}, neko::Scalar{0.5f}};
 
 	int footCount = 0;
 
@@ -119,10 +119,10 @@ public:
 	void SetPlayerInput(neko::Span<PlayerInput> playerInputs);
 	static constexpr std::array<neko::Vec2f, MaxPlayerNmb> spawnPositions
 		{{
-			 {neko::Fixed16{-4.77f}, neko::Fixed16{-1.79f}},
-			 {neko::Fixed16{4.13f}, neko::Fixed16{-1.79f}},
-			 {neko::Fixed16{-1.65f}, neko::Fixed16{0.96f}},
-			 {neko::Fixed16{1.38f}, neko::Fixed16{0.96f}},
+			 {neko::Scalar{-4.77f}, neko::Scalar{-1.79f}},
+			 {neko::Scalar{4.13f}, neko::Scalar{-1.79f}},
+			 {neko::Scalar{-1.65f}, neko::Scalar{0.96f}},
+			 {neko::Scalar{1.38f}, neko::Scalar{0.96f}},
 		 }};
 private:
 	GameSystems* gameSystems_ = nullptr;

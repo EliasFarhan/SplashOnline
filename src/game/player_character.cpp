@@ -252,7 +252,8 @@ void PlayerManager::Respawn(int playerNumber)
 	auto& playerPhysic = playerPhysics_[playerNumber];
 	auto& physicsWorld = gameSystems_->GetPhysicsWorld();
 	auto& body = physicsWorld.body(playerPhysic.bodyIndex);
-
+	body.velocity = {};
+	body.force = {};
 	body.isActive = false;
 	playerCharacter.respawnPauseTimer.Reset();
 }

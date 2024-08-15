@@ -34,8 +34,10 @@ struct PlayerRenderData
 	spine::Bone* shoulderBone{};
 	spine::Bone* handBone{};
 	PlayerRenderState state = PlayerRenderState::IDLE;
+	Timer<float> cloudEndRespawnTimer{-1.0f, 0.367f};
 	bool faceRight = true;
 	bool isRespawning = false;
+	static constexpr auto invincibleFlashPeriod = 0.125f;
 };
 
 class PlayerRenderer
@@ -49,6 +51,7 @@ public:
 	void Draw();
 
 private:
+	void UpdateTransforms(float dt);
 	void Load();
 	void SwitchToState(PlayerRenderState state, int playerNumber);
 	const GameSystems* gameSystems_ = nullptr;
