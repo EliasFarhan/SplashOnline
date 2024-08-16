@@ -231,6 +231,10 @@ void PlayerManager::OnTriggerExit(neko::ColliderIndex playerIndex,
 	{
 		Respawn(playerNumber);
 	}
+	if(otherUserData->type == ColliderType::BULLET)
+	{
+		//TODO manage wata hit
+	}
 }
 void PlayerManager::OnTriggerEnter(neko::ColliderIndex playerIndex, int playerNumber, const neko::Collider& otherCollider)
 {

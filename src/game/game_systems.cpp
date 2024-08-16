@@ -20,6 +20,7 @@ void GameSystems::Begin()
 {
 	playerManager_.Begin();
 	level_.Begin();
+	bulletManager_.Begin();
 
 }
 
@@ -27,10 +28,12 @@ void GameSystems::Tick()
 {
 	physicsManager_.Step(fixedDeltaTime);
 	playerManager_.Tick();
+	bulletManager_.Tick();
 }
 
 void GameSystems::End()
 {
+	bulletManager_.End();
 	playerManager_.End();
 	level_.End();
 }
@@ -49,6 +52,14 @@ void GameSystems::OnTriggerEnter(const neko::ColliderPair& p)
 	if(userData2->type == ColliderType::PLAYER)
 	{
 		playerManager_.OnTriggerEnter(p.c2, userData2->playerNumber, c1);
+	}
+	if(userData1->type == ColliderType::BULLET)
+	{
+		bulletManager_.OnTriggerEnter(p.c1, c2);
+	}
+	if(userData1->type == ColliderType::BULLET)
+	{
+		bulletManager_.OnTriggerEnter(p.c2, c1);
 	}
 
 }

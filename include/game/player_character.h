@@ -57,7 +57,6 @@ struct PlayerCharacter
 	Timer<> reserveWaterTimer{neko::Fixed16{4.0f}, neko::Fixed16{4.0f}};
 	int firstShots = FirstShotsCount;
 	Timer<> shootAnimTimer{neko::Fixed16{-1.0f}, neko::Fixed16{0.133f}};
-	bool reload = false;
 	Timer<> waterTimer{neko::Fixed16{0.3f}, neko::Fixed16{0.2f}};
 
 	Timer<> burstTimer{neko::Fixed16{1}, neko::Fixed16{0.1f}};
