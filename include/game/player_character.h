@@ -24,11 +24,10 @@ struct PlayerCharacter
 	static constexpr neko::Scalar InAirForce{ 20.0f };
 	static constexpr neko::Scalar WaterForce{ 140.0f }; //WHen touch by water on ground, origin 100
 	static constexpr neko::Scalar MegaForce{ 400.0f };
-	static constexpr neko::Scalar RainForce{ 45.0f }; //When touch by water from rain
 	static constexpr neko::Scalar AttackForce{ 5.0f };  //Recoil in air
 	static constexpr neko::Scalar RecoilGroundFactor{ 0.6f };
 	static constexpr neko::Scalar WalkSpeed{ 5.0f };
-	static constexpr neko::Scalar MaxSpeed{ 8.0f };                    // The fastest the player can travel in the x axis.
+	static constexpr neko::Scalar MaxSpeed{ 8.0f }; // The fastest the player can travel in the x axis on the ground
 	static constexpr neko::Scalar CapMoveForce{ 50.0f };
 	static constexpr neko::Scalar WetCapMoveForce{ 20.0f };
 	static constexpr neko::Scalar ReactorForce { 22.0f };//19.0f
@@ -38,13 +37,22 @@ struct PlayerCharacter
 	static constexpr neko::Fixed8 deadZone {InputManager::deadZone};
 	static constexpr int MaxResistancePhase = 3;
 	static constexpr int MovePriority = 1;
+	static constexpr int DashPrepPriority = 2;
+	static constexpr int DashPriority = 2;
+	static constexpr int CapVelPriority = 2;
+	static constexpr int SlowDashPriority = 1;
 	static constexpr int JetPackPriority = 1;
 	static constexpr auto JetBurstThreshold = neko::Scalar { 0.75f};
 	static constexpr auto ReactorThreshold = neko::Scalar { 0.2f};
 	static constexpr auto GroundReactorThreshold = neko::Scalar { 0.5f};
+	static constexpr auto StompThreshold = neko::Scalar { -0.5f};
+	static constexpr auto StompOrBurstMaxVelocity = neko::Scalar { 12.0f};
 	static constexpr neko::Scalar JumpCancelTime{0.8f};
 	static constexpr neko::Scalar FirstShotFactor{5.0f};
 	static constexpr neko::Scalar FirstShotRatio{1.0f/4.0f};
+	static constexpr neko::Scalar DashSpeed{20.0f};
+	static constexpr neko::Scalar DashedSpeed{-30.0f};
+	static constexpr neko::Scalar SlowDashForce{30.0f};
 	static constexpr neko::Vec2f WataOffsetPos{{},neko::Scalar{0.5f}};
 
 	//Respawn
@@ -68,6 +76,14 @@ struct PlayerCharacter
 	Timer<> jumpTimer{neko::Scalar{-1}, neko::Scalar{1.0f}};
 	Timer<> preJetBurstTimer{neko::Scalar{-1.0f}, neko::Scalar{0.5f}};
 
+	//Dash
+	Timer<> dashDownTimer{neko::Scalar{-1.0f}, neko::Scalar {0.15f}};
+	Timer<> slowDashTimer{neko::Scalar{-1.0f}, neko::Scalar {0.3f}};
+	Timer<> bounceDashTimer{neko::Scalar{-1.0f}, neko::Scalar {0.15f}};
+	Timer<> dashPrepTimer{neko::Scalar{-1.0f}, neko::Scalar {0.5f}};
+	Timer<> dashedTimer{neko::Scalar{-1.0f}, neko::Scalar {0.5f}};
+
+
 	int footCount = 0;
 
 	[[nodiscard]] bool IsGrounded() const
@@ -83,6 +99,25 @@ struct PlayerCharacter
 	[[nodiscard]] bool IsReloading() const
 	{
 		return !reloadTimer.Over();
+	}
+
+	[[nodiscard]] bool IsDashing() const
+	{
+		return !dashDownTimer.Over();
+	}
+
+	[[nodiscard]] bool IsDashPrepping() const
+	{
+		return !dashPrepTimer.Over();
+	}
+
+	static constexpr int FallingPriority = 0;
+	static constexpr neko::Scalar FallingForce{5.0f};
+	static constexpr neko::Scalar FallingThreshold{-0.5f};
+
+	bool IsDashed() const
+	{
+		return !dashedTimer.Over();
 	}
 
 };
@@ -107,6 +142,13 @@ struct PlayerPhysic
 			{},
 			{neko::Scalar{playerScale*0.04818996f}, neko::Scalar{playerScale*0.0f}},
 			{neko::Scalar{playerScale*0.6595958f}, neko::Scalar{playerScale*0.3909828f}}
+		};
+	neko::ColliderIndex headColliderIndex = neko::INVALID_COLLIDER_INDEX;
+	static constexpr Box headBox
+		{
+			{{}, neko::Scalar{2.14f*playerScale}},
+			{neko::Scalar{playerScale*-0.00925f}, neko::Scalar{playerScale*0.08f}},
+			{neko::Scalar{playerScale*1.405238f}, neko::Scalar{playerScale*1.0f}}
 		};
 	ColliderUserData userData{};
 	neko::Vec2f totalForce{};
@@ -141,6 +183,7 @@ public:
 private:
 	GameSystems* gameSystems_ = nullptr;
 	std::array<PlayerInput, MaxPlayerNmb> playerInputs_{};
+	std::array<PlayerInput, MaxPlayerNmb> previousPlayerInputs_{};
 	std::array<PlayerCharacter, MaxPlayerNmb> playerCharacters_{};
 	std::array<PlayerPhysic, MaxPlayerNmb> playerPhysics_{};
 

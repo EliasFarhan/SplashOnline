@@ -32,6 +32,7 @@ public:
 	[[nodiscard]] BulletManager& GetBulletManager() {return bulletManager_;}
 
 	neko::PhysicsWorld& GetPhysicsWorld(){return physicsManager_;}
+	const auto& GetQuadTree() const {return quadTree_;}
 	[[nodiscard]] const neko::PhysicsWorld& GetPhysicsWorld() const {return physicsManager_;}
 	void OnTriggerEnter(const neko::ColliderPair& p) override;
 	void OnTriggerExit(const neko::ColliderPair& p) override;

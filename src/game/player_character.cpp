@@ -9,6 +9,10 @@
 
 #include <fmt/format.h>
 
+#ifdef TRACY_ENABLE
+#include <tracy/Tracy.hpp>
+#endif
+
 namespace splash
 {
 
@@ -49,6 +53,14 @@ void PlayerManager::Begin()
 		auto& footBox = physicsWorld.aabb(footCollider.shapeIndex);
 		footBox.halfSize = PlayerPhysic::footBox.size/neko::Scalar{2};
 
+		playerPhysic.headColliderIndex = physicsWorld.AddAabbCollider(playerPhysic.bodyIndex);
+		auto& headCollider = physicsWorld.collider(playerPhysic.headColliderIndex);
+		headCollider.isTrigger = true;
+		headCollider.offset = PlayerPhysic::headBox.position+PlayerPhysic::headBox.offset;
+		headCollider.userData = &playerPhysic.userData;
+		auto& headBox = physicsWorld.aabb(headCollider.shapeIndex);
+		headBox.halfSize = PlayerPhysic::headBox.size/neko::Scalar{2};
+
 		playerPhysic.userData.type = ColliderType::PLAYER;
 		playerPhysic.userData.playerNumber = playerIndex;
 
@@ -57,6 +69,9 @@ void PlayerManager::Begin()
 }
 void PlayerManager::Tick()
 {
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
 	for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
 	{
 		auto& playerCharacter = playerCharacters_[playerNumber];
@@ -145,7 +160,7 @@ void PlayerManager::Tick()
 
 		}
 		// In Air Move and not dashing!!!
-		if(!playerCharacter.IsGrounded())
+		if(!playerCharacter.IsGrounded() && neko::Abs(moveX) > neko::Scalar{PlayerCharacter::deadZone})
 		{
 			if(playerPhysic.priority <= PlayerCharacter::MovePriority)
 			{
@@ -183,7 +198,8 @@ void PlayerManager::Tick()
 
 			if((playerCharacter.IsGrounded() || jetbursting && playerCharacter.preJetBurstTimer.Over()) &&
 				playerCharacter.jumpTimer.Over() &&
-				velY < PlayerCharacter::JumpForce*body.inverseMass*fixedDeltaTime && body.velocity.Length() < neko::Scalar {12.0f})
+				velY < PlayerCharacter::JumpForce*body.inverseMass*fixedDeltaTime &&
+				body.velocity.Length() < PlayerCharacter::StompOrBurstMaxVelocity)
 			{
 				//Doing a jet burst
 				const auto jumpSpeed = PlayerCharacter::JumpForce*body.inverseMass*fixedDeltaTime;
@@ -219,9 +235,87 @@ void PlayerManager::Tick()
 			playerCharacter.jumpTimer.Stop();
 		}
 
-		//TODO stomp update
+		//stomp update
+		playerCharacter.dashPrepTimer.Update(fixedDeltaTime);
+		if(!playerCharacter.dashDownTimer.Over())
+		{
+			playerCharacter.dashDownTimer.Update(fixedDeltaTime);
+			if(playerCharacter.dashDownTimer.Over())
+			{
+				//Finish stomp
+				playerCharacter.slowDashTimer.Reset();
+				playerCharacter.jetBurstCoolDownTimer.Stop();
+			}
+		}
+		if(!playerCharacter.slowDashTimer.Over())
+		{
+			if(playerCharacter.IsGrounded())
+			{
+				playerCharacter.slowDashTimer.Stop();
+			}
+			else
+			{
+				playerCharacter.slowDashTimer.Update(fixedDeltaTime);
+				if(playerPhysic.priority <= PlayerCharacter::SlowDashPriority)
+				{
+					playerPhysic.totalForce.y += PlayerCharacter::SlowDashForce;
+					playerPhysic.priority = PlayerCharacter::SlowDashPriority;
+				}
+			}
+		}
+		if(!playerCharacter.IsGrounded())
+		{
+			if(!playerCharacter.IsDashing() &&
+				!playerCharacter.IsDashPrepping() &&
+				reactor < PlayerCharacter::FallingThreshold) //TODO add stopdash
+			{
+				if(playerPhysic.priority <= PlayerCharacter::FallingPriority)
+				{
+					playerPhysic.totalForce.y += PlayerCharacter::FallingForce * reactor;
+				}
+			}
+			if(playerInput.GetStomp() &&
+				!previousPlayerInputs_[playerNumber].GetStomp() &&
+				!playerCharacter.IsDashing() &&
+				!playerCharacter.IsDashPrepping() &&
+				!playerCharacter.IsDashed() &&
+				body.velocity.Length() < PlayerCharacter::StompOrBurstMaxVelocity) // todo not collided
+			{
+				//Start stomp prep
+				playerCharacter.dashPrepTimer.Reset();
+			}
+			else if(playerCharacter.IsDashing())
+			{
+				//Update stomp with moveX
+				neko::Vec2f vel{moveX*PlayerCharacter::DashSpeed, -PlayerCharacter::DashSpeed};
+				if(playerPhysic.priority < PlayerCharacter::DashPriority)
+				{
+					playerPhysic.totalForce = (vel-body.velocity)/fixedDeltaTime/body.inverseMass;
+					playerPhysic.priority = PlayerCharacter::DashPriority;
+				}
 
-		//TODO Cap velocity update
+			}
+			else if(playerCharacter.IsDashPrepping() &&
+				!playerCharacter.IsDashing() &&
+				!playerCharacter.IsDashed()) //todo is not collided
+			{
+				if(reactor < PlayerCharacter::StompThreshold)
+				{
+					//Start stomping
+					playerCharacter.dashDownTimer.Reset();
+					playerCharacter.dashPrepTimer.Stop();
+				}
+				else
+				{
+					// stomp prepping
+					if(playerPhysic.priority < PlayerCharacter::DashPrepPriority)
+					{
+						playerPhysic.totalForce = ((-body.velocity)/fixedDeltaTime-physicsWorld.gravity())/body.inverseMass;
+						playerPhysic.priority = PlayerCharacter::DashPrepPriority;
+					}
+				}
+			}
+		}
 
 		//Water gun update
 		if(playerCharacter.reserveWaterTimer.Over()) //we emptied the gun tank
@@ -287,7 +381,28 @@ void PlayerManager::Tick()
 				}
 			}
 		}
-
+		// cap velocity
+		if(playerPhysic.priority < PlayerCharacter::CapVelPriority)
+		{
+			neko::Vec2f wantedVel = body.velocity;
+			if(neko::Abs(body.velocity.x) > PlayerCharacter::MaxSpeed)
+			{
+				wantedVel.x = PlayerCharacter::MaxSpeed * neko::Sign(body.velocity.x);
+			}
+			if(neko::Abs(body.velocity.y) > PlayerCharacter::MaxSpeed)
+			{
+				if(!(playerCharacter.IsDashed() || playerCharacter.IsDashing()) &&
+					playerCharacter.slowDashTimer.Over())
+				{
+					wantedVel.y = PlayerCharacter::MaxSpeed * neko::Sign(body.velocity.y);
+				}
+			}
+			if(wantedVel != body.velocity)
+			{
+				playerPhysic.totalForce = (wantedVel-body.velocity)*body.inverseMass/fixedDeltaTime
+					-physicsWorld.gravity()/body.inverseMass;
+			}
+		}
 		// In the end, apply force to physics
 		body.force = playerPhysic.totalForce;
 		playerPhysic.totalForce = {};
@@ -302,6 +417,7 @@ void PlayerManager::SetPlayerInput(neko::Span<PlayerInput> playerInputs)
 {
 	for(int i = 0; i < MaxPlayerNmb; i++)
 	{
+		previousPlayerInputs_[i] = playerInputs_[i];
 		playerInputs_[i] = playerInputs[i];
 	}
 }

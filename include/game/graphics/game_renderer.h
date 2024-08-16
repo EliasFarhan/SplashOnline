@@ -31,6 +31,7 @@ private:
 	PlayerRenderer playerRenderer_;
 	BulletRenderer bulletRenderer_;
 	LevelRenderer levelRenderer_;
+	const GameSystems* gameSystems_ = nullptr;
 	int graphicIndex = -1;
 	float timeSinceTick_ = 0.0f;
 };

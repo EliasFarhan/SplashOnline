@@ -5,6 +5,9 @@
 #include "utils/log.h"
 
 #include <fmt/format.h>
+#ifdef TRACY_ENABLE
+#include <tracy/Tracy.hpp>
+#endif
 
 namespace splash
 {
@@ -26,6 +29,9 @@ void GameSystems::Begin()
 
 void GameSystems::Tick()
 {
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
 	physicsManager_.Step(fixedDeltaTime);
 	playerManager_.Tick();
 	bulletManager_.Tick();
@@ -44,7 +50,7 @@ void GameSystems::OnTriggerEnter(const neko::ColliderPair& p)
 	const auto& c2 = physicsManager_.collider(p.c2);
 	const auto* userData2 = static_cast<const ColliderUserData*>(c2.userData);
 
-	LogDebug(fmt::format("On Trigger Enter: c{} c{}", p.c1.index, p.c2.index));
+	//LogDebug(fmt::format("On Trigger Enter: c{} c{}", p.c1.index, p.c2.index));
 	if(userData1->type == ColliderType::PLAYER)
 	{
 		playerManager_.OnTriggerEnter(p.c1, userData1->playerNumber, c2);
@@ -70,7 +76,7 @@ void GameSystems::OnTriggerExit(const neko::ColliderPair& p)
 	const auto& c2 = physicsManager_.collider(p.c2);
 	const auto* userData2 = static_cast<const ColliderUserData*>(c2.userData);
 
-	LogDebug(fmt::format("On Trigger Exit: c{} c{}", p.c1.index, p.c2.index));
+	//LogDebug(fmt::format("On Trigger Exit: c{} c{}", p.c1.index, p.c2.index));
 	if(userData1->type == ColliderType::PLAYER)
 	{
 		playerManager_.OnTriggerExit(p.c1, userData1->playerNumber, c2);
@@ -80,13 +86,13 @@ void GameSystems::OnTriggerExit(const neko::ColliderPair& p)
 		playerManager_.OnTriggerExit(p.c2, userData2->playerNumber, c1);
 	}
 }
-void GameSystems::OnCollisionEnter(const neko::ColliderPair& p)
+void GameSystems::OnCollisionEnter([[maybe_unused]] const neko::ColliderPair& p)
 {
-	LogDebug(fmt::format("On Collision Enter: c{} c{}", p.c1.index, p.c2.index));
+	//LogDebug(fmt::format("On Collision Enter: c{} c{}", p.c1.index, p.c2.index));
 }
-void GameSystems::OnCollisionExit(const neko::ColliderPair& p)
+void GameSystems::OnCollisionExit([[maybe_unused]] const neko::ColliderPair& p)
 {
-	LogDebug(fmt::format("On Collision Exit: c{} c{}", p.c1.index, p.c2.index));
+	//LogDebug(fmt::format("On Collision Exit: c{} c{}", p.c1.index, p.c2.index));
 }
 void GameSystems::SetPlayerInput(neko::Span<PlayerInput> playerInputs)
 {

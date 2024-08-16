@@ -47,6 +47,9 @@ void PlayerRenderer::Update([[maybe_unused]]float dt)
 		Load();
 		return;
 	}
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
 	const auto& playerManager = gameSystems_->GetPlayerManager();
 
 	for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
@@ -85,6 +88,15 @@ void PlayerRenderer::Update([[maybe_unused]]float dt)
 				SwitchToState(PlayerRenderState::IDLE, playerNumber);
 				playerRenderData.cloudDrawable->update(dt, spine::Physics_Update);
 				continue;
+			}
+
+			if(playerCharacter.IsDashPrepping())
+			{
+				SwitchToState(PlayerRenderState::DASHPREP, playerNumber);
+			}
+			if(playerCharacter.IsDashing())
+			{
+				SwitchToState(PlayerRenderState::DASH, playerNumber);
 			}
 			switch (playerRenderData.state)
 			{
@@ -229,9 +241,21 @@ void PlayerRenderer::Update([[maybe_unused]]float dt)
 				break;
 			}
 			case PlayerRenderState::DASHPREP:
+			{
+				if(!playerCharacter.IsDashPrepping())
+				{
+					SwitchToState(PlayerRenderState::FALL, playerNumber);
+				}
 				break;
+			}
 			case PlayerRenderState::DASH:
+			{
+				if(!playerCharacter.IsDashing())
+				{
+					SwitchToState(PlayerRenderState::FALL, playerNumber);
+				}
 				break;
+			}
 			case PlayerRenderState::BOUNCE:
 				break;
 			case PlayerRenderState::LENGTH:
@@ -281,6 +305,9 @@ void PlayerRenderer::Update([[maybe_unused]]float dt)
 }
 void PlayerRenderer::Draw()
 {
+#ifdef TRACY_ENABLE
+ 	ZoneScoped;
+#endif
 	auto* renderer = GetRenderer();
 	const auto& physicsWorld = gameSystems_->GetPhysicsWorld();
 	const auto& playerManager = gameSystems_->GetPlayerManager();
@@ -298,8 +325,11 @@ void PlayerRenderer::Draw()
 
 		// Draw in correct order
 		bodyDrawable->draw(renderer);
-		gunDrawable->draw(renderer);
-		armDrawable->draw(renderer);
+		if(playerRenderDatas_[i].state != PlayerRenderState::DASHPREP)
+		{
+			gunDrawable->draw(renderer);
+			armDrawable->draw(renderer);
+		}
 		if (playerRenderDatas_[i].isRespawning || !playerRenderDatas_[i].cloudEndRespawnTimer.Over())
 		{
 			auto& cloudDrawable = playerRenderDatas_[i].cloudDrawable;
@@ -319,6 +349,11 @@ void PlayerRenderer::Draw()
 				GetDrawingRect(body.position + PlayerPhysic::footBox.offset,
 					PlayerPhysic::footBox.size);
 			SDL_RenderDrawRect(renderer, &footRect);
+			const auto headRect =
+				GetDrawingRect(body.position + PlayerPhysic::headBox.position+PlayerPhysic::headBox.offset,
+					PlayerPhysic::headBox.size);
+			SDL_RenderDrawRect(renderer, &headRect);
+
 		}
 	}
 

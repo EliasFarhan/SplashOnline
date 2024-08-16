@@ -4,7 +4,6 @@
 
 #include "utils/log.h"
 #include <SDL_log.h>
-#include <iostream>
 
 namespace splash
 {
