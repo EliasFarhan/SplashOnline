@@ -6,6 +6,10 @@
 #include "graphics/graphics_manager.h"
 #include "game/game_systems.h"
 
+#ifdef TRACY_ENABLE
+#include <tracy/Tracy.hpp>
+#endif
+
 namespace splash
 {
 
@@ -29,6 +33,8 @@ void BulletRenderer::Update(float dt)
 	}
 	const auto& bulletManager = gameSystems_->GetBulletManager();
 	const auto& physicsWorld = gameSystems_->GetPhysicsWorld();
+
+	const auto scale = (float)Bullet::scale * GetGraphicsScale();
 	for(int i = 0; i < BulletManager::MaxBulletNmb; i++)
 	{
 		const auto& bullet = bulletManager.GetBullets()[i];
@@ -81,12 +87,10 @@ void BulletRenderer::Update(float dt)
 			break;
 		}
 		}
-		//bulletRenderData.drawable->skeleton->setToSetupPose();
+		bulletRenderData.drawable->skeleton->setScaleX(scale);
+		bulletRenderData.drawable->skeleton->setScaleY(scale);
 		const auto position = GetGraphicsPosition(body.position);
 		bulletRenderData.drawable->skeleton->setPosition((float)position.x, (float)position.y);
-
-		bulletRenderData.drawable->skeleton->setScaleX((float)Bullet::scale);
-		bulletRenderData.drawable->skeleton->setScaleY((float)Bullet::scale);
 
 		bulletRenderData.drawable->update(dt, spine::Physics_Update);
 
@@ -102,8 +106,6 @@ void BulletRenderer::Draw()
 	for(int i = 0; i < BulletManager::MaxBulletNmb; i++)
 	{
 		auto& bulletRenderData = bulletRenderDatas_[i];
-		const auto& bullet = bulletManager.GetBullets()[i];
-		const auto& body = physicsWorld.body(bullet.bodyIndex);
 		if(bulletRenderData.state == BulletRenderData::BulletRenderState::NONE)
 		{
 			continue;
@@ -111,8 +113,10 @@ void BulletRenderer::Draw()
 		bulletRenderData.drawable->draw(renderer);
 		if (GetDebugConfig().showPhysicsBox)
 		{
+			const auto& bullet = bulletManager.GetBullets()[i];
+			const auto& body = physicsWorld.body(bullet.bodyIndex);
 			const auto rect = GetDrawingRect(
-				body.position - neko::Vec2f(Bullet::radius, Bullet::radius),
+				body.position,
 				neko::Vec2f(Bullet::radius+Bullet::radius, Bullet::radius+Bullet::radius));
 			const auto& color = playerColors[bullet.playerNumber];
 			SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
@@ -123,10 +127,13 @@ void BulletRenderer::Draw()
 
 void BulletRenderer::Load()
 {
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
 	for(int i = 0; i < BulletManager::MaxBulletNmb; i++)
 	{
 		bulletRenderDatas_[i].drawable = CreateSkeletonDrawable(SpineManager::WATA);
-
+		bulletRenderDatas_[i].drawable->animationState->setAnimation(0, "water_fly", true);
 	}
 
 }

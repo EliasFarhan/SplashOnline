@@ -38,8 +38,19 @@ void BulletManager::Begin()
 
 void BulletManager::Tick()
 {
+	auto& physicsWorld = gameSystems_->GetPhysicsWorld();
 	for(auto& bullet: bullets_)
 	{
+		if(!bullet.timeToLiveTimer.Over())
+		{
+			bullet.timeToLiveTimer.Update(fixedDeltaTime);
+			if(bullet.timeToLiveTimer.Over())
+			{
+				auto& body = physicsWorld.body(bullet.bodyIndex);
+				body.isActive = false;
+				bullet.destroyedTimer.Reset();
+			}
+		}
 		if(!bullet.destroyedTimer.Over())
 		{
 			bullet.destroyedTimer.Update(fixedDeltaTime);
@@ -88,8 +99,12 @@ void BulletManager::OnTriggerEnter(neko::ColliderIndex bulletIndex, const neko::
 	}
 }
 
-void
-BulletManager::SpawnWata(neko::Vec2f position, neko::Vec2f targetDir, int playerNumber, bool straight, neko::Scalar speed)
+void BulletManager::SpawnWata(
+	neko::Vec2f position,
+	neko::Vec2f targetDir,
+	int playerNumber,
+	bool straight,
+	neko::Scalar speed)
 {
 	auto it = std::find_if(bullets_.begin(), bullets_.end(),[](auto& bullet){
 		return bullet.playerNumber == -1;
@@ -120,6 +135,7 @@ BulletManager::SpawnWata(neko::Vec2f position, neko::Vec2f targetDir, int player
 	}
 	newBullet->playerNumber = playerNumber;
 	newBullet->colliderUserData.playerNumber = playerNumber;
+	newBullet->timeToLiveTimer.Reset();
 	auto& bulletBody = gameSystems_->GetPhysicsWorld().body(newBullet->bodyIndex);
 	bulletBody.isActive = true;
 	bulletBody.type = straight ? neko::BodyType::KINEMATIC : neko::BodyType::DYNAMIC;

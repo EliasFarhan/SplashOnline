@@ -111,14 +111,17 @@ void TextureManager::Begin()
 		{
 #ifdef TRACY_ENABLE
 			ZoneNamedN(loadingTexture, "Loading Image File", true);
+			ZoneTextV(loadingTexture, texturePaths[i].data(), texturePaths[i].size());
 #endif
 #ifdef TRACY_ENABLE
 			TracyCZoneN(imageLoad, "Load Image From File", true);
+			TracyCZoneText(imageLoad, texturePaths[i].data(), texturePaths[i].size());
 #endif
 			images[i] = LoadImageFromFile(texturePaths[i]);
 #ifdef TRACY_ENABLE
 			TracyCZoneEnd(imageLoad);
 			TracyCZoneN(surfaceCreate, "Create Surface From Image", true);
+			TracyCZoneText(surfaceCreate, texturePaths[i].data(), texturePaths[i].size());
 #endif
 			surfaces[i] = CreateSurfaceFromImage(images[i]);
 #ifdef TRACY_ENABLE
@@ -165,6 +168,7 @@ void TextureManager::UpdateLoad()
 		if(textures_[i] != nullptr) continue;
 #ifdef TRACY_ENABLE
 		ZoneNamedN(loadingTexture, "Loading SDL Texture", true);
+		ZoneTextV(loadingTexture, texturePaths[i].data(), texturePaths[i].size());
 #endif
 		textures_[i] = CreateTextureFromSurface(renderer_, surfaces[i]);
 		SDL_FreeSurface(surfaces[i]);

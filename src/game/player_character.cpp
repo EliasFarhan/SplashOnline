@@ -234,7 +234,7 @@ void PlayerManager::Tick()
 			playerCharacter.reloadTimer.Update(fixedDeltaTime);
 		}
 
-		if(target.SquareLength() < neko::Scalar {PlayerCharacter::deadZone})
+		if(target.Length() < neko::Scalar {PlayerCharacter::deadZone})
 		{
 			playerCharacter.reserveWaterTimer.Update(
 				-fixedDeltaTime * playerCharacter.reserveWaterTimer.GetPeriod() /

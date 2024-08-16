@@ -17,6 +17,7 @@ struct Bullet
 	neko::BodyIndex bodyIndex = neko::INVALID_BODY_INDEX;
 	neko::ColliderIndex colliderIndex = neko::INVALID_COLLIDER_INDEX;
 	Timer<neko::Scalar> destroyedTimer{neko::Scalar{-1}, neko::Scalar{0.2f}};
+	Timer<neko::Scalar> timeToLiveTimer{neko::Scalar{3.0f}, neko::Scalar{3.0f}};
 	ColliderUserData colliderUserData{};
 	int playerNumber = -1;
 

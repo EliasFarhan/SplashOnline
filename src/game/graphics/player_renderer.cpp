@@ -4,7 +4,9 @@
 
 #include <math/fixed_lut.h>
 #include <fmt/format.h>
-
+#ifdef TRACY_ENABLE
+#include <tracy/Tracy.hpp>
+#endif
 
 namespace splash
 {
@@ -303,6 +305,9 @@ void PlayerRenderer::SwitchToState(PlayerRenderState state, int playerNumber)
 }
 void PlayerRenderer::Load()
 {
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
 	for(int i = 0; i < MaxPlayerNmb; i++)
 	{
 		playerRenderDatas_[i].bodyDrawable = CreateSkeletonDrawable((SpineManager::SkeletonId)((int)SpineManager::CAT_NOARM+i));

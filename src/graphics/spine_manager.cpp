@@ -218,6 +218,7 @@ void SpineManager::End()
 	for(auto* skeletonData: skeletonData_)
 	{
 		delete skeletonData;
+		skeletonData = nullptr;
 	}
 	atlases_ = {};
 	attachmentLoaders_ = {};

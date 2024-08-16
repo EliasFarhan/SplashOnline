@@ -24,8 +24,8 @@
 		"slots": {
 			"SL_drops": {
 				"rgba": [
-					{ "color": "00000000", "curve": "stepped" },
-					{ "time": 0.2, "color": "00000000" }
+					{ "color": "ffffffff", "curve": "stepped" },
+					{ "time": 0.2, "color": "ffffff00" }
 				],
 				"attachment": [
 					{ "name": "assets/dropnormal1" },
@@ -55,7 +55,7 @@
 		"slots": {
 			"SL_drops": {
 				"rgba": [
-					{ "color": "00000000" }
+					{ "color": "ffffffff" }
 				]
 			}
 		},
