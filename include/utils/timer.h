@@ -5,7 +5,7 @@
 #ifndef SPLASHONLINE_TIMER_H
 #define SPLASHONLINE_TIMER_H
 
-#include <math/fixed.h>
+#include <math/const.h>
 
 template<typename T=neko::Scalar>
 class Timer
