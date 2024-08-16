@@ -56,6 +56,9 @@ void Engine::Begin()
 	ZoneScoped;
 #endif
 	jobSystem_.Begin();
+
+	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+	SDL_LogSetPriority(SDL_LOG_CATEGORY_ERROR, SDL_LOG_PRIORITY_WARN);
 	/*
 	* Initialises the SDL video subsystem (as well as the events subsystem).
 	* Returns 0 on success or a negative error code on failure using SDL_GetError().
