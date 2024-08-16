@@ -34,7 +34,7 @@ void BulletRenderer::Update(float dt)
 	const auto& bulletManager = gameSystems_->GetBulletManager();
 	const auto& physicsWorld = gameSystems_->GetPhysicsWorld();
 
-	const auto scale = (float)Bullet::scale * GetGraphicsScale();
+	const auto scale = (float)Bullet::Scale * GetGraphicsScale();
 	for(int i = 0; i < BulletManager::MaxBulletNmb; i++)
 	{
 		const auto& bullet = bulletManager.GetBullets()[i];
@@ -117,7 +117,7 @@ void BulletRenderer::Draw()
 			const auto& body = physicsWorld.body(bullet.bodyIndex);
 			const auto rect = GetDrawingRect(
 				body.position,
-				neko::Vec2f(Bullet::radius+Bullet::radius, Bullet::radius+Bullet::radius));
+				neko::Vec2f(Bullet::Radius + Bullet::Radius, Bullet::Radius + Bullet::Radius));
 			const auto& color = playerColors[bullet.playerNumber];
 			SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
 			SDL_RenderDrawRect(renderer, &rect);

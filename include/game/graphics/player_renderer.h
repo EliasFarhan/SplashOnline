@@ -37,7 +37,10 @@ struct PlayerRenderData
 	Timer<float> cloudEndRespawnTimer{-1.0f, 0.367f};
 	bool faceRight = true;
 	bool isRespawning = false;
+	bool wasShooting = false;
+
 	static constexpr auto invincibleFlashPeriod = 0.125f;
+	neko::Vec2<float> targetDir{0.0f,-1.0f};
 };
 
 class PlayerRenderer

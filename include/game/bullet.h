@@ -21,8 +21,9 @@ struct Bullet
 	ColliderUserData colliderUserData{};
 	int playerNumber = -1;
 
-	static constexpr neko::Scalar radius{0.2f};
-	static constexpr neko::Scalar scale{0.7f};
+	static constexpr neko::Scalar Radius{ 0.2f};
+	static constexpr neko::Scalar Scale{ 0.7f};
+	static constexpr neko::Scalar WataSpeed{20.0f};
 };
 
 class GameSystems;
@@ -34,7 +35,7 @@ public:
 	void Tick();
 	void End();
 
-	void SpawnWata(neko::Vec2f position, neko::Vec2f targetDir, int playerNumber, bool straight, neko::Scalar speed);
+	void SpawnWata(neko::Vec2f position, neko::Vec2f targetDir, int playerNumber, bool straight, neko::Scalar speedFactor);
 	static constexpr int MaxBulletNmb = 50;
 	void OnTriggerEnter(neko::ColliderIndex bulletIndex, const neko::Collider& otherCollider);
 

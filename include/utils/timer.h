@@ -31,6 +31,10 @@ public:
         }
         period_ = newPeriod;
     }
+	constexpr void SetTime(T newTime) noexcept
+	{
+		time_ = newTime;
+	}
     constexpr void Reset() noexcept
     {
         time_ = period_;

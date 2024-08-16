@@ -45,7 +45,7 @@ struct PlayerCharacter
 	static constexpr neko::Scalar JumpCancelTime{0.8f};
 	static constexpr neko::Scalar FirstShotFactor{5.0f};
 	static constexpr neko::Scalar FirstShotRatio{1.0f/4.0f};
-	static constexpr neko::Vec2f WataOffsetPos{{},neko::Scalar{1.0f}};
+	static constexpr neko::Vec2f WataOffsetPos{{},neko::Scalar{0.5f}};
 
 	//Respawn
 	Timer<> respawnPauseTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 0.5f }};
@@ -61,7 +61,6 @@ struct PlayerCharacter
 	//Wata shoot
 	Timer<> reserveWaterTimer{neko::Scalar{4.0f}, neko::Scalar{4.0f}};
 	int firstShots = FirstShotsCount;
-	Timer<> shootAnimTimer{neko::Scalar{-1.0f}, neko::Scalar{0.133f}};
 	Timer<> waterTimer{neko::Scalar{0.3f}, neko::Scalar{0.2f}};
 	Timer<> reloadTimer{neko::Scalar {-1.0f}, neko::Scalar{1.033f}};
 

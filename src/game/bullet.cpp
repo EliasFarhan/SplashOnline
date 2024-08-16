@@ -32,7 +32,7 @@ void BulletManager::Begin()
 		collider.userData = &bullet.colliderUserData;
 
 		auto& circle = physicsWorld.circle(collider.shapeIndex);
-		circle.radius = Bullet::radius * Bullet::scale;
+		circle.radius = Bullet::Radius * Bullet::Scale;
 	}
 }
 
@@ -104,7 +104,7 @@ void BulletManager::SpawnWata(
 	neko::Vec2f targetDir,
 	int playerNumber,
 	bool straight,
-	neko::Scalar speed)
+	neko::Scalar speedFactor)
 {
 	auto it = std::find_if(bullets_.begin(), bullets_.end(),[](auto& bullet){
 		return bullet.playerNumber == -1;
@@ -127,6 +127,7 @@ void BulletManager::SpawnWata(
 		if(newBullet == nullptr)
 		{
 			//We have a problem
+			std::terminate();
 		}
 	}
 	else
@@ -140,6 +141,6 @@ void BulletManager::SpawnWata(
 	bulletBody.isActive = true;
 	bulletBody.type = straight ? neko::BodyType::KINEMATIC : neko::BodyType::DYNAMIC;
 	bulletBody.position = position;
-	bulletBody.velocity = targetDir*speed;
+	bulletBody.velocity = targetDir * speedFactor * Bullet::WataSpeed;
 }
 }

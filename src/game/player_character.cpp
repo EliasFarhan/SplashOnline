@@ -224,21 +224,22 @@ void PlayerManager::Tick()
 		//TODO Cap velocity update
 
 		//Water gun update
-		if(playerCharacter.reserveWaterTimer.Over())
+		if(playerCharacter.reserveWaterTimer.Over()) //we emptied the gun tank
 		{
-			playerCharacter.reloadTimer.Reset();
+			playerCharacter.reloadTimer.Reset(); // reloading start
+			playerCharacter.reserveWaterTimer.SetTime({});
 		}
 		if(playerCharacter.IsReloading())
 		{
 			target = {};
 			playerCharacter.reloadTimer.Update(fixedDeltaTime);
 		}
-
-		if(target.Length() < neko::Scalar {PlayerCharacter::deadZone})
+		bool isShooting = target.Length() > neko::Scalar {PlayerCharacter::deadZone};
+		if(!isShooting)
 		{
-			playerCharacter.reserveWaterTimer.Update(
-				-fixedDeltaTime * playerCharacter.reserveWaterTimer.GetPeriod() /
-				playerCharacter.reloadTimer.GetPeriod());
+			const auto reserveDt = fixedDeltaTime * playerCharacter.reserveWaterTimer.GetPeriod() /
+								   playerCharacter.reloadTimer.GetPeriod();
+			playerCharacter.reserveWaterTimer.SetTime(playerCharacter.reserveWaterTimer.RemainingTime()+reserveDt);
 		}
 		else
 		{
@@ -265,13 +266,20 @@ void PlayerManager::Tick()
 		}
 		else
 		{
-			if(target.SquareLength() > neko::Scalar {PlayerCharacter::deadZone})
+			if(isShooting)
 			{
 				//TODO not shooting if stomp prep or dashing
 				//Shoot wata bullet
 				auto& bulletManager = gameSystems_->GetBulletManager();
-				const auto speedFactor = playerCharacter.firstShots>0?neko::Scalar {1.0f}:playerCharacter.reserveWaterTimer.RemainingTime();
-				bulletManager.SpawnWata(body.position+PlayerCharacter::WataOffsetPos+target, target.Normalized(), playerNumber, playerCharacter.firstShots>0,speedFactor);
+				const auto speedFactor = playerCharacter.firstShots>0 ?
+					neko::Scalar {1.0f} :
+					playerCharacter.reserveWaterTimer.RemainingTime();
+				bulletManager.SpawnWata(
+					body.position+PlayerCharacter::WataOffsetPos+target,
+					target.Normalized(),
+					playerNumber,
+					playerCharacter.firstShots>0,
+					speedFactor);
 				playerCharacter.waterTimer.Reset();
 				if(playerCharacter.firstShots > 0)
 				{
