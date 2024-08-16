@@ -68,6 +68,7 @@ void PlayerManager::Tick()
 		const auto reactor = neko::Scalar {playerInput.moveDirY};
 		const auto moveX = neko::Abs(playerInput.moveDirX) > PlayerCharacter::deadZone ? neko::Scalar{playerInput.moveDirX} : neko::Scalar{};
 
+		playerCharacter.jumpTimer.Update(fixedDeltaTime);
 
 		if(!playerCharacter.respawnStaticTime.Over())
 		{
@@ -104,52 +105,27 @@ void PlayerManager::Tick()
 			continue;
 		}
 
-		if(playerCharacter.jetBurstTimer.Over() &&
+		if(playerCharacter.preJetBurstTimer.Over() &&
 			(reactor < PlayerCharacter::ReactorThreshold ||
 			body.velocity.y > neko::Scalar{0.0f}))
 		{
-			playerCharacter.burstTimer.Update(fixedDeltaTime);
+			playerCharacter.jetBurstCoolDownTimer.Update(fixedDeltaTime);
 		}
-		if(!playerCharacter.jetBurstTimer.Over())
-		{
-			playerCharacter.jetBurstTimer.Update(fixedDeltaTime);
-			neko::Scalar force{};
-			if(playerCharacter.jetBurstTimer.Over())
-			{
-				const auto jumpSpeed = PlayerCharacter::JumpForce*body.inverseMass*fixedDeltaTime;
-				force = jumpSpeed-body.velocity.y / fixedDeltaTime / body.inverseMass;
-				playerCharacter.jumpTimer.Reset();
-			}
-			else
-			{
-				force = PlayerCharacter::ReactorForce;
-			}
-			if(playerPhysic.priority < PlayerCharacter::JetPackPriority )
-			{
-				playerPhysic.priority = PlayerCharacter::JetPackPriority;
-				playerPhysic.totalForce.y = force;
-			}
-		}
+
+		//Walk Update
 		if(playerCharacter.IsGrounded())
 		{
 			//on ground
-			if(reactor > PlayerCharacter::JetBurstThreshold)
-			{
-				if(playerCharacter.burstTimer.Over() && playerCharacter.jetBurstTimer.Over())
-				{
-					playerCharacter.jetBurstTimer.Reset();
-					playerCharacter.burstTimer.Reset();
-				}
-			}
-
 			const auto wantedSpeed = moveX * PlayerCharacter::WalkSpeed;
 			const auto velX = body.velocity.x;
 			const auto deltaSpeed = wantedSpeed-velX;
 			const auto newCap = PlayerCharacter::CapMoveForce;
+
+
 			//TODO add wet cap
 			if(playerPhysic.priority <= PlayerCharacter::MovePriority)
 			{
-				if(playerPhysic.priority < PlayerCharacter::MovePriority )
+				if(playerPhysic.priority < PlayerCharacter::MovePriority)
 				{
 					playerPhysic.priority = PlayerCharacter::MovePriority;
 					//Counter gravity
@@ -167,7 +143,8 @@ void PlayerManager::Tick()
 			}
 
 		}
-		else
+		// In Air Move and not dashing!!!
+		if(!playerCharacter.IsGrounded())
 		{
 			if(playerPhysic.priority <= PlayerCharacter::MovePriority)
 			{
@@ -175,35 +152,75 @@ void PlayerManager::Tick()
 				playerPhysic.totalForce += neko::Vec2f{horizontalForce, {}};
 				playerPhysic.priority = PlayerCharacter::MovePriority;
 			}
-			//in air
-			if(reactor > PlayerCharacter::ReactorThreshold &&
-			   playerCharacter.jetBurstTimer.Over())
+		}
+		//Jetpack update
+		bool jetbursting = playerCharacter.IsJetBursting();
+		if(!jetbursting && (reactor < PlayerCharacter::ReactorThreshold || body.velocity.y < neko::Scalar {0.0f}))
+		{
+			playerCharacter.jetBurstCoolDownTimer.Update(fixedDeltaTime);
+		}
+		if(jetbursting)
+		{
+			playerCharacter.preJetBurstTimer.Update(fixedDeltaTime);
+		}
+		if((playerCharacter.IsGrounded() && reactor > PlayerCharacter::GroundReactorThreshold) ||
+			(!playerCharacter.IsGrounded() && reactor > PlayerCharacter::ReactorThreshold))
+		{
+			const auto velY = body.velocity.y;
+			const auto decreaseFactor = velY > neko::Scalar{} ? neko::Scalar{ 0.75f } : neko::Scalar{ 1.0f };
+			auto force = PlayerCharacter::ReactorForce * reactor * decreaseFactor;
+			if(playerCharacter.jetBurstCoolDownTimer.Over() && !jetbursting && reactor > PlayerCharacter::JetBurstThreshold) //TODO add collided
 			{
-				const auto velY = body.velocity.y;
-				const auto decreaseFactor = velY > neko::Scalar{} ? neko::Scalar{ 0.75f } : neko::Scalar{ 1.0f };
+				jetbursting = true;
+				playerCharacter.preJetBurstTimer.Reset();
+				playerCharacter.jetBurstCoolDownTimer.Reset();
+			}
+			if(jetbursting)
+			{
+				force = PlayerCharacter::ReactorForce;
+			}
 
-				auto force = PlayerCharacter::ReactorForce * reactor * decreaseFactor;
-				//TODO jetburst and jumping
+			if((playerCharacter.IsGrounded() || jetbursting && playerCharacter.preJetBurstTimer.Over()) &&
+				playerCharacter.jumpTimer.Over() &&
+				velY < PlayerCharacter::JumpForce*body.inverseMass*fixedDeltaTime && body.velocity.Length() < neko::Scalar {12.0f})
+			{
+				//Doing a jet burst
+				const auto jumpSpeed = PlayerCharacter::JumpForce*body.inverseMass*fixedDeltaTime;
+				force = jumpSpeed-body.velocity.y / fixedDeltaTime / body.inverseMass;
+				playerCharacter.jumpTimer.Reset();
+			}
 
+			if(!playerCharacter.jumpTimer.Over())
+			{
+				const auto t = neko::Scalar {1}-playerCharacter.jumpTimer.CurrentRatio();
+				force *= (t*t*t*t);
+			}
 
-				if(!playerCharacter.jumpTimer.Over())
-				{
-					playerCharacter.jumpTimer.Update(fixedDeltaTime);
-
-					const auto t = playerCharacter.jumpTimer.CurrentRatio();
-					force *= (t*t*t*t);
-				}
-				if(playerPhysic.priority <= PlayerCharacter::JetPackPriority)
-				{
-					playerPhysic.totalForce.y = force;
-				}
+			//TODO reset force at 0 if collided and not on ground
+			if(playerPhysic.priority <= PlayerCharacter::JetPackPriority)
+			{
+				playerPhysic.totalForce += neko::Vec2f{{}, force};
+				playerPhysic.priority = PlayerCharacter::JetPackPriority;
+			}
+			if(velY > neko::Scalar {0.0f})
+			{
+				playerCharacter.jetBurstCoolDownTimer.Reset();
 			}
 		}
-
+		else if(playerCharacter.IsGrounded() || reactor < PlayerCharacter::ReactorThreshold)
+		{
+			jetbursting = false;
+			playerCharacter.preJetBurstTimer.Stop();
+			playerCharacter.jetBurstCoolDownTimer.Stop();
+		}
+		if((reactor < PlayerCharacter::ReactorThreshold || body.velocity.y < neko::Fixed{0.0f}) && playerCharacter.jumpTimer.RemainingTime() < PlayerCharacter::JumpCancelTime)
+		{
+			playerCharacter.jumpTimer.Stop();
+		}
 		// In the end, apply force to physics
 		body.force = playerPhysic.totalForce;
 		playerPhysic.totalForce = {};
-		playerPhysic.priority = {};
+		playerPhysic.priority = 0;
 	}
 }
 void PlayerManager::End()
@@ -256,7 +273,8 @@ void PlayerManager::Respawn(int playerNumber)
 	auto& playerPhysic = playerPhysics_[playerNumber];
 	auto& physicsWorld = gameSystems_->GetPhysicsWorld();
 	auto& body = physicsWorld.body(playerPhysic.bodyIndex);
-
+	body.velocity = {};
+	body.force = {};
 	body.isActive = false;
 	playerCharacter.respawnPauseTimer.Reset();
 }

@@ -7,7 +7,7 @@
 
 #include <math/fixed.h>
 
-template<typename T=neko::Fixed16>
+template<typename T=neko::Scalar>
 class Timer
 {
 public:

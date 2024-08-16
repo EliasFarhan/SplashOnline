@@ -10,6 +10,7 @@ namespace splash
 {
 void InputManager::Begin()
 {
+	AddEventListener(this);
 	controller_ = FindGameController();
 	if(controller_ == nullptr)
 	{
@@ -25,6 +26,7 @@ SDL_GameController* InputManager::FindGameController()
 		}
 	}
 
+	LogWarning("No controller found");
 	return nullptr;
 }
 
@@ -66,6 +68,7 @@ SDL_JoystickID InputManager::GetControllerInstanceId(SDL_GameController* control
 
 void InputManager::End()
 {
+	RemoveEventListener(this);
 	if(controller_ != nullptr)
 	{
 		SDL_GameControllerClose(controller_);
@@ -94,5 +97,17 @@ PlayerInput InputManager::GetPlayerInput() const
 		input.targetDirY = -neko::Fixed8{rightY};
 	}
 	return input;
+}
+void InputManager::OnEvent(const SDL_Event& event)
+{
+	ManageEvent(event);
+}
+int InputManager::GetEventListenerIndex() const
+{
+	return eventIndex_;
+}
+void InputManager::SetEventListenerIndex(int index)
+{
+	eventIndex_ = index;
 }
 }

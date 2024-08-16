@@ -54,6 +54,7 @@ struct ColliderUserData
 	int playerNumber = -1; //Used by player or bullet
 };
 
+
 }
 
 #endif //SPLASHONLINE_GAME_CONST_H_

@@ -118,4 +118,8 @@ std::pair<int, int> GetWindowSize()
 {
 	return instance->GetWindowSize();
 }
+void RemoveEventListener(OnEventInterface* eventInterface)
+{
+	instance->RemoveEventListener(eventInterface);
+}
 }

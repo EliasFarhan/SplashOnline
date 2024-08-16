@@ -93,6 +93,12 @@ void GuiRenderer::Update()
 
 	ImGui::Begin("Splash Online");
 	ImGui::Text("FPS %f", 1.0f/GetDeltaTime());
+	const auto playerInput = GetPlayerInput();
+	ImGui::Text("Input: Move(%1.2f, %1.2f), Target(%1.2f, %1.2f)",
+		(float)playerInput.moveDirX,
+		(float)playerInput.moveDirY,
+		(float)playerInput.targetDirX,
+		(float)playerInput.targetDirY);
 	ImGui::Checkbox("Show Physics Box",&debugConfig_.showPhysicsBox);
 	ImGui::End();
 	for(auto* guiInterface : guiInterfaces_)
