@@ -49,6 +49,7 @@ public:
 		CHARS_NOARM,
 		CHARS_ARM,
 		GUN,
+		WATA,
 		CLOUD_ANIM,
 		FX,
 

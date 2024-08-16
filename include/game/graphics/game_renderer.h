@@ -25,7 +25,7 @@ public:
 	void Draw() override;
 	void SetGraphicsIndex(int index) override;
 	[[nodiscard]] int GetGraphicsIndex() const override;
-	float GetTimeSinceTick() const;
+	[[nodiscard]] float GetTimeSinceTick() const;
 
 private:
 	PlayerRenderer playerRenderer_;

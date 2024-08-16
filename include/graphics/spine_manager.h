@@ -25,6 +25,7 @@ public:
 		CHARACTERS_NOARM,
 		CHARACTERS_ARMS,
 		BASEGUN,
+		WATA,
 		CLOUD,
 		FX,
 		LENGTH,
@@ -46,6 +47,7 @@ public:
 		ROBOT_ARM,
 
 		BASEGUN,
+		WATA,
 		CLOUD,
 
 		CLOUD_EJECT,
@@ -62,6 +64,7 @@ public:
 		LANDUNG,
 		RELOAD,
 		STAR,
+
 
 		LENGTH
 

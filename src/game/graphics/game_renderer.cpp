@@ -42,7 +42,9 @@ void GameRenderer::End()
 	playerRenderer_.End();
 }
 
-GameRenderer::GameRenderer(const GameSystems* gameSystems): playerRenderer_(gameSystems)
+GameRenderer::GameRenderer(const GameSystems* gameSystems):
+	playerRenderer_(gameSystems),
+	bulletRenderer_(gameSystems)
 {
 	instance = this;
 }
@@ -50,7 +52,6 @@ GameRenderer::GameRenderer(const GameSystems* gameSystems): playerRenderer_(game
 void GameRenderer::Tick()
 {
 	timeSinceTick_ -= (float)fixedDeltaTime;
-	playerRenderer_.Tick();
 }
 
 float GameRenderer::GetTimeSinceTick() const

@@ -49,6 +49,7 @@ static constexpr std::array<std::string_view, (int)TextureManager::TextureId::LE
 		"data/spine/chars/SBPChars_ver4_2.png",
 		"data/spine/arms/SBPCharArms_ver4_2.png",
 		"data/spine/gun/SBPweapons_ver4_2.png",
+		"data/spine/water/SBPwater_ver4_2.png",
 		"data/spine/cloud/SBPCloud_ver_4_2.png",
 		"data/spine/FX/SBPfx_ver4_2.png",
 

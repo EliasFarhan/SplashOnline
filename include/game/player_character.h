@@ -41,33 +41,49 @@ struct PlayerCharacter
 	static constexpr int JetPackPriority = 1;
 	static constexpr auto JetBurstThreshold = neko::Scalar { 0.75f};
 	static constexpr auto ReactorThreshold = neko::Scalar { 0.2f};
+	static constexpr auto GroundReactorThreshold = neko::Scalar { 0.5f};
+	static constexpr neko::Scalar JumpCancelTime{0.8f};
+	static constexpr neko::Scalar FirstShotFactor{5.0f};
+	static constexpr neko::Scalar FirstShotRatio{1.0f/4.0f};
+	static constexpr neko::Vec2f WataOffsetPos{{},neko::Scalar{1.0f}};
 
 	//Respawn
-	Timer<> respawnPauseTimer{ neko::Fixed16{ -1.0f }, neko::Fixed16{ 0.5f }};
-	Timer<> respawnMoveTimer{ neko::Fixed16{ -1.0f }, neko::Fixed16{ 1.0f }};
-	Timer<> respawnStaticTime{ neko::Fixed16{ 2.0f }, neko::Fixed16{ 2.0f }};
-	Timer<> invincibleTimer{neko::Fixed16 {-1}, neko::Fixed16 {2.0f}};
+	Timer<> respawnPauseTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 0.5f }};
+	Timer<> respawnMoveTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 1.0f }};
+	Timer<> respawnStaticTime{ neko::Scalar{ 2.0f }, neko::Scalar{ 2.0f }};
+	Timer<> invincibleTimer{neko::Scalar {-1}, neko::Scalar {2.0f}};
 
 	//Wata Hit
-	Timer<> hitTimer{neko::Fixed16{-1}, neko::Fixed16{1.5f}};
+	Timer<> hitTimer{neko::Scalar{-1}, neko::Scalar{1.5f}};
 	neko::Vec2f hitDirection{};
 	int resistancePhase = 0; //Used for the resistance to wata bullet
 
 	//Wata shoot
-	Timer<> reserveWaterTimer{neko::Fixed16{4.0f}, neko::Fixed16{4.0f}};
+	Timer<> reserveWaterTimer{neko::Scalar{4.0f}, neko::Scalar{4.0f}};
 	int firstShots = FirstShotsCount;
-	Timer<> shootAnimTimer{neko::Fixed16{-1.0f}, neko::Fixed16{0.133f}};
-	Timer<> waterTimer{neko::Fixed16{0.3f}, neko::Fixed16{0.2f}};
+	Timer<> shootAnimTimer{neko::Scalar{-1.0f}, neko::Scalar{0.133f}};
+	Timer<> waterTimer{neko::Scalar{0.3f}, neko::Scalar{0.2f}};
+	Timer<> reloadTimer{neko::Scalar {-1.0f}, neko::Scalar{1.033f}};
 
-	Timer<> burstTimer{neko::Fixed16{1}, neko::Fixed16{0.1f}};
-	Timer<> jumpTimer{neko::Fixed16{-1}, neko::Fixed16{1.0f}};
-	Timer<> jetBurstTimer{neko::Fixed16{-1.0f}, neko::Fixed16{0.5f}};
+	Timer<> jetBurstCoolDownTimer{neko::Scalar{1}, neko::Scalar{0.1f}};
+	Timer<> jumpTimer{neko::Scalar{-1}, neko::Scalar{1.0f}};
+	Timer<> preJetBurstTimer{neko::Scalar{-1.0f}, neko::Scalar{0.5f}};
 
 	int footCount = 0;
 
 	[[nodiscard]] bool IsGrounded() const
 	{
 		return footCount > 0;
+	}
+
+	[[nodiscard]] bool IsJetBursting() const
+	{
+		return !preJetBurstTimer.Over();
+	}
+
+	[[nodiscard]] bool IsReloading() const
+	{
+		return !reloadTimer.Over();
 	}
 
 };
@@ -118,10 +134,10 @@ public:
 	void SetPlayerInput(neko::Span<PlayerInput> playerInputs);
 	static constexpr std::array<neko::Vec2f, MaxPlayerNmb> spawnPositions
 		{{
-			 {neko::Fixed16{-4.77f}, neko::Fixed16{-1.79f}},
-			 {neko::Fixed16{4.13f}, neko::Fixed16{-1.79f}},
-			 {neko::Fixed16{-1.65f}, neko::Fixed16{0.96f}},
-			 {neko::Fixed16{1.38f}, neko::Fixed16{0.96f}},
+			 {neko::Scalar{-4.77f}, neko::Scalar{-1.79f}},
+			 {neko::Scalar{4.13f}, neko::Scalar{-1.79f}},
+			 {neko::Scalar{-1.65f}, neko::Scalar{0.96f}},
+			 {neko::Scalar{1.38f}, neko::Scalar{0.96f}},
 		 }};
 private:
 	GameSystems* gameSystems_ = nullptr;

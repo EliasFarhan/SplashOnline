@@ -30,6 +30,7 @@ static constexpr std::array<std::string_view, (int)SpineManager::AtlasId::LENGTH
 	"data/spine/chars/SBPChars_ver4_2.atlas",
 	"data/spine/arms/SBPCharArms_ver4_2.atlas",
 	"data/spine/gun/SBPweapons_ver4_2.atlas",
+	"data/spine/water/SBPwater_ver4_2.atlas",
 	"data/spine/cloud/SBPCloud_ver_4_2.atlas",
 	"data/spine/FX/SBPfx_ver4_2.atlas",
 }};
@@ -49,6 +50,7 @@ static constexpr std::array<std::string_view, (int)SpineManager::SkeletonId::LEN
 		 "data/spine/arms/robot_arm.skel",
 
 		 "data/spine/gun/basegun_equip.skel",
+		 "data/spine/water/WATER_normaldrops.skel",
 		 "data/spine/cloud/cloud.skel",
 
 		 "data/spine/FX/fx_cloudeject.skel",
@@ -65,6 +67,8 @@ static constexpr std::array<std::string_view, (int)SpineManager::SkeletonId::LEN
 		 "data/spine/FX/fx_landing.skel",
 		 "data/spine/FX/fx_reload.skel",
 		 "data/spine/FX/fx_star.skel",
+
+
 	 }};
 
 void SpineManager::load([[maybe_unused]] spine::AtlasPage& page, [[maybe_unused]] const spine::String& path)
@@ -230,6 +234,7 @@ std::unique_ptr<spine::SkeletonDrawable> SpineManager::CreateSkeletonDrawable(Sp
 #endif
 	if(skeletonData_[(int)skeletonId] == nullptr)
 	{
+		LogError(fmt::format("Could not load spine skeleton drawable: {}", (int)skeletonId));
 		return nullptr;
 	}
 	return std::make_unique<spine::SkeletonDrawable>(skeletonData_[(int)skeletonId]);

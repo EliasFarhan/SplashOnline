@@ -21,6 +21,7 @@ void BulletManager::Begin()
 	{
 		bullet.bodyIndex = physicsWorld.AddBody();
 		bullet.colliderIndex = physicsWorld.AddCircleCollider(bullet.bodyIndex);
+		bullet.colliderUserData.type = ColliderType::BULLET;
 
 		auto& body = physicsWorld.body(bullet.bodyIndex);
 		body.isActive = false;
@@ -28,6 +29,7 @@ void BulletManager::Begin()
 
 		auto& collider = physicsWorld.collider(bullet.colliderIndex);
 		collider.isTrigger = true;
+		collider.userData = &bullet.colliderUserData;
 
 		auto& circle = physicsWorld.circle(collider.shapeIndex);
 		circle.radius = Bullet::radius * Bullet::scale;
@@ -38,10 +40,10 @@ void BulletManager::Tick()
 {
 	for(auto& bullet: bullets_)
 	{
-		if(!bullet.destroyTimer.Over())
+		if(!bullet.destroyedTimer.Over())
 		{
-			bullet.destroyTimer.Update(fixedDeltaTime);
-			if(bullet.destroyTimer.Over())
+			bullet.destroyedTimer.Update(fixedDeltaTime);
+			if(bullet.destroyedTimer.Over())
 			{
 				bullet.playerNumber = -1;
 			}
@@ -67,6 +69,7 @@ void BulletManager::OnTriggerEnter(neko::ColliderIndex bulletIndex, const neko::
 		{
 			continue;
 		}
+		//We found the bullet
 		if(colliderUserData->playerNumber == bullet.playerNumber)
 		{
 			return;
@@ -79,7 +82,7 @@ void BulletManager::OnTriggerEnter(neko::ColliderIndex bulletIndex, const neko::
 		}
 		else
 		{
-			bullet.destroyTimer.Reset();
+			bullet.destroyedTimer.Reset();
 		}
 		break;
 	}
@@ -91,22 +94,33 @@ BulletManager::SpawnWata(neko::Vec2f position, neko::Vec2f targetDir, int player
 	auto it = std::find_if(bullets_.begin(), bullets_.end(),[](auto& bullet){
 		return bullet.playerNumber == -1;
 	});
-	Bullet* bullet = nullptr;
+	Bullet* newBullet = nullptr;
 	if(it == bullets_.end())
 	{
-		//Try to find a bullet with empty body
-		it = std::find_if(bullets_.begin(), bullets_.end(),[this](auto& bullet){
-			const auto& bulletBody = gameSystems_->GetPhysicsWorld().body(bullet.bodyIndex);
-			return !bulletBody.isActive;
-		});
-		bullet = &*it;
+		neko::Scalar ratio{-1.0f};
+		for(auto& bullet : bullets_)
+		{
+			const auto& body = gameSystems_->GetPhysicsWorld().body(bullet.bodyIndex);
+			if(body.isActive) continue;
+			const auto currentRatio = bullet.destroyedTimer.CurrentRatio();
+			if(ratio < currentRatio)
+			{
+				newBullet = &bullet;
+				ratio = currentRatio;
+			}
+		}
+		if(newBullet == nullptr)
+		{
+			//We have a problem
+		}
 	}
 	else
 	{
-		bullet = &*it;
+		newBullet = &*it;
 	}
-	bullet->playerNumber = playerNumber;
-	auto& bulletBody = gameSystems_->GetPhysicsWorld().body(bullet->bodyIndex);
+	newBullet->playerNumber = playerNumber;
+	newBullet->colliderUserData.playerNumber = playerNumber;
+	auto& bulletBody = gameSystems_->GetPhysicsWorld().body(newBullet->bodyIndex);
 	bulletBody.isActive = true;
 	bulletBody.type = straight ? neko::BodyType::KINEMATIC : neko::BodyType::DYNAMIC;
 	bulletBody.position = position;

@@ -56,6 +56,10 @@ public:
     {
         return time_;
     }
+	[[nodiscard]] constexpr T GetPeriod() const noexcept
+	{
+		return period_;
+	}
 private:
     T time_{};
     T period_{};

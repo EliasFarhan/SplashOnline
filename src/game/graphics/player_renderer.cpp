@@ -294,10 +294,6 @@ PlayerRenderer::PlayerRenderer(const GameSystems* gameSystems): gameSystems_(gam
 
 }
 
-void PlayerRenderer::Tick()
-{
-
-}
 
 void PlayerRenderer::SwitchToState(PlayerRenderState state, int playerNumber)
 {

@@ -67,6 +67,7 @@ void PlayerManager::Tick()
 
 		const auto reactor = neko::Scalar {playerInput.moveDirY};
 		const auto moveX = neko::Abs(playerInput.moveDirX) > PlayerCharacter::deadZone ? neko::Scalar{playerInput.moveDirX} : neko::Scalar{};
+		auto target = neko::Vec2f{neko::Scalar {playerInput.targetDirX}, neko::Scalar {playerInput.targetDirY}};
 
 		playerCharacter.jumpTimer.Update(fixedDeltaTime);
 
@@ -217,6 +218,68 @@ void PlayerManager::Tick()
 		{
 			playerCharacter.jumpTimer.Stop();
 		}
+
+		//TODO stomp update
+
+		//TODO Cap velocity update
+
+		//Water gun update
+		if(playerCharacter.reserveWaterTimer.Over())
+		{
+			playerCharacter.reloadTimer.Reset();
+		}
+		if(playerCharacter.IsReloading())
+		{
+			target = {};
+			playerCharacter.reloadTimer.Update(fixedDeltaTime);
+		}
+
+		if(target.SquareLength() < neko::Scalar {PlayerCharacter::deadZone})
+		{
+			playerCharacter.reserveWaterTimer.Update(
+				-fixedDeltaTime * playerCharacter.reserveWaterTimer.GetPeriod() /
+				playerCharacter.reloadTimer.GetPeriod());
+		}
+		else
+		{
+			if(playerCharacter.firstShots > 0)
+			{
+				playerCharacter.reserveWaterTimer.Update(fixedDeltaTime*PlayerCharacter::FirstShotFactor);
+			}
+			else
+			{
+				playerCharacter.reserveWaterTimer.Update(fixedDeltaTime);
+			}
+		}
+
+		if(playerCharacter.reserveWaterTimer.RemainingTime() > playerCharacter.reserveWaterTimer.GetPeriod())
+		{
+			playerCharacter.reserveWaterTimer.Reset();
+			playerCharacter.reloadTimer.Stop();
+			playerCharacter.firstShots = PlayerCharacter::FirstShotsCount;
+		}
+		if((!playerCharacter.waterTimer.Over() && playerCharacter.firstShots == 0) ||
+			(playerCharacter.firstShots > 0 && playerCharacter.waterTimer.CurrentRatio() < PlayerCharacter::FirstShotRatio))
+		{
+			playerCharacter.waterTimer.Update(fixedDeltaTime);
+		}
+		else
+		{
+			if(target.SquareLength() > neko::Scalar {PlayerCharacter::deadZone})
+			{
+				//TODO not shooting if stomp prep or dashing
+				//Shoot wata bullet
+				auto& bulletManager = gameSystems_->GetBulletManager();
+				const auto speedFactor = playerCharacter.firstShots>0?neko::Scalar {1.0f}:playerCharacter.reserveWaterTimer.RemainingTime();
+				bulletManager.SpawnWata(body.position+PlayerCharacter::WataOffsetPos+target, target.Normalized(), playerNumber, playerCharacter.firstShots>0,speedFactor);
+				playerCharacter.waterTimer.Reset();
+				if(playerCharacter.firstShots > 0)
+				{
+					playerCharacter.firstShots--;
+				}
+			}
+		}
+
 		// In the end, apply force to physics
 		body.force = playerPhysic.totalForce;
 		playerPhysic.totalForce = {};

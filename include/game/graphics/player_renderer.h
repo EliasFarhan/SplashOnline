@@ -47,7 +47,6 @@ public:
 	void Begin();
 	void End();
 	void Update(float dt);
-	void Tick();
 	void Draw();
 
 private:
