@@ -7,8 +7,9 @@
 
 #include "engine/system.h"
 #include "graphics/gui_renderer.h"
-#include "neko/network_manager.h"
-#include "thread/job_system.h"
+
+#include <neko/network_manager.h>
+#include <thread/job_system.h>
 
 namespace splash
 {
@@ -42,22 +43,25 @@ public:
 		const ExitGames::Common::JString& errorString,
 		const ExitGames::Common::JString& region,
 		const ExitGames::Common::JString& cluster) override;
-	void disconnectReturn(void) override;
+	void disconnectReturn() override;
 	void leaveRoomReturn(int errorCode, const ExitGames::Common::JString& errorString) override;
+
 	void Begin() override;
 	void End() override;
 	void Update(float dt) override;
-	int GetSystemIndex() const override;
+
+	[[nodiscard]] int GetSystemIndex() const override;
 	void SetSystemIndex(int index) override;
 	void OnGui() override;
 	void SetGuiIndex(int index) override;
-	int GetGuiIndex() const override;
+	[[nodiscard]] int GetGuiIndex() const override;
+
 private:
 	void RunNetwork();
 
 	neko::NetworkManager networkManager_;
 	neko::FuncJob networkJob_;
-	State state_ = State::UNCONNECTED;
+	std::atomic<State> state_ = State::UNCONNECTED;
 	int systemIndex_ = -1;
 	int guiIndex_ = -1;
 	std::atomic<bool> isRunning_ = true;

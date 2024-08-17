@@ -84,12 +84,7 @@ public:
 		return graphicsIndex_;
 	}
 private:
-	std::unique_ptr<spine::Atlas> atlas_;
-	std::unique_ptr<spine::SDLTextureLoader> textureLoader_;
-	std::unique_ptr<spine::AtlasAttachmentLoader> attachmentLoader_;
-	std::unique_ptr<spine::SkeletonJson> skeletonJson_;
 	std::unique_ptr<spine::SkeletonDrawable> skeletonDrawable_;
-	spine::SkeletonData * skeletonData_ = nullptr;
 	int systemIndex_ = -1;
 	int graphicsIndex_ = -1;
 };

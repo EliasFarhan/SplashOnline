@@ -45,7 +45,7 @@ void AudioManager::Begin()
 			   "data/music/Music.bank"
 		   }};
 	  std::array<FMOD::Studio::Bank*, 3> banks{};
-	  for (int i = 0; i < banks.size(); i++)
+	  for (std::size_t i = 0; i < banks.size(); i++)
 	  {
 #ifdef TRACY_ENABLE
 		  ZoneNamedN(loadBank, "Load Bank", true);

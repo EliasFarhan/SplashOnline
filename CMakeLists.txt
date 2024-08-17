@@ -129,8 +129,8 @@ elseif (UNIX)
             optimized libPhoton.a
             debug libPhotonDebug64.a
             optimized libPhotonRelease64.a
-            debug libCommonRelease64.a # libCommonDebug64.a
-            optimized libCommonRelease64.a
+            debug libCommonDebug64.a # libCommonDebug64.a
+            optimized libCommonDebug64.a #libCommonRelease64.a
     )
 endif()
 

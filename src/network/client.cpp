@@ -38,31 +38,43 @@ void NetworkClient::joinRoomEventAction(int playerNr,
 	const ExitGames::Common::JVector<int>& playernrs,
 	const ExitGames::LoadBalancing::Player& player)
 {
+	(void) player;
+	(void) playerNr;
+	(void) playernrs;
+
+	LogDebug(fmt::format("Join Room Event: playerNr: {} player name: {}", playerNr, player.getName().ASCIIRepresentation().cstr()));
+
 	state_ = State::IN_ROOM;
 }
 void NetworkClient::leaveRoomEventAction(int playerNr, bool isInactive)
 {
-
+	(void) playerNr;
+	(void) isInactive;
 }
 void NetworkClient::customEventAction(int playerNr, nByte eventCode, const ExitGames::Common::Object& eventContent)
 {
-
+	(void) playerNr;
+	(void) eventCode;
+	(void) eventContent;
 }
 void NetworkClient::connectReturn(int errorCode,
 	const ExitGames::Common::JString& errorString,
 	const ExitGames::Common::JString& region,
 	const ExitGames::Common::JString& cluster)
 {
-	LogDebug("CONNECTED!");
+	(void) errorCode;
+	(void) errorString;
+	LogDebug(fmt::format("Connect Return: region: {} cluster: {}", region.ASCIIRepresentation().cstr(), cluster.ASCIIRepresentation().cstr()));
 	state_ = State::CONNECTED_TO_MASTER;
 }
 void NetworkClient::disconnectReturn(void)
 {
-
+	LogDebug("Disconnect Return");
 }
 void NetworkClient::leaveRoomReturn(int errorCode, const ExitGames::Common::JString& errorString)
 {
-
+	(void)errorCode;
+	(void)errorString;
 }
 void NetworkClient::Begin()
 {
@@ -75,7 +87,7 @@ void NetworkClient::End()
 }
 void NetworkClient::Update(float dt)
 {
-
+	(void) dt;
 }
 int NetworkClient::GetSystemIndex() const
 {
@@ -106,11 +118,19 @@ void NetworkClient::OnGui()
 	}
 	case State::CONNECTED_TO_MASTER:
 	{
+		static std::array<char, 40> roomName{};
+		static std::array<char, 40> playerName{};
+		ImGui::InputText("Player Name", playerName.data(), playerName.size());
+		ImGui::InputText("Room Name", roomName.data(), roomName.size());
 		if(ImGui::Button("Join Or Create"))
 		{
 			state_ = State::JOINING;
+			ExitGames::LoadBalancing::RoomOptions roomOptions{};
+			roomOptions.setMaxPlayers(4);
 			auto& client = neko::GetLoadBalancingClient();
-			client.opJoinRandomOrCreateRoom();
+			auto& player = client.getLocalPlayer();
+			player.setName(playerName.data());
+			client.opJoinRandomOrCreateRoom(ExitGames::Common::JString(roomName.data()), roomOptions);
 		}
 		break;
 	}
@@ -121,6 +141,25 @@ void NetworkClient::OnGui()
 	}
 	case State::IN_ROOM:
 	{
+		ImGui::Text("In Room");
+		auto& client = neko::GetLoadBalancingClient();
+		if (!client.getIsInRoom())
+			break;
+		auto& player1 = client.getLocalPlayer();
+		auto& room = client.getCurrentlyJoinedRoom();
+		const auto playerCount = room.getPlayerCount();
+		ImGui::Text("Player Count: %d", room.getPlayerCount());
+		ImGui::Text("Player Nbr: %d", player1.getNumber());
+		if(playerCount >= 2)
+		{
+			if(ImGui::Button("Start Game"))
+			{
+				state_ = State::IN_GAME;
+				//TODO send event start game
+				//create the game manager?
+			}
+		}
+
 		break;
 	}
 	case State::IN_GAME:
