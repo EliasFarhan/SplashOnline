@@ -16,14 +16,15 @@ class NetworkManager
 {
 public:
 
-    explicit NetworkManager(ClientInterface* client);
-	void Begin();
-	void Tick();
-	void End();
+    explicit NetworkManager(ClientInterface* client, const ExitGames::LoadBalancing::ClientConstructOptions& clientConstructOptions={});
+	virtual void Begin();
+	virtual void Tick();
+	virtual void End();
 
 	ExitGames::LoadBalancing::Client& GetClient();
-private:
+protected:
     ExitGames::LoadBalancing::Client loadBalancingClient_;
+	ExitGames::LoadBalancing::ConnectOptions connectOptions_;
 };
 ExitGames::LoadBalancing::Client& GetLoadBalancingClient();
 

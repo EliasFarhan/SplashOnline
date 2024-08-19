@@ -80,9 +80,6 @@ void NetworkClient::customEventAction(int playerNr, nByte eventCode, const ExitG
 		if(state_.load(std::memory_order_consume) == State::IN_GAME)
 		{
 			lastReceiveInput_ = ExitGames::Common::ValueObject<InputSerializer>(eventContent).getDataCopy();
-			const auto& playerInput = lastReceiveInput_.GetPlayerInput();
-			LogDebug(fmt::format("New Player Input: size: {} frame: {} move: ({},{})", playerInput.inputSize, playerInput.frame,
-				(float)playerInput.inputs[0].moveDirX, (float)playerInput.inputs[0].moveDirY));
 		}
 		break;
 	}
@@ -118,9 +115,13 @@ void NetworkClient::leaveRoomReturn(int errorCode, const ExitGames::Common::JStr
 }
 void NetworkClient::Begin()
 {
+	InputSerializer::registerType();
+	ConfirmFrameSerializer::registerType();
 }
 void NetworkClient::End()
 {
+	ConfirmFrameSerializer::unregisterType();
+	InputSerializer::unregisterType();
 	RemoveSystem(this);
 	RemoveGuiInterface(this);
 	isRunning_.store(false, std::memory_order_release);
@@ -179,6 +180,21 @@ void NetworkClient::OnGui()
 		ImGui::Text("Joining...");
 		break;
 	}
+	case State::CHOOSING_REGIONS:
+	{
+		ImGui::Text("Choose region:");
+		for(const auto& region : regions_)
+		{
+			if(ImGui::Button(region.first.c_str()))
+			{
+				auto& client = networkManager_.GetClient();
+				client.selectRegion(region.first.c_str());
+				break;
+
+			}
+		}
+		break;
+	}
 	case State::IN_ROOM:
 	{
 		ImGui::Text("In Room");
@@ -229,7 +245,7 @@ int NetworkClient::GetGuiIndex() const
 {
 	return guiIndex_;
 }
-NetworkClient::NetworkClient() : networkManager_(this), networkJob_([this](){RunNetwork();})
+NetworkClient::NetworkClient(const ExitGames::LoadBalancing::ClientConstructOptions& clientConstructOptions) : networkManager_(this, clientConstructOptions), networkJob_([this](){RunNetwork();})
 {
 	instance = this;
 	AddGuiInterface(this);
@@ -280,6 +296,15 @@ void NetworkClient::SendConfirmFramePacket([[maybe_unused]] const ConfirmFramePa
 	auto& client = networkManager_.GetClient();
 	ExitGames::LoadBalancing::RaiseEventOptions options{};
 	client.opRaiseEvent(true, serializer, (nByte) PacketType::CONFIRM_FRAME, options);
+}
+void NetworkClient::onAvailableRegions(const ExitGames::Common::JVector<ExitGames::Common::JString>& regions,
+	const ExitGames::Common::JVector<ExitGames::Common::JString>& regionsServers)
+{
+	state_.store(State::CHOOSING_REGIONS);
+	for(unsigned i = 0; i < regions.getSize(); i++)
+	{
+		regions_.emplace_back(regions[i].ASCIIRepresentation().cstr(), regionsServers[i].ASCIIRepresentation().cstr());
+	}
 }
 NetworkClient* GetNetworkClient()
 {

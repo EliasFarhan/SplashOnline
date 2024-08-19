@@ -34,6 +34,7 @@ struct ConfirmFramePacket
 class ConfirmFrameSerializer : public ExitGames::Common::CustomType<ConfirmFrameSerializer, (nByte)PacketType::CONFIRM_FRAME>
 {
 public:
+	ConfirmFrameSerializer() = default;
 	explicit ConfirmFrameSerializer(const ConfirmFramePacket& confirmFramePacket): confirmFramePacket_(confirmFramePacket){}
 	[[nodiscard]] bool compare(const CustomTypeBase& other) const override;
 	void duplicate(CustomTypeBase* pRetVal) const override;

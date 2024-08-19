@@ -23,13 +23,14 @@ public:
 	{
 		UNCONNECTED,
 		CONNECTING,
+		CHOOSING_REGIONS,
 		CONNECTED_TO_MASTER,
 		JOINING,
 		IN_ROOM,
 		IN_GAME,
 	};
 
-	NetworkClient();
+	NetworkClient(const ExitGames::LoadBalancing::ClientConstructOptions& clientConstructOptions={});
 	void debugReturn(int debugLevel, const ExitGames::Common::JString& string) override;
 	void connectionErrorReturn(int errorCode) override;
 	void clientErrorReturn(int errorCode) override;
@@ -46,6 +47,8 @@ public:
 		const ExitGames::Common::JString& cluster) override;
 	void disconnectReturn() override;
 	void leaveRoomReturn(int errorCode, const ExitGames::Common::JString& errorString) override;
+	void onAvailableRegions(const ExitGames::Common::JVector<ExitGames::Common::JString> & regions,
+		const ExitGames::Common::JVector<ExitGames::Common::JString> & regionsServers) override;
 
 	void Begin() override;
 	void End() override;
@@ -73,6 +76,7 @@ private:
 	int localPlayerIndex_ = -1;
 	std::atomic<bool> isRunning_ = true;
 
+	std::vector<std::pair<std::string, std::string>> regions_;
 	InputSerializer lastReceiveInput_;
 };
 
