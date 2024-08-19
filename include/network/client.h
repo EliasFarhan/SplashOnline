@@ -56,6 +56,8 @@ public:
 	void SetGuiIndex(int index) override;
 	[[nodiscard]] int GetGuiIndex() const override;
 
+	[[nodiscard]] State GetState() const { return state_.load(std::memory_order_consume); }
+	int GetPlayerIndex();
 private:
 	void RunNetwork();
 
@@ -64,6 +66,7 @@ private:
 	std::atomic<State> state_ = State::UNCONNECTED;
 	int systemIndex_ = -1;
 	int guiIndex_ = -1;
+	int localPlayerIndex_ = -1;
 	std::atomic<bool> isRunning_ = true;
 };
 

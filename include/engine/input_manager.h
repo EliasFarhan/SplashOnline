@@ -31,6 +31,19 @@ struct PlayerInput
 	constexpr void SetStomp(bool stomp) { stomp ? buttons |= STOMP : buttons &= ~STOMP; }
 	constexpr void SetConfirm(bool confirm) { confirm ? buttons |= CONFIRM : buttons &= ~CONFIRM; }
 	constexpr void SetCancel(bool cancel) { cancel ? buttons |= CANCEL : buttons &= ~CANCEL; }
+
+	bool operator==(const PlayerInput& otherInput) const
+	{
+		return moveDirX == otherInput.moveDirX &&
+		moveDirY == otherInput.moveDirY &&
+		targetDirX == otherInput.targetDirX &&
+		targetDirY == otherInput.targetDirY &&
+		buttons == otherInput.buttons;
+	}
+	bool operator!=(const PlayerInput& otherInput) const
+	{
+		return !(*this == otherInput);
+	}
 };
 
 class InputManager : public OnEventInterface

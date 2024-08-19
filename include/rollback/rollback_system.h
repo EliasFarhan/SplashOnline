@@ -5,14 +5,17 @@
 #ifndef SPLASHONLINE_ROLLBACK_SYSTEM_H
 #define SPLASHONLINE_ROLLBACK_SYSTEM_H
 
+#include <cstdint>
+
 namespace splash
 {
 
+	template<typename T>
     class RollbackInterface
     {
     public:
-        virtual void Tick() = 0;
-        virtual void Rollback() = 0;
+        [[nodiscard]] virtual std::uint32_t CalculateChecksum() const = 0;
+        virtual void RollbackFrom(const T& system) = 0;
     };
 
 }

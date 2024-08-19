@@ -1,6 +1,7 @@
 #include "network/client.h"
 #include "engine/engine.h"
 #include "utils/log.h"
+#include "network/packet.h"
 
 #include <imgui.h>
 #include <fmt/format.h>
@@ -42,20 +43,53 @@ void NetworkClient::joinRoomEventAction(int playerNr,
 	(void) playerNr;
 	(void) playernrs;
 
+
 	LogDebug(fmt::format("Join Room Event: playerNr: {} player name: {}", playerNr, player.getName().ASCIIRepresentation().cstr()));
 
-	state_ = State::IN_ROOM;
+	if(state_.load(std::memory_order_consume) == State::JOINING)
+	{
+
+		state_.store(State::IN_ROOM, std::memory_order_release);
+		localPlayerIndex_ = networkManager_.GetClient().getLocalPlayer().getNumber();
+	}
 }
 void NetworkClient::leaveRoomEventAction(int playerNr, bool isInactive)
 {
 	(void) playerNr;
 	(void) isInactive;
+
 }
 void NetworkClient::customEventAction(int playerNr, nByte eventCode, const ExitGames::Common::Object& eventContent)
 {
 	(void) playerNr;
 	(void) eventCode;
 	(void) eventContent;
+	switch((PacketType)eventCode)
+	{
+
+	case PacketType::START_GAME:
+	{
+		if(state_.load(std::memory_order_consume) == State::IN_ROOM)
+		{
+			state_.store(State::IN_GAME, std::memory_order_release);
+			LogDebug("In Game");
+		}
+		break;
+	}
+	case PacketType::INPUT:
+	{
+		break;
+	}
+	case PacketType::CONFIRM_FRAME:
+	{
+		break;
+	}
+	default:
+	{
+		LogWarning(fmt::format("Received event packet with unknown code: {}", eventCode));
+		break;
+	}
+	}
 }
 void NetworkClient::connectReturn(int errorCode,
 	const ExitGames::Common::JString& errorString,
@@ -65,7 +99,7 @@ void NetworkClient::connectReturn(int errorCode,
 	(void) errorCode;
 	(void) errorString;
 	LogDebug(fmt::format("Connect Return: region: {} cluster: {}", region.ASCIIRepresentation().cstr(), cluster.ASCIIRepresentation().cstr()));
-	state_ = State::CONNECTED_TO_MASTER;
+	state_.store(State::CONNECTED_TO_MASTER, std::memory_order_release);
 }
 void NetworkClient::disconnectReturn(void)
 {
@@ -99,15 +133,19 @@ void NetworkClient::SetSystemIndex(int index)
 }
 void NetworkClient::OnGui()
 {
+	if(state_.load(std::memory_order_consume) == State::IN_GAME)
+	{
+		return;
+	}
 	ImGui::Begin("Network Client");
-	switch(state_)
+	switch(state_.load(std::memory_order_consume))
 	{
 	case State::UNCONNECTED:
 	{
 		if(ImGui::Button("Connect"))
 		{
 			ScheduleNetJob(&networkJob_);
-			state_ = State::CONNECTING;
+			state_.store(State::CONNECTING, std::memory_order_release);
 		}
 		break;
 	}
@@ -124,7 +162,7 @@ void NetworkClient::OnGui()
 		ImGui::InputText("Room Name", roomName.data(), roomName.size());
 		if(ImGui::Button("Join Or Create"))
 		{
-			state_ = State::JOINING;
+			state_.store(State::JOINING, std::memory_order_release);
 			ExitGames::LoadBalancing::RoomOptions roomOptions{};
 			roomOptions.setMaxPlayers(4);
 			auto& client = neko::GetLoadBalancingClient();
@@ -149,14 +187,17 @@ void NetworkClient::OnGui()
 		auto& room = client.getCurrentlyJoinedRoom();
 		const auto playerCount = room.getPlayerCount();
 		ImGui::Text("Player Count: %d", room.getPlayerCount());
-		ImGui::Text("Player Nbr: %d", player1.getNumber());
-		if(playerCount >= 2)
+		ImGui::Text("Player Nbr: %d", localPlayerIndex_);
+		if(playerCount >= 2 && room.getMasterClientID() == player1.getNumber())
 		{
 			if(ImGui::Button("Start Game"))
 			{
-				state_ = State::IN_GAME;
+				state_.store(State::IN_GAME, std::memory_order_release);
 				//TODO send event start game
 				//create the game manager?
+				room.setIsOpen(false);
+				ExitGames::LoadBalancing::RaiseEventOptions options{};
+				client.opRaiseEvent(true, (nByte)0, (nByte)PacketType::START_GAME, options);
 			}
 		}
 
@@ -164,6 +205,7 @@ void NetworkClient::OnGui()
 	}
 	case State::IN_GAME:
 	{
+		ImGui::Text("In Game!");
 		break;
 	}
 	default:
@@ -208,6 +250,14 @@ void NetworkClient::RunNetwork()
 #ifdef TRACY_ENABLE
 	TracyCZoneEnd(netEnd);
 #endif
+}
+int NetworkClient::GetPlayerIndex()
+{
+	if(state_.load(std::memory_order_consume) == State::IN_GAME)
+	{
+		return networkManager_.GetClient().getLocalPlayer().getNumber();
+	}
+	return 0;
 }
 NetworkClient* GetNetworkClient()
 {

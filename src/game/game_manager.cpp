@@ -30,7 +30,14 @@ void GameManager::Update(float dt)
 	}
 	else
 	{
-		// import network inputs
+		const auto playerIndex = netClient->GetPlayerIndex();
+		if(playerIndex == 0)
+		{
+			//We are not in game
+			return;
+		}
+		playerInputs_[playerIndex-1] = GetPlayerInput();
+		//TODO import network inputs and confirm frames
 	}
 
 	currentTime_ += dt;
