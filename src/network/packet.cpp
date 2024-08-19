@@ -4,6 +4,10 @@
 
 #include "network/packet.h"
 
+#include "utils/log.h"
+
+#include <fmt/format.h>
+
 namespace splash
 {
 
@@ -36,7 +40,7 @@ short ConfirmFrameSerializer::serialize(nByte* pRetVal) const
 	}
 	return sizeof(ConfirmFramePacket);
 }
-ExitGames::Common::JString& ConfirmFrameSerializer::toString(ExitGames::Common::JString& retStr, bool withTypes) const
+ExitGames::Common::JString& ConfirmFrameSerializer::toString(ExitGames::Common::JString& retStr, [[maybe_unused]] bool withTypes) const
 {
 	return retStr = ExitGames::Common::JString("Confirm Frame Packet");
 }
@@ -50,17 +54,29 @@ void InputSerializer::duplicate(ExitGames::Common::CustomTypeBase* pRetVal) cons
 }
 void InputSerializer::deserialize(const nByte* pData, short length)
 {
-	//TODO deserialize input
+	const auto inputSize = (int)((length - 2*sizeof(int))/sizeof(PlayerInput));
+	const auto packetInputSize = *reinterpret_cast<const int*>(pData+sizeof(int));
+	if(inputSize != packetInputSize)
+	{
+		LogError(fmt::format("Input size is not the same: {} vs {}"));
+		return;
+	}
+	inputPacket_.frame = *reinterpret_cast<const int*>(pData);
+	inputPacket_.inputSize = inputSize;
+	std::memcpy(inputPacket_.inputs.data(), pData+2*sizeof(int), inputSize*sizeof(PlayerInput));
+
 }
 short InputSerializer::serialize(nByte* pRetVal) const
 {
 	if(pRetVal)
 	{
-		//TODO serialize input
+		*reinterpret_cast<int*>(pRetVal) = inputPacket_.frame;
+		*reinterpret_cast<int*>(pRetVal+sizeof(int)) = inputPacket_.inputSize;
+		std::memcpy(pRetVal+2*sizeof(int), inputPacket_.inputs.data(), inputPacket_.inputSize*sizeof(PlayerInput));
 	}
-	return inputPacket_.inputSize*sizeof(PlayerInput)+sizeof(int)+sizeof(int);
+	return (short)(inputPacket_.inputSize*sizeof(PlayerInput)+sizeof(int)+sizeof(int));
 }
-ExitGames::Common::JString& InputSerializer::toString(ExitGames::Common::JString& retStr, bool withTypes) const
+ExitGames::Common::JString& InputSerializer::toString(ExitGames::Common::JString& retStr, [[maybe_unused]]bool withTypes) const
 {
 	return retStr = ExitGames::Common::JString("Input Packet");
 }

@@ -7,6 +7,7 @@
 
 #include "engine/system.h"
 #include "graphics/gui_renderer.h"
+#include "packet.h"
 
 #include <neko/network_manager.h>
 #include <thread/job_system.h>
@@ -58,6 +59,9 @@ public:
 
 	[[nodiscard]] State GetState() const { return state_.load(std::memory_order_consume); }
 	int GetPlayerIndex();
+
+	void SendInputPacket(const InputPacket& inputPacket);
+	void SendConfirmFramePacket(const ConfirmFramePacket& confirmPacket);
 private:
 	void RunNetwork();
 
@@ -68,6 +72,8 @@ private:
 	int guiIndex_ = -1;
 	int localPlayerIndex_ = -1;
 	std::atomic<bool> isRunning_ = true;
+
+	InputSerializer lastReceiveInput_;
 };
 
 NetworkClient* GetNetworkClient();

@@ -7,26 +7,6 @@
 namespace splash
 {
 
-void SplashManager::Begin()
-{
-
-}
-void SplashManager::End()
-{
-
-}
-void SplashManager::Update(float dt)
-{
-
-}
-int SplashManager::GetSystemIndex() const
-{
-	return 0;
-}
-void SplashManager::SetSystemIndex(int index)
-{
-
-}
 void SplashManager::OnGui()
 {
 

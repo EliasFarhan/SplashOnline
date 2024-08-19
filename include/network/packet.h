@@ -31,7 +31,7 @@ struct ConfirmFramePacket
 	}
 };
 
-class ConfirmFrameSerializer : public ExitGames::Common::CustomType<ConfirmFramePacket, (nByte)PacketType::CONFIRM_FRAME>
+class ConfirmFrameSerializer : public ExitGames::Common::CustomType<ConfirmFrameSerializer, (nByte)PacketType::CONFIRM_FRAME>
 {
 public:
 	explicit ConfirmFrameSerializer(const ConfirmFramePacket& confirmFramePacket): confirmFramePacket_(confirmFramePacket){}
@@ -46,7 +46,7 @@ private:
 
 struct InputPacket
 {
-	PlayerInput* inputs = nullptr;
+	std::array<PlayerInput, 26> inputs{};
 	int inputSize = -1;
 	int frame = -1;
 
@@ -64,15 +64,17 @@ struct InputPacket
 	}
 };
 
-class InputSerializer : public ExitGames::Common::CustomType<InputPacket, (nByte)PacketType::INPUT>
+class InputSerializer : public ExitGames::Common::CustomType<InputSerializer, (nByte)PacketType::INPUT>
 {
 public:
+	InputSerializer() = default;
 	explicit InputSerializer(const InputPacket& inputPacket): inputPacket_(inputPacket){}
 	[[nodiscard]] bool compare(const CustomTypeBase& other) const override;
 	void duplicate(CustomTypeBase* pRetVal) const override;
 	void deserialize(const nByte* pData, short length) override;
 	short serialize(nByte* pRetVal) const override;
 	ExitGames::Common::JString& toString(ExitGames::Common::JString& retStr, bool withTypes) const override;
+	[[nodiscard]] const auto& GetPlayerInput() const {return inputPacket_;}
 private:
 	InputPacket inputPacket_{};
 };

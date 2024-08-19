@@ -62,7 +62,6 @@ void NetworkClient::leaveRoomEventAction(int playerNr, bool isInactive)
 void NetworkClient::customEventAction(int playerNr, nByte eventCode, const ExitGames::Common::Object& eventContent)
 {
 	(void) playerNr;
-	(void) eventCode;
 	(void) eventContent;
 	switch((PacketType)eventCode)
 	{
@@ -78,6 +77,13 @@ void NetworkClient::customEventAction(int playerNr, nByte eventCode, const ExitG
 	}
 	case PacketType::INPUT:
 	{
+		if(state_.load(std::memory_order_consume) == State::IN_GAME)
+		{
+			lastReceiveInput_ = ExitGames::Common::ValueObject<InputSerializer>(eventContent).getDataCopy();
+			const auto& playerInput = lastReceiveInput_.GetPlayerInput();
+			LogDebug(fmt::format("New Player Input: size: {} frame: {} move: ({},{})", playerInput.inputSize, playerInput.frame,
+				(float)playerInput.inputs[0].moveDirX, (float)playerInput.inputs[0].moveDirY));
+		}
 		break;
 	}
 	case PacketType::CONFIRM_FRAME:
@@ -133,10 +139,6 @@ void NetworkClient::SetSystemIndex(int index)
 }
 void NetworkClient::OnGui()
 {
-	if(state_.load(std::memory_order_consume) == State::IN_GAME)
-	{
-		return;
-	}
 	ImGui::Begin("Network Client");
 	switch(state_.load(std::memory_order_consume))
 	{
@@ -193,8 +195,7 @@ void NetworkClient::OnGui()
 			if(ImGui::Button("Start Game"))
 			{
 				state_.store(State::IN_GAME, std::memory_order_release);
-				//TODO send event start game
-				//create the game manager?
+				//todo create the game manager?
 				room.setIsOpen(false);
 				ExitGames::LoadBalancing::RaiseEventOptions options{};
 				client.opRaiseEvent(true, (nByte)0, (nByte)PacketType::START_GAME, options);
@@ -206,6 +207,13 @@ void NetworkClient::OnGui()
 	case State::IN_GAME:
 	{
 		ImGui::Text("In Game!");
+		const auto& playerInputPacket = lastReceiveInput_.GetPlayerInput();
+		const auto& playerInput = playerInputPacket.inputs[0];
+		ImGui::Text("Input: Move(%1.2f, %1.2f), Target(%1.2f, %1.2f)",
+			(float)playerInput.moveDirX,
+			(float)playerInput.moveDirY,
+			(float)playerInput.targetDirX,
+			(float)playerInput.targetDirY);
 		break;
 	}
 	default:
@@ -258,6 +266,20 @@ int NetworkClient::GetPlayerIndex()
 		return networkManager_.GetClient().getLocalPlayer().getNumber();
 	}
 	return 0;
+}
+void NetworkClient::SendInputPacket(const InputPacket& inputPacket)
+{
+	InputSerializer serializer(inputPacket);
+	auto& client = networkManager_.GetClient();
+	ExitGames::LoadBalancing::RaiseEventOptions options{};
+	client.opRaiseEvent(false, serializer, (nByte) PacketType::INPUT, options);
+}
+void NetworkClient::SendConfirmFramePacket([[maybe_unused]] const ConfirmFramePacket& confirmPacket)
+{
+	ConfirmFrameSerializer serializer(confirmPacket);
+	auto& client = networkManager_.GetClient();
+	ExitGames::LoadBalancing::RaiseEventOptions options{};
+	client.opRaiseEvent(true, serializer, (nByte) PacketType::CONFIRM_FRAME, options);
 }
 NetworkClient* GetNetworkClient()
 {
