@@ -69,15 +69,17 @@ private:
 	void RunNetwork();
 
 	neko::NetworkManager networkManager_;
+	std::vector<std::pair<std::string, std::string>> regions_;
+	std::vector<std::unique_ptr<neko::FuncJob>> networkTasks_;
+	std::mutex networkTasksMutex_;
 	neko::FuncJob networkJob_;
 	std::atomic<State> state_ = State::UNCONNECTED;
 	int systemIndex_ = -1;
 	int guiIndex_ = -1;
 	int localPlayerIndex_ = -1;
+	InputSerializer lastReceiveInput_{};
 	std::atomic<bool> isRunning_ = true;
 
-	std::vector<std::pair<std::string, std::string>> regions_;
-	InputSerializer lastReceiveInput_;
 };
 
 NetworkClient* GetNetworkClient();

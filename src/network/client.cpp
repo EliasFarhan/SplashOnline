@@ -187,8 +187,11 @@ void NetworkClient::OnGui()
 		{
 			if(ImGui::Button(region.first.c_str()))
 			{
-				auto& client = networkManager_.GetClient();
-				client.selectRegion(region.first.c_str());
+				std::scoped_lock<std::mutex> lock(networkTasksMutex_);
+				networkTasks_.push_back(std::make_unique<neko::FuncJob>([region, this]{
+					auto& client = networkManager_.GetClient();
+					client.selectRegion(region.first.c_str());
+				}));
 				break;
 
 			}
@@ -210,11 +213,18 @@ void NetworkClient::OnGui()
 		{
 			if(ImGui::Button("Start Game"))
 			{
-				state_.store(State::IN_GAME, std::memory_order_release);
+				std::scoped_lock<std::mutex> lock(networkTasksMutex_);
+				networkTasks_.push_back(std::make_unique<neko::FuncJob>([this]{
+					state_.store(State::IN_GAME, std::memory_order_release);
+
+
+					auto& client = neko::GetLoadBalancingClient();
+					auto& room = client.getCurrentlyJoinedRoom();
+					room.setIsOpen(false);
+					ExitGames::LoadBalancing::RaiseEventOptions options{};
+					client.opRaiseEvent(true, (nByte)0, (nByte)PacketType::START_GAME, options);
+				}));
 				//todo create the game manager?
-				room.setIsOpen(false);
-				ExitGames::LoadBalancing::RaiseEventOptions options{};
-				client.opRaiseEvent(true, (nByte)0, (nByte)PacketType::START_GAME, options);
 			}
 		}
 
@@ -250,6 +260,7 @@ NetworkClient::NetworkClient(const ExitGames::LoadBalancing::ClientConstructOpti
 	instance = this;
 	AddGuiInterface(this);
 	AddSystem(this);
+	networkTasks_.reserve(15);
 }
 void NetworkClient::RunNetwork()
 {
@@ -260,12 +271,35 @@ void NetworkClient::RunNetwork()
 #ifdef TRACY_ENABLE
 	TracyCZoneEnd(netStart);
 #endif
+	static constexpr Uint32 tickTime = 10;//10ms for network loop
+	auto previous = SDL_GetTicks();
 	while(isRunning_.load(std::memory_order_consume))
 	{
+
+		{
 #ifdef TRACY_ENABLE
-		ZoneNamedN(networkLoop, "Network Loop", true);
+			ZoneNamedN(networkTasks, "Network Tasks", true);
+#endif
+			std::scoped_lock<std::mutex> lock(networkTasksMutex_);
+			for(auto& networkTask: networkTasks_)
+			{
+				networkTask->Execute();
+			}
+			networkTasks_.clear();
+		}
+#ifdef TRACY_ENABLE
+		TracyCZoneN(networkLoop, "Network Loop", true);
 #endif
 		networkManager_.Tick();
+#ifdef TRACY_ENABLE
+		TracyCZoneEnd(networkLoop);
+#endif
+		auto current = SDL_GetTicks();
+		if(current - previous < tickTime)
+		{
+			SLEEP(tickTime - (current-previous));
+		}
+		previous = current;
 	}
 #ifdef TRACY_ENABLE
 	TracyCZoneN(netEnd, "Stop Network Manager", true);
@@ -286,25 +320,36 @@ int NetworkClient::GetPlayerIndex()
 void NetworkClient::SendInputPacket(const InputPacket& inputPacket)
 {
 	InputSerializer serializer(inputPacket);
-	auto& client = networkManager_.GetClient();
-	ExitGames::LoadBalancing::RaiseEventOptions options{};
-	client.opRaiseEvent(false, serializer, (nByte) PacketType::INPUT, options);
+	std::scoped_lock<std::mutex> lock(networkTasksMutex_);
+	networkTasks_.push_back(std::make_unique<neko::FuncJob>([this, serializer]
+	{
+		auto& client = networkManager_.GetClient();
+		ExitGames::LoadBalancing::RaiseEventOptions options{};
+		client.opRaiseEvent(false, serializer, (nByte)PacketType::INPUT, options);
+	}));
 }
 void NetworkClient::SendConfirmFramePacket([[maybe_unused]] const ConfirmFramePacket& confirmPacket)
 {
 	ConfirmFrameSerializer serializer(confirmPacket);
-	auto& client = networkManager_.GetClient();
-	ExitGames::LoadBalancing::RaiseEventOptions options{};
-	client.opRaiseEvent(true, serializer, (nByte) PacketType::CONFIRM_FRAME, options);
+	std::scoped_lock<std::mutex> lock(networkTasksMutex_);
+	networkTasks_.push_back(std::make_unique<neko::FuncJob>([this, serializer]
+	{
+		auto& client = networkManager_.GetClient();
+		ExitGames::LoadBalancing::RaiseEventOptions options{};
+		client.opRaiseEvent(true, serializer, (nByte)PacketType::CONFIRM_FRAME, options);
+	}));
 }
 void NetworkClient::onAvailableRegions(const ExitGames::Common::JVector<ExitGames::Common::JString>& regions,
 	const ExitGames::Common::JVector<ExitGames::Common::JString>& regionsServers)
 {
 	state_.store(State::CHOOSING_REGIONS);
+	std::vector<std::pair<std::string, std::string>> regionsTmp;
+	regionsTmp.reserve(regions.getSize());
 	for(unsigned i = 0; i < regions.getSize(); i++)
 	{
-		regions_.emplace_back(regions[i].ASCIIRepresentation().cstr(), regionsServers[i].ASCIIRepresentation().cstr());
+		regionsTmp.emplace_back(regions[i].ASCIIRepresentation().cstr(), regionsServers[i].ASCIIRepresentation().cstr());
 	}
+	std::swap(regions_, regionsTmp);
 }
 NetworkClient* GetNetworkClient()
 {
