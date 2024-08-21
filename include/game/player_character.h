@@ -10,6 +10,7 @@
 #include "engine/input_manager.h"
 #include "container/span.h"
 #include "physics/physics.h"
+#include "rollback/rollback_system.h"
 
 #include <math/vec2.h>
 #include <physics/physics_type.h>
@@ -157,7 +158,7 @@ struct PlayerPhysic
 };
 
 class GameSystems;
-class PlayerManager
+class PlayerManager : public RollbackInterface<PlayerManager>
 {
 public:
 	explicit PlayerManager(GameSystems* gameSystems);
@@ -173,6 +174,11 @@ public:
 	[[nodiscard]] const auto& GetPlayerPhysics()const {return playerPhysics_;}
 	[[nodiscard]] const auto& GetPlayerInputs() const { return playerInputs_; }
 	void SetPlayerInput(neko::Span<PlayerInput> playerInputs);
+
+	uint32_t CalculateChecksum() const override;
+
+	void RollbackFrom(const PlayerManager& system) override;
+
 	static constexpr std::array<neko::Vec2f, MaxPlayerNmb> spawnPositions
 		{{
 			 {neko::Scalar{-4.77f}, neko::Scalar{-1.79f}},

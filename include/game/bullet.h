@@ -7,6 +7,7 @@
 
 #include "utils/timer.h"
 #include "game/const.h"
+#include "rollback/rollback_system.h"
 
 #include <physics/physics.h>
 
@@ -27,7 +28,7 @@ struct Bullet
 };
 
 class GameSystems;
-class BulletManager
+class BulletManager : public RollbackInterface<BulletManager>
 {
 public:
 	explicit BulletManager(GameSystems* gameSystems);
@@ -40,6 +41,11 @@ public:
 	void OnTriggerEnter(neko::ColliderIndex bulletIndex, const neko::Collider& otherCollider);
 
 	[[nodiscard]] const auto& GetBullets() const { return bullets_;}
+
+	uint32_t CalculateChecksum() const override;
+
+	void RollbackFrom(const BulletManager& system) override;
+
 private:
 	GameSystems* gameSystems_ = nullptr;
 	std::array<Bullet, MaxBulletNmb> bullets_;

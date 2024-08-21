@@ -33,4 +33,12 @@ void MusicManager::Play()
 		eventInstance_->start();
 	}
 }
+
+void MusicManager::SetParameter(std::string_view name, float value)
+{
+	if(eventInstance_ != nullptr)
+	{
+		eventInstance_->setParameterValue(name.data(), value);
+	}
+}
 }

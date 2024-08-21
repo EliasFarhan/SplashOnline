@@ -23,6 +23,7 @@ public:
 	[[nodiscard]] int GetSystemIndex() const override;
 	void SetSystemIndex(int index) override;
 
+	MusicManager& GetMusicManager() { return musicManager_; }
 	FMOD::Studio::EventDescription* GetEventDescription(std::string_view eventName);
 	[[nodiscard]] bool IsLoaded() const { return isLoaded_.load(std::memory_order_consume); }
 private:
@@ -34,6 +35,7 @@ private:
 
 FMOD::Studio::EventDescription* GetEventDescription(std::string_view eventName);
 bool IsFmodLoaded();
+MusicManager& GetMusicManager();
 
 }
 

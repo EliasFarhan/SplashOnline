@@ -465,4 +465,18 @@ void PlayerManager::Respawn(int playerNumber)
 	body.isActive = false;
 	playerCharacter.respawnPauseTimer.Reset();
 }
+
+uint32_t PlayerManager::CalculateChecksum() const
+{
+	//TODO calculate player character checksum
+	return 0;
+}
+
+void PlayerManager::RollbackFrom(const PlayerManager& system)
+{
+	playerInputs_ = system.playerInputs_;
+	previousPlayerInputs_ = system.previousPlayerInputs_;
+	playerCharacters_ = system.playerCharacters_;
+	playerPhysics_ = system.playerPhysics_;
+}
 }

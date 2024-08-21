@@ -143,4 +143,14 @@ void BulletManager::SpawnWata(
 	bulletBody.position = position;
 	bulletBody.velocity = targetDir * speedFactor * Bullet::WataSpeed;
 }
+
+uint32_t BulletManager::CalculateChecksum() const
+{
+	return 0;
+}
+
+void BulletManager::RollbackFrom(const BulletManager& system)
+{
+	bullets_ = system.bullets_;
+}
 }

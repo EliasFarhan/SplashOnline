@@ -22,7 +22,7 @@ public:
 		splash::RemoveDrawInterface(this);
 		splash::RemoveSystem(this);
 	}
-	void Update(float dt) override
+	void Update([[maybe_unused]] float dt) override
 	{
 		if(splash::IsTextureLoaded() && bg_ == nullptr)
 		{
@@ -34,12 +34,13 @@ public:
 			splash::InputPacket packet{};
 			packet.frame = frame_;
 			packet.inputSize = 1;
+			;
 			packet.inputs[0] = playerInput_;
 			client_->SendInputPacket(packet);
 			frame_++;
 		}
 	}
-	int GetSystemIndex() const override
+	[[nodiscard]] int GetSystemIndex() const override
 	{
 		return systemIndex_;
 	}

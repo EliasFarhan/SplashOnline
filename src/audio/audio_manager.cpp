@@ -1,5 +1,8 @@
 #include "audio/audio_manager.h"
 #include "engine/engine.h"
+#include "utils/log.h"
+
+#include <fmt/format.h>
 
 #include <string_view>
 #include <array>
@@ -90,8 +93,10 @@ void AudioManager::SetSystemIndex(int index)
 FMOD::Studio::EventDescription* AudioManager::GetEventDescription(std::string_view eventName)
 {
 	FMOD::Studio::EventDescription* eventDescription = nullptr;
-	if(system_->getEvent(eventName.data(), &eventDescription ) != FMOD_OK)
+	const auto errorCode = system_->getEvent(eventName.data(), &eventDescription );
+	if(errorCode != FMOD_OK)
 	{
+		LogError(fmt::format("Fmod getting event description error: {}", (int)errorCode));
 		return nullptr;
 	}
 	return eventDescription;
@@ -108,5 +113,9 @@ FMOD::Studio::EventDescription* GetEventDescription(std::string_view eventName)
 bool IsFmodLoaded()
 {
 	return instance->IsLoaded();
+}
+MusicManager& GetMusicManager()
+{
+	return instance->GetMusicManager();
 }
 }

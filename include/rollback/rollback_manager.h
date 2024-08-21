@@ -14,7 +14,7 @@ class RollbackManager
 public:
 
 private:
-	GameSystems confirmFrameGameSystems_;
+	GameSystems confirmFrameGameSystems_{};
 };
 }
 #endif //SPLASHONLINE_ROLLBACK_MANAGER_H

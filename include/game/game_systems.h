@@ -9,6 +9,7 @@
 #include "game/bullet.h"
 #include "game/level.h"
 #include "engine/input_manager.h"
+#include "rollback/rollback_system.h"
 
 #include <physics/physics.h>
 
@@ -16,7 +17,7 @@ namespace splash
 {
 
 
-class GameSystems : public neko::ContactListener
+class GameSystems : public neko::ContactListener, public RollbackInterface<GameSystems>
 {
 public:
 	GameSystems();
@@ -38,6 +39,10 @@ public:
 	void OnTriggerExit(const neko::ColliderPair& p) override;
 	void OnCollisionEnter(const neko::ColliderPair& p) override;
 	void OnCollisionExit(const neko::ColliderPair& p) override;
+
+	uint32_t CalculateChecksum() const override;
+
+	void RollbackFrom(const GameSystems& system) override;
 
 private:
 	PlayerManager playerManager_;
