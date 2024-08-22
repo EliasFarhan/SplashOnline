@@ -106,9 +106,9 @@ void RollbackManager::SetInputs(const InputPacket& packet)
 	const auto currentFrame = packet.frame;
 	const auto lastReceiveFrame = inputDatas_[playerNumber].lastReceivedFrame;
 	const auto firstFrame = currentFrame-packet.inputSize+1;
-	for(std::size_t i = 0; i < packet.inputs.size(); i++)
+	for(int i = 0; i < packet.inputSize; i++)
 	{
-		int tmpFrame = firstFrame+(int)i;
+		int tmpFrame = firstFrame+i;
 		if(tmpFrame < lastReceiveFrame)
 		{
 			continue;
@@ -124,6 +124,18 @@ void RollbackManager::SetInputs(const InputPacket& packet)
 bool RollbackManager::IsValid(int playerNumber) const
 {
 	return inputDatas_[playerNumber].isValid;
+}
+const GameSystems& RollbackManager::GetGameSystems() const
+{
+	return confirmFrameGameSystems_;
+}
+void RollbackManager::Begin()
+{
+	confirmFrameGameSystems_.Begin();
+}
+void RollbackManager::SetDirty(bool dirty)
+{
+	isDirty_ = dirty;
 }
 bool IsValid(int playerNumber)
 {

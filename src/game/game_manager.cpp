@@ -7,6 +7,7 @@
 #include "engine/engine.h"
 #include "network/client.h"
 #include "audio/sound_manager.h"
+#include "utils/log.h"
 
 namespace splash
 {
@@ -15,6 +16,7 @@ void GameManager::Begin()
 {
 	gameSystems_.Begin();
 	gameRenderer_.Begin();
+	rollbackManager_.Begin();
 }
 void GameManager::Update(float dt)
 {
@@ -93,10 +95,22 @@ void GameManager::Tick()
 
 		//TODO import confirm frames
 
-		//TODO rollback if needed
+		//rollback if needed
 		if(rollbackManager_.IsDirty())
 		{
-
+			gameSystems_.RollbackFrom(rollbackManager_.GetGameSystems());
+			if(rollbackManager_.GetGameSystems().CalculateChecksum() != gameSystems_.CalculateChecksum())
+			{
+				LogError("Desync");
+			}
+			int firstFrame = neko::Max(rollbackManager_.GetLastConfirmFrame(), 0);
+			for(int i = 0; i < currentFrame_-firstFrame; i++)
+			{
+				const auto rollbackInputs = rollbackManager_.GetInputs(firstFrame+i);
+				gameSystems_.SetPlayerInput(rollbackInputs);
+				gameSystems_.Tick();
+			}
+			rollbackManager_.SetDirty(false);
 		}
 		playerInputs_ = rollbackManager_.GetInputs(currentFrame_);
 		gameSystems_.SetPlayerInput(playerInputs_);

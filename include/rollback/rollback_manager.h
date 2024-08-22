@@ -16,15 +16,19 @@ class RollbackManager
 {
 public:
 	RollbackManager(const GameData& gameData);
+	void Begin();
 	void SetInput(int playerNumber, PlayerInput input, int currentFrame);
 	[[nodiscard]] PlayerInput GetInput(int playerNumber, int currentFrame) const;
 	[[nodiscard]] std::pair<std::array<PlayerInput, MaxPlayerInputNmb>, int> GetInputs(int playerNumber, int currentFrame) const;
 	[[nodiscard]] std::array<PlayerInput, MaxPlayerNmb> GetInputs(int currentFrame) const;
 	int ConfirmLastFrame();
+	[[nodiscard]] int GetLastConfirmFrame() const {return lastConfirmFrame_;}
 	[[nodiscard]] int GetLastReceivedFrame() const;
 	void SetInputs(const InputPacket& packet);
 	[[nodiscard]] bool IsValid(int playerNumber) const;
 	[[nodiscard]] bool IsDirty() const { return isDirty_;}
+	const GameSystems& GetGameSystems() const;
+	void SetDirty(bool dirty);
 private:
 	struct PlayerInputData
 	{

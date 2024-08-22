@@ -140,6 +140,11 @@ void NetworkClient::SetSystemIndex(int index)
 }
 void NetworkClient::OnGui()
 {
+	const auto state = state_.load(std::memory_order_consume);
+	if(state == State::IN_GAME)
+	{
+		return;
+	}
 	ImGui::Begin("Network Client");
 	switch(state_.load(std::memory_order_consume))
 	{
@@ -217,7 +222,6 @@ void NetworkClient::OnGui()
 				networkTasks_.emplace_back([this]{
 					state_.store(State::IN_GAME, std::memory_order_release);
 
-
 					auto& client = neko::GetLoadBalancingClient();
 					auto& room = client.getCurrentlyJoinedRoom();
 					room.setIsOpen(false);
@@ -230,14 +234,11 @@ void NetworkClient::OnGui()
 
 		break;
 	}
-	case State::IN_GAME:
-	{
-		break;
-	}
 	default:
 		break;
 	}
 	ImGui::End();
+
 }
 void NetworkClient::SetGuiIndex(int index)
 {
