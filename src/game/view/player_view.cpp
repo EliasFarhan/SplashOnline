@@ -1,6 +1,7 @@
 #include "game/graphics/player_view.h"
 #include "graphics/graphics_manager.h"
 #include "utils/log.h"
+#include "rollback/rollback_manager.h"
 
 #include <math/fixed_lut.h>
 #include <fmt/format.h>
@@ -42,10 +43,13 @@ void PlayerView::Update([[maybe_unused]]float dt)
 {
 	if (!IsSpineLoaded())
 		return;
-	if(playerRenderDatas_[0].bodyDrawable == nullptr)
+	for(int i = 0; i < MaxPlayerNmb; i++)
 	{
-		Load();
-		return;
+		if (IsValid(i) && playerRenderDatas_[i].bodyDrawable == nullptr)
+		{
+			Load();
+			return;
+		}
 	}
 #ifdef TRACY_ENABLE
 	ZoneScoped;
@@ -54,6 +58,10 @@ void PlayerView::Update([[maybe_unused]]float dt)
 
 	for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
 	{
+		if(!IsValid(playerNumber))
+		{
+			continue;
+		}
 		const auto& playerCharacter = playerManager.GetPlayerCharacter()[playerNumber];
 		const auto& playerInput = playerManager.GetPlayerInputs()[playerNumber];
 		auto& playerRenderData = playerRenderDatas_[playerNumber];
@@ -314,6 +322,11 @@ void PlayerView::Draw()
 	const auto& playerPhysics = playerManager.GetPlayerPhysics();
 	for(int i = 0; i < MaxPlayerNmb; i++)
 	{
+
+		if(!IsValid(i))
+		{
+			continue;
+		}
 		if (!playerRenderDatas_[i].bodyDrawable)
 		{
 			continue;
@@ -378,6 +391,10 @@ void PlayerView::Load()
 #endif
 	for(int i = 0; i < MaxPlayerNmb; i++)
 	{
+		if(!IsValid(i))
+		{
+			continue;
+		}
 		playerRenderDatas_[i].bodyDrawable = CreateSkeletonDrawable((SpineManager::SkeletonId)((int)SpineManager::CAT_NOARM+i));
 		playerRenderDatas_[i].bodyDrawable->animationState->setAnimation(0, "idle", true);
 
@@ -405,6 +422,11 @@ void PlayerView::UpdateTransforms(float dt)
 	const auto scale = playerScale * GetGraphicsScale();
 	for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
 	{
+
+		if(!IsValid(playerNumber))
+		{
+			continue;
+		}
 		auto& playerRenderData = playerRenderDatas_[playerNumber];
 		const auto& playerCharacter = playerManager.GetPlayerCharacter()[playerNumber];
 		const auto& body = physicsWorld.body(playerPhysics[playerNumber].bodyIndex);

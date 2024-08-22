@@ -14,7 +14,7 @@ namespace splash
 
 struct GameData
 {
-	int playerCount = MaxPlayerNmb;
+	std::array<bool, MaxPlayerNmb> connectedPlayers{};
 	float introDelay = 5.0f;
 	neko::Scalar period {60.0f*2.0f}; //two minutes default game
 };
@@ -35,7 +35,9 @@ private:
 	RollbackManager rollbackManager_;
 	Timer<float> introDelayTimer_;
 	float currentTime_ = 0.0f;
+	int currentFrame_ = -1;
 	int systemIndex_ = 0;
+	std::array<bool, MaxPlayerNmb> connectedPlayers_{};
 	std::array<PlayerInput, MaxPlayerNmb> playerInputs_;
 
 };

@@ -24,29 +24,13 @@ void GameManager::Update(float dt)
 	}
 
 
-	auto* netClient = GetNetworkClient();
-	if(netClient == nullptr)
-	{
-		playerInputs_[0] = GetPlayerInput();
-		gameSystems_.SetPlayerInput(playerInputs_);
-	}
-	else
-	{
-		const auto playerIndex = netClient->GetPlayerIndex();
-		if(playerIndex == 0)
-		{
-			//We are not in game
-			return;
-		}
-		playerInputs_[playerIndex-1] = GetPlayerInput();
-		//TODO import network inputs and confirm frames
-	}
+
 
 	if(!introDelayTimer_.Over())
 	{
 		int previousTime = (int)introDelayTimer_.RemainingTime();
 		introDelayTimer_.Update(dt);
-		int currentTime = introDelayTimer_.RemainingTime();
+		int currentTime = (int)introDelayTimer_.RemainingTime();
 		if((int)previousTime != (int)currentTime)
 		{
 			if(previousTime != 0)
@@ -58,6 +42,7 @@ void GameManager::Update(float dt)
 		//TODO play sound 5, 4, 3, 2, 1
 		if(introDelayTimer_.Over())
 		{
+			currentFrame_ = 0;
 			FmodPlaySound(GetGameSoundEvent(GameSoundId::BLAST));
 		}
 	}
@@ -81,10 +66,64 @@ void GameManager::End()
 }
 void GameManager::Tick()
 {
+	auto* netClient = GetNetworkClient();
+	if(netClient == nullptr)
+	{
+		playerInputs_[0] = GetPlayerInput();
+		gameSystems_.SetPlayerInput(playerInputs_);
+	}
+	else
+	{
+		const auto playerIndex = netClient->GetPlayerIndex();
+		if(playerIndex == -1)
+		{
+			//We are not in game
+			return;
+		}
+		const auto localPlayerinput = GetPlayerInput();
+		playerInputs_[playerIndex-1] = localPlayerinput;
+		rollbackManager_.SetInput(playerIndex-1, localPlayerinput, currentFrame_);
+
+		//import network inputs
+		auto inputs = netClient->GetInputPackets();
+		for(auto& input: inputs)
+		{
+			rollbackManager_.SetInputs(input);
+		}
+
+		//TODO import confirm frames
+
+		//TODO rollback if needed
+		if(rollbackManager_.IsDirty())
+		{
+
+		}
+		playerInputs_ = rollbackManager_.GetInputs(currentFrame_);
+		gameSystems_.SetPlayerInput(playerInputs_);
+	}
 	gameSystems_.Tick();
 	gameRenderer_.Tick();
+
+	if(netClient != nullptr)
+	{
+		//send input
+		InputPacket inputPacket{};
+		inputPacket.playerNumber = netClient->GetPlayerIndex()-1;
+		inputPacket.frame = currentFrame_;
+		const auto inputs = rollbackManager_.GetInputs( inputPacket.playerNumber, currentFrame_);
+		inputPacket.inputs = inputs.first;
+		inputPacket.inputSize = inputs.second;
+		netClient->SendInputPacket(inputPacket);
+
+		//TODO validate frame if master
+	}
+	currentFrame_++;
 }
-GameManager::GameManager(const GameData& gameData): gameRenderer_(&gameSystems_), introDelayTimer_{gameData.introDelay, gameData.introDelay}
+GameManager::GameManager(const GameData& gameData):
+	rollbackManager_(gameData),
+	gameRenderer_(&gameSystems_),
+	introDelayTimer_{gameData.introDelay, gameData.introDelay},
+	connectedPlayers_(gameData.connectedPlayers)
 {
 	AddSystem(this);
 }

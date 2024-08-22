@@ -62,8 +62,9 @@ void InputSerializer::deserialize(const nByte* pData, short length)
 		return;
 	}
 	inputPacket_.frame = *reinterpret_cast<const int*>(pData);
+	inputPacket_.playerNumber = *reinterpret_cast<const int*>(pData+2*sizeof(int));
 	inputPacket_.inputSize = inputSize;
-	std::memcpy(inputPacket_.inputs.data(), pData+2*sizeof(int), inputSize*sizeof(PlayerInput));
+	std::memcpy(inputPacket_.inputs.data(), pData+3*sizeof(int), inputSize*sizeof(PlayerInput));
 
 }
 short InputSerializer::serialize(nByte* pRetVal) const
@@ -72,9 +73,10 @@ short InputSerializer::serialize(nByte* pRetVal) const
 	{
 		*reinterpret_cast<int*>(pRetVal) = inputPacket_.frame;
 		*reinterpret_cast<int*>(pRetVal+sizeof(int)) = inputPacket_.inputSize;
-		std::memcpy(pRetVal+2*sizeof(int), inputPacket_.inputs.data(), inputPacket_.inputSize*sizeof(PlayerInput));
+		*reinterpret_cast<int*>(pRetVal+2*sizeof(int)) = inputPacket_.playerNumber;
+		std::memcpy(pRetVal+3*sizeof(int), inputPacket_.inputs.data(), inputPacket_.inputSize*sizeof(PlayerInput));
 	}
-	return (short)(inputPacket_.inputSize*sizeof(PlayerInput)+sizeof(int)+sizeof(int));
+	return (short)(inputPacket_.inputSize*sizeof(PlayerInput)+3*sizeof(int));
 }
 ExitGames::Common::JString& InputSerializer::toString(ExitGames::Common::JString& retStr, [[maybe_unused]]bool withTypes) const
 {

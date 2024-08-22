@@ -6,6 +6,7 @@
 #include "game/game_systems.h"
 #include "game/const.h"
 #include "utils/log.h"
+#include "rollback/rollback_manager.h"
 
 #include <fmt/format.h>
 
@@ -27,6 +28,10 @@ void PlayerManager::Begin()
 	auto& physicsWorld = gameSystems_->GetPhysicsWorld();
 	for(int playerIndex = 0; playerIndex < MaxPlayerNmb; playerIndex++)
 	{
+		if(!IsValid(playerIndex))
+		{
+			continue;
+		}
 		auto& playerPhysic = playerPhysics_[playerIndex];
 		playerPhysic.bodyIndex = physicsWorld.AddBody();
 		playerPhysic.colliderIndex = physicsWorld.AddAabbCollider(playerPhysic.bodyIndex);
@@ -74,6 +79,11 @@ void PlayerManager::Tick()
 #endif
 	for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
 	{
+
+		if(!IsValid(playerNumber))
+		{
+			continue;
+		}
 		auto& playerCharacter = playerCharacters_[playerNumber];
 		auto& playerInput = playerInputs_[playerNumber];
 		auto& playerPhysic = playerPhysics_[playerNumber];
@@ -408,6 +418,15 @@ void PlayerManager::Tick()
 		playerPhysic.totalForce = {};
 		playerPhysic.priority = 0;
 	}
+
+	for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
+	{
+		if(!IsValid(playerNumber))
+		{
+			continue;
+		}
+		previousPlayerInputs_[playerNumber] = playerInputs_[playerNumber];
+	}
 }
 void PlayerManager::End()
 {
@@ -417,7 +436,6 @@ void PlayerManager::SetPlayerInput(neko::Span<PlayerInput> playerInputs)
 {
 	for(int i = 0; i < MaxPlayerNmb; i++)
 	{
-		previousPlayerInputs_[i] = playerInputs_[i];
 		playerInputs_[i] = playerInputs[i];
 	}
 }

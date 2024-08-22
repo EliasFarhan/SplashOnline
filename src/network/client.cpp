@@ -48,16 +48,14 @@ void NetworkClient::joinRoomEventAction(int playerNr,
 
 	if(state_.load(std::memory_order_consume) == State::JOINING)
 	{
-
 		state_.store(State::IN_ROOM, std::memory_order_release);
 		localPlayerIndex_ = networkManager_.GetClient().getLocalPlayer().getNumber();
+
 	}
 }
 void NetworkClient::leaveRoomEventAction(int playerNr, bool isInactive)
 {
-	(void) playerNr;
 	(void) isInactive;
-
 }
 void NetworkClient::customEventAction(int playerNr, nByte eventCode, const ExitGames::Common::Object& eventContent)
 {
@@ -79,7 +77,9 @@ void NetworkClient::customEventAction(int playerNr, nByte eventCode, const ExitG
 	{
 		if(state_.load(std::memory_order_consume) == State::IN_GAME)
 		{
-			lastReceiveInput_ = ExitGames::Common::ValueObject<InputSerializer>(eventContent).getDataCopy();
+			auto lastReceiveInput_ = ExitGames::Common::ValueObject<InputSerializer>(eventContent).getDataCopy();
+			std::scoped_lock<std::mutex> lock(inputMutex_);
+			lastReceivedInputPackets_.push_back(lastReceiveInput_.GetPlayerInput());
 		}
 		break;
 	}
@@ -188,10 +188,10 @@ void NetworkClient::OnGui()
 			if(ImGui::Button(region.first.c_str()))
 			{
 				std::scoped_lock<std::mutex> lock(networkTasksMutex_);
-				networkTasks_.push_back(std::make_unique<neko::FuncJob>([region, this]{
+				networkTasks_.emplace_back([region, this]{
 					auto& client = networkManager_.GetClient();
 					client.selectRegion(region.first.c_str());
-				}));
+				});
 				break;
 
 			}
@@ -214,7 +214,7 @@ void NetworkClient::OnGui()
 			if(ImGui::Button("Start Game"))
 			{
 				std::scoped_lock<std::mutex> lock(networkTasksMutex_);
-				networkTasks_.push_back(std::make_unique<neko::FuncJob>([this]{
+				networkTasks_.emplace_back([this]{
 					state_.store(State::IN_GAME, std::memory_order_release);
 
 
@@ -223,7 +223,7 @@ void NetworkClient::OnGui()
 					room.setIsOpen(false);
 					ExitGames::LoadBalancing::RaiseEventOptions options{};
 					client.opRaiseEvent(true, (nByte)0, (nByte)PacketType::START_GAME, options);
-				}));
+				});
 				//todo create the game manager?
 			}
 		}
@@ -232,14 +232,6 @@ void NetworkClient::OnGui()
 	}
 	case State::IN_GAME:
 	{
-		ImGui::Text("In Game!");
-		const auto& playerInputPacket = lastReceiveInput_.GetPlayerInput();
-		const auto& playerInput = playerInputPacket.inputs[0];
-		ImGui::Text("Input: Move(%1.2f, %1.2f), Target(%1.2f, %1.2f)",
-			(float)playerInput.moveDirX,
-			(float)playerInput.moveDirY,
-			(float)playerInput.targetDirX,
-			(float)playerInput.targetDirY);
 		break;
 	}
 	default:
@@ -261,6 +253,8 @@ NetworkClient::NetworkClient(const ExitGames::LoadBalancing::ClientConstructOpti
 	AddGuiInterface(this);
 	AddSystem(this);
 	networkTasks_.reserve(15);
+	returnedInputPackets_.reserve(10);
+	lastReceivedInputPackets_.reserve(10);
 }
 void NetworkClient::RunNetwork()
 {
@@ -283,7 +277,7 @@ void NetworkClient::RunNetwork()
 			std::scoped_lock<std::mutex> lock(networkTasksMutex_);
 			for(auto& networkTask: networkTasks_)
 			{
-				networkTask->Execute();
+				networkTask();
 			}
 			networkTasks_.clear();
 		}
@@ -309,35 +303,31 @@ void NetworkClient::RunNetwork()
 	TracyCZoneEnd(netEnd);
 #endif
 }
-int NetworkClient::GetPlayerIndex()
+int NetworkClient::GetPlayerIndex() const
 {
-	if(state_.load(std::memory_order_consume) == State::IN_GAME)
-	{
-		return networkManager_.GetClient().getLocalPlayer().getNumber();
-	}
-	return 0;
+	return localPlayerIndex_;
 }
 void NetworkClient::SendInputPacket(const InputPacket& inputPacket)
 {
 	InputSerializer serializer(inputPacket);
 	std::scoped_lock<std::mutex> lock(networkTasksMutex_);
-	networkTasks_.push_back(std::make_unique<neko::FuncJob>([this, serializer]
+	networkTasks_.emplace_back([this, serializer]
 	{
 		auto& client = networkManager_.GetClient();
 		ExitGames::LoadBalancing::RaiseEventOptions options{};
 		client.opRaiseEvent(false, serializer, (nByte)PacketType::INPUT, options);
-	}));
+	});
 }
 void NetworkClient::SendConfirmFramePacket([[maybe_unused]] const ConfirmFramePacket& confirmPacket)
 {
 	ConfirmFrameSerializer serializer(confirmPacket);
 	std::scoped_lock<std::mutex> lock(networkTasksMutex_);
-	networkTasks_.push_back(std::make_unique<neko::FuncJob>([this, serializer]
+	networkTasks_.emplace_back([this, serializer]
 	{
 		auto& client = networkManager_.GetClient();
 		ExitGames::LoadBalancing::RaiseEventOptions options{};
 		client.opRaiseEvent(true, serializer, (nByte)PacketType::CONFIRM_FRAME, options);
-	}));
+	});
 }
 void NetworkClient::onAvailableRegions(const ExitGames::Common::JVector<ExitGames::Common::JString>& regions,
 	const ExitGames::Common::JVector<ExitGames::Common::JString>& regionsServers)
@@ -350,6 +340,27 @@ void NetworkClient::onAvailableRegions(const ExitGames::Common::JVector<ExitGame
 		regionsTmp.emplace_back(regions[i].ASCIIRepresentation().cstr(), regionsServers[i].ASCIIRepresentation().cstr());
 	}
 	std::swap(regions_, regionsTmp);
+}
+neko::Span<InputPacket> NetworkClient::GetInputPackets()
+{
+	{
+		std::scoped_lock<std::mutex> lock(inputMutex_);
+		std::swap(lastReceivedInputPackets_, returnedInputPackets_);
+		lastReceivedInputPackets_.clear();
+	}
+	return {returnedInputPackets_.data(), returnedInputPackets_.size()};
+}
+std::array<bool, MaxPlayerNmb> NetworkClient::GetConnectedPlayers()
+{
+	std::array<bool, MaxPlayerNmb> connectedPlayers{};
+	const auto& room = networkManager_.GetClient().getCurrentlyJoinedRoom();
+	const auto& players = room.getPlayers();
+	for(unsigned i = 0; i < players.getSize(); i++)
+	{
+		const auto* playerTmp = players[i];
+		connectedPlayers[playerTmp->getNumber()-1] = true;
+	}
+	return connectedPlayers;
 }
 NetworkClient* GetNetworkClient()
 {

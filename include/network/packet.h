@@ -47,13 +47,14 @@ private:
 
 struct InputPacket
 {
-	std::array<PlayerInput, 26> inputs{};
+	std::array<PlayerInput, MaxPlayerInputNmb> inputs{};
 	int inputSize = -1;
 	int frame = -1;
+	int playerNumber = -1;
 
 	bool operator==(const InputPacket& inputPacket) const
 	{
-		bool result = frame == inputPacket.frame && inputSize == inputPacket.inputSize;
+		bool result = frame == inputPacket.frame && inputSize == inputPacket.inputSize && playerNumber == inputPacket.playerNumber;
 		if (!result)
 			return false;
 		for(int i = 0; i < inputSize; i++)

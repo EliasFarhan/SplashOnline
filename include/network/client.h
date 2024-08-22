@@ -10,6 +10,7 @@
 #include "packet.h"
 
 #include <neko/network_manager.h>
+#include <container/span.h>
 #include <thread/job_system.h>
 
 namespace splash
@@ -61,23 +62,28 @@ public:
 	[[nodiscard]] int GetGuiIndex() const override;
 
 	[[nodiscard]] State GetState() const { return state_.load(std::memory_order_consume); }
-	int GetPlayerIndex();
+	int GetPlayerIndex() const;
+	std::array<bool, MaxPlayerNmb> GetConnectedPlayers();
 
 	void SendInputPacket(const InputPacket& inputPacket);
 	void SendConfirmFramePacket(const ConfirmFramePacket& confirmPacket);
+	neko::Span<InputPacket> GetInputPackets();
 private:
 	void RunNetwork();
 
 	neko::NetworkManager networkManager_;
 	std::vector<std::pair<std::string, std::string>> regions_;
-	std::vector<std::unique_ptr<neko::FuncJob>> networkTasks_;
+	std::vector<std::function<void()>> networkTasks_;
+	std::vector<InputPacket> lastReceivedInputPackets_;
+	std::vector<InputPacket> returnedInputPackets_;
 	std::mutex networkTasksMutex_;
+	std::mutex inputMutex_;
 	neko::FuncJob networkJob_;
 	std::atomic<State> state_ = State::UNCONNECTED;
 	int systemIndex_ = -1;
 	int guiIndex_ = -1;
 	int localPlayerIndex_ = -1;
-	InputSerializer lastReceiveInput_{};
+
 	std::atomic<bool> isRunning_ = true;
 
 };

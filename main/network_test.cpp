@@ -34,7 +34,7 @@ public:
 			splash::InputPacket packet{};
 			packet.frame = frame_;
 			packet.inputSize = 1;
-			;
+			packet.playerNumber = client_->GetPlayerIndex()-1;
 			packet.inputs[0] = playerInput_;
 			client_->SendInputPacket(packet);
 			frame_++;

@@ -179,7 +179,9 @@ void SplashManager::SwitchToState(SplashManager::State state)
 	}
 	case State::GAME:
 	{
-		gameManager_ = std::make_unique<GameManager>();
+		GameData gameData{};
+		gameData.connectedPlayers = client_->GetConnectedPlayers();
+		gameManager_ = std::make_unique<GameManager>(gameData);
 		gameManager_->Begin();
 		GetMusicManager().SetParameter("Transition Title", 0.0f);
 		GetMusicManager().SetParameter("Transition Kittymanjaro", 0.5f);

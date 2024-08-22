@@ -54,6 +54,8 @@ struct ColliderUserData
 	int playerNumber = -1; //Used by player or bullet
 };
 
+static constexpr int MaxPlayerInputNmb = 26; //half a second of input
+
 
 }
 
