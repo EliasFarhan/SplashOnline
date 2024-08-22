@@ -41,4 +41,21 @@ void MusicManager::SetParameter(std::string_view name, float value)
 		eventInstance_->setParameterValue(name.data(), value);
 	}
 }
+float MusicManager::GetVolume() const
+{
+	if(eventInstance_ != nullptr)
+	{
+		float volume;
+		eventInstance_->getVolume(&volume);
+		return volume;
+	}
+	return 0;
+}
+void MusicManager::SetVolume(float newVolume)
+{
+	if(eventInstance_ != nullptr)
+	{
+		eventInstance_->setVolume(newVolume);
+	}
+}
 }

@@ -11,6 +11,7 @@
 int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
 {
 	splash::Engine engine;
+	splash::AudioManager audioManager;
 	splash::GameManager gameManager;
 	engine.Run();
 	return 0;

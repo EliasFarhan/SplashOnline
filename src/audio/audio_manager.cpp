@@ -106,6 +106,24 @@ AudioManager::AudioManager()
 	instance = this;
 	AddSystem(this);
 }
+FMOD::Studio::EventInstance* AudioManager::PlaySound(std::string_view eventName)
+{
+	FMOD::Studio::EventDescription* eventDescription = GetEventDescription(eventName);
+
+	if(eventDescription == nullptr)
+	{
+		return nullptr;
+	}
+	FMOD::Studio::EventInstance* eventInstance = nullptr;
+	if(eventDescription->createInstance(&eventInstance))
+	{
+		LogError(fmt::format("Could not create instance for event: {}", eventName));
+		return nullptr;
+	}
+	eventInstance->start();
+	eventInstance->release();
+	return eventInstance;
+}
 FMOD::Studio::EventDescription* GetEventDescription(std::string_view eventName)
 {
 	return instance->GetEventDescription(eventName);
@@ -117,5 +135,9 @@ bool IsFmodLoaded()
 MusicManager& GetMusicManager()
 {
 	return instance->GetMusicManager();
+}
+FMOD::Studio::EventInstance* FmodPlaySound(std::string_view eventName)
+{
+	return instance->PlaySound(eventName);
 }
 }

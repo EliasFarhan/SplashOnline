@@ -64,9 +64,7 @@ void SplashManager::Update(float dt)
 		static bool switchToTitle = false;
 		if(logoTimer_.Over())
 		{
-			state_ = State::LOBBY;
-			GetMusicManager().SetParameter("Transition Intro", 0.0f);
-			GetMusicManager().SetParameter("Transition Title", 0.5f);
+			this->SwitchToState(State::LOBBY);
 		}
 		else
 		{
@@ -88,9 +86,11 @@ void SplashManager::Update(float dt)
 	}
 	case State::LOBBY:
 	{
-
+		if(client_->GetState() == NetworkClient::State::IN_GAME)
+		{
+			SwitchToState(State::GAME);
+		}
 		break;
-
 	}
 	case State::GAME:
 	{
@@ -159,5 +159,35 @@ SplashManager::SplashManager()
 	AddDrawInterface(this);
 	AddGuiInterface(this);
 	AddSystem(this);
+}
+void SplashManager::SwitchToState(SplashManager::State state)
+{
+	//const auto previousState = state_;
+	state_ = state;
+	switch (state)
+	{
+	case State::LOGO:
+		break;
+	case State::LOBBY:
+	{
+		state_ = State::LOBBY;
+		GetMusicManager().SetParameter("Transition Intro", 0.0f);
+		GetMusicManager().SetParameter("Transition Title", 0.5f);
+		client_ = std::make_unique<NetworkClient>();
+		client_->Begin();
+		break;
+	}
+	case State::GAME:
+	{
+		gameManager_ = std::make_unique<GameManager>();
+		gameManager_->Begin();
+		GetMusicManager().SetParameter("Transition Title", 0.0f);
+		GetMusicManager().SetParameter("Transition Kittymanjaro", 0.5f);
+		GetMusicManager().SetParameter("Transition Start", 0.5f);
+		break;
+	}
+	case State::VICTORY_SCREEN:
+		break;
+	}
 }
 }

@@ -18,6 +18,8 @@ public:
 	void End();
 	void Play();
 	void SetParameter(std::string_view name, float value);
+	[[nodiscard]] float GetVolume() const;
+	void SetVolume(float newVolume);
 private:
 	FMOD::Studio::EventInstance* eventInstance_ = nullptr;
 };

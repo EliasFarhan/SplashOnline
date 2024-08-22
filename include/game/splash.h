@@ -48,7 +48,7 @@ public:
 	int GetGraphicsIndex() const override;
 
 private:
-	NetworkClient client_{};
+	std::unique_ptr<NetworkClient> client_{};
 	std::unique_ptr<GameManager> gameManager_{};
 
 	Timer<float> logoTimer_{-1.0f, 2.0f};
@@ -60,6 +60,7 @@ private:
 	int graphicsIndex_ = -1;
 	int guiIndex_ = -1;
 
+	void SwitchToState(State state);
 };
 
 }

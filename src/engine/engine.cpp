@@ -33,10 +33,10 @@ void Engine::Run()
 		window_.Update();
 
 		graphicsManager_.Update(dt_);
-		for(auto* system : systems_)
+		for(std::size_t i = 0; i < systems_.size(); i++)
 		{
-			if(system == nullptr) continue;
-			system->Update(dt_);
+			if(systems_[i] == nullptr) continue;
+			systems_[i]->Update(dt_);
 		}
 
 		graphicsManager_.PreDraw();
@@ -130,6 +130,7 @@ PlayerInput Engine::GetPlayerInput() const
 Engine::Engine()
 {
 	instance = this;
+	systems_.reserve(15);
 }
 void Engine::ScheduleNetJob(neko::Job* pJob)
 {

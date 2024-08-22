@@ -6,6 +6,7 @@
 #include "game/const.h"
 #include "engine/engine.h"
 #include "network/client.h"
+#include "audio/sound_manager.h"
 
 namespace splash
 {
@@ -17,10 +18,11 @@ void GameManager::Begin()
 }
 void GameManager::Update(float dt)
 {
-	if(!IsSpineLoaded() || !IsTextureLoaded())
+	if(!IsSpineLoaded() || !IsTextureLoaded() || !IsFmodLoaded())
 	{
 		return;
 	}
+
 
 	auto* netClient = GetNetworkClient();
 	if(netClient == nullptr)
@@ -40,12 +42,35 @@ void GameManager::Update(float dt)
 		//TODO import network inputs and confirm frames
 	}
 
-	currentTime_ += dt;
-	constexpr auto fixedDt = (float)fixedDeltaTime;
-	while (currentTime_ > fixedDt)
+	if(!introDelayTimer_.Over())
 	{
-		Tick();
-		currentTime_ -= fixedDt;
+		int previousTime = (int)introDelayTimer_.RemainingTime();
+		introDelayTimer_.Update(dt);
+		int currentTime = introDelayTimer_.RemainingTime();
+		if((int)previousTime != (int)currentTime)
+		{
+			if(previousTime != 0)
+			{
+				auto soundEvent = GetGameSoundEvent((GameSoundId)((int)GameSoundId::VOICE5+(5-previousTime)));
+				FmodPlaySound(soundEvent);
+			}
+		}
+		//TODO play sound 5, 4, 3, 2, 1
+		if(introDelayTimer_.Over())
+		{
+			FmodPlaySound(GetGameSoundEvent(GameSoundId::BLAST));
+		}
+	}
+
+	if(introDelayTimer_.Over())
+	{
+		currentTime_ += dt;
+		constexpr auto fixedDt = (float)fixedDeltaTime;
+		while (currentTime_ > fixedDt)
+		{
+			Tick();
+			currentTime_ -= fixedDt;
+		}
 	}
 
 	gameRenderer_.Update(dt);
@@ -59,7 +84,7 @@ void GameManager::Tick()
 	gameSystems_.Tick();
 	gameRenderer_.Tick();
 }
-GameManager::GameManager(): gameRenderer_(&gameSystems_)
+GameManager::GameManager(const GameData& gameData): gameRenderer_(&gameSystems_), introDelayTimer_{gameData.introDelay, gameData.introDelay}
 {
 	AddSystem(this);
 }

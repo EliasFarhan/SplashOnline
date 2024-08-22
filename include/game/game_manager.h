@@ -11,10 +11,18 @@
 
 namespace splash
 {
+
+struct GameData
+{
+	int playerCount = MaxPlayerNmb;
+	float introDelay = 5.0f;
+	neko::Scalar period {60.0f*2.0f}; //two minutes default game
+};
+
 class GameManager : public SystemInterface
 {
 public:
-	GameManager();
+	explicit GameManager(const GameData&  = {});
 	void Begin() override;
 	void Update(float dt) override;
 	void End() override;
@@ -25,9 +33,11 @@ private:
 	GameSystems gameSystems_;
 	GameView gameRenderer_;
 	RollbackManager rollbackManager_;
+	Timer<float> introDelayTimer_;
 	float currentTime_ = 0.0f;
 	int systemIndex_ = 0;
 	std::array<PlayerInput, MaxPlayerNmb> playerInputs_;
+
 };
 }
 #endif //SPLASHONLINE_GAME_GAME_MANAGER_H_

@@ -99,6 +99,11 @@ void GuiRenderer::Update()
 		(float)playerInput.moveDirY,
 		(float)playerInput.targetDirX,
 		(float)playerInput.targetDirY);
+	float musicVolume = GetMusicManager().GetVolume();
+	if(ImGui::SliderFloat("Music Volume", &musicVolume, 0.0f, 1.0f))
+	{
+		GetMusicManager().SetVolume(musicVolume);
+	}
 	ImGui::Checkbox("Show Physics Box",&debugConfig_.showPhysicsBox);
 	ImGui::End();
 	for(auto* guiInterface : guiInterfaces_)

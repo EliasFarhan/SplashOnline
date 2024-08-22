@@ -30,7 +30,7 @@ public:
 		IN_GAME,
 	};
 
-	NetworkClient(const ExitGames::LoadBalancing::ClientConstructOptions& clientConstructOptions={});
+	explicit NetworkClient(const ExitGames::LoadBalancing::ClientConstructOptions& clientConstructOptions={});
 	void debugReturn(int debugLevel, const ExitGames::Common::JString& string) override;
 	void connectionErrorReturn(int errorCode) override;
 	void clientErrorReturn(int errorCode) override;

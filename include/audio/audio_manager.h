@@ -26,6 +26,8 @@ public:
 	MusicManager& GetMusicManager() { return musicManager_; }
 	FMOD::Studio::EventDescription* GetEventDescription(std::string_view eventName);
 	[[nodiscard]] bool IsLoaded() const { return isLoaded_.load(std::memory_order_consume); }
+
+	FMOD::Studio::EventInstance* PlaySound(std::string_view eventName);
 private:
 	MusicManager musicManager_;
 	FMOD::Studio::System* system_ = nullptr;
@@ -36,6 +38,7 @@ private:
 FMOD::Studio::EventDescription* GetEventDescription(std::string_view eventName);
 bool IsFmodLoaded();
 MusicManager& GetMusicManager();
+FMOD::Studio::EventInstance* FmodPlaySound(std::string_view eventName);
 
 }
 
