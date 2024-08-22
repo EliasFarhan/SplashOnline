@@ -1,7 +1,7 @@
 //
 // Created by unite on 02.08.2024.
 //
-#include "game/graphics/game_renderer.h"
+#include "game/graphics/game_view.h"
 
 #ifdef TRACY_ENABLE
 #include <tracy/Tracy.hpp>
@@ -9,8 +9,8 @@
 
 namespace splash
 {
-static GameRenderer* instance = nullptr;
-void GameRenderer::Draw()
+static GameView* instance = nullptr;
+void GameView::Draw()
 {
 #ifdef TRACY_ENABLE
 	ZoneScoped;
@@ -40,29 +40,29 @@ void GameRenderer::Draw()
 		drawQuad(&gameSystems_->GetQuadTree().GetRootNode());
 	}
 }
-void GameRenderer::SetGraphicsIndex(int index)
+void GameView::SetGraphicsIndex(int index)
 {
 	graphicIndex = index;
 }
-int GameRenderer::GetGraphicsIndex() const
+int GameView::GetGraphicsIndex() const
 {
 	return graphicIndex;
 }
-void GameRenderer::Begin()
+void GameView::Begin()
 {
 	AddDrawInterface(this);
 	playerRenderer_.Begin();
 	bulletRenderer_.Begin();
 	levelRenderer_.Begin();
 }
-void GameRenderer::Update(float dt)
+void GameView::Update(float dt)
 {
 	timeSinceTick_ += dt;
 	levelRenderer_.Update();
 	playerRenderer_.Update(dt);
 	bulletRenderer_.Update(dt);
 }
-void GameRenderer::End()
+void GameView::End()
 {
 	RemoveDrawInterface(this);
 	levelRenderer_.End();
@@ -70,7 +70,7 @@ void GameRenderer::End()
 	playerRenderer_.End();
 }
 
-GameRenderer::GameRenderer(const GameSystems* gameSystems):
+GameView::GameView(const GameSystems* gameSystems):
 	playerRenderer_(gameSystems),
 	bulletRenderer_(gameSystems),
 	gameSystems_(gameSystems)
@@ -78,12 +78,12 @@ GameRenderer::GameRenderer(const GameSystems* gameSystems):
 	instance = this;
 }
 
-void GameRenderer::Tick()
+void GameView::Tick()
 {
 	timeSinceTick_ -= (float)fixedDeltaTime;
 }
 
-float GameRenderer::GetTimeSinceTick() const
+float GameView::GetTimeSinceTick() const
 {
 	return timeSinceTick_;
 }

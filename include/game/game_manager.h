@@ -6,7 +6,7 @@
 #define SPLASHONLINE_GAME_GAME_MANAGER_H_
 
 #include "rollback/rollback_manager.h"
-#include "game/graphics/game_renderer.h"
+#include "game/graphics/game_view.h"
 #include "engine/system.h"
 
 namespace splash
@@ -23,7 +23,7 @@ public:
 	void SetSystemIndex(int index) override;
 private:
 	GameSystems gameSystems_;
-	GameRenderer gameRenderer_;
+	GameView gameRenderer_;
 	RollbackManager rollbackManager_;
 	float currentTime_ = 0.0f;
 	int systemIndex_ = 0;

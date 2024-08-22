@@ -11,7 +11,7 @@
 
 namespace splash
 {
-class LevelRenderer
+class LevelView
 {
 public:
 	void Begin();

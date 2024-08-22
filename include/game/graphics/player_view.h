@@ -43,10 +43,10 @@ struct PlayerRenderData
 	neko::Vec2<float> targetDir{0.0f,-1.0f};
 };
 
-class PlayerRenderer
+class PlayerView
 {
 public:
-	explicit PlayerRenderer(const GameSystems* gameSystems);
+	explicit PlayerView(const GameSystems* gameSystems);
 	void Begin();
 	void End();
 	void Update(float dt);

@@ -6,18 +6,18 @@
 #define SPLASHONLINE_GAME_RENDERER_H_
 
 #include "graphics/graphics_manager.h"
-#include "game/graphics/player_renderer.h"
-#include "game/graphics/bullet_renderer.h"
+#include "game/graphics/player_view.h"
+#include "game/graphics/bullet_view.h"
 #include "game/game_systems.h"
-#include "game/graphics/level_renderer.h"
+#include "game/graphics/level_view.h"
 
 namespace splash
 {
 
-class GameRenderer : public DrawInterface
+class GameView : public DrawInterface
 {
 public:
-	explicit GameRenderer(const GameSystems* gameSystems);
+	explicit GameView(const GameSystems* gameSystems);
 	void Begin();
 	void Update(float dt);
 	void Tick();
@@ -28,9 +28,9 @@ public:
 	[[nodiscard]] float GetTimeSinceTick() const;
 
 private:
-	PlayerRenderer playerRenderer_;
-	BulletRenderer bulletRenderer_;
-	LevelRenderer levelRenderer_;
+	PlayerView playerRenderer_;
+	BulletView bulletRenderer_;
+	LevelView levelRenderer_;
 	const GameSystems* gameSystems_ = nullptr;
 	int graphicIndex = -1;
 	float timeSinceTick_ = 0.0f;
