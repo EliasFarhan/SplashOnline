@@ -36,7 +36,7 @@ private:
 	Timer<float> introDelayTimer_;
 	float currentTime_ = 0.0f;
 	int currentFrame_ = -1;
-	int systemIndex_ = 0;
+	int systemIndex_ = -1;
 	std::array<bool, MaxPlayerNmb> connectedPlayers_{};
 	std::array<PlayerInput, MaxPlayerNmb> playerInputs_;
 

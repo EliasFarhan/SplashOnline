@@ -50,12 +50,16 @@ void NetworkClient::joinRoomEventAction(int playerNr,
 	{
 		state_.store(State::IN_ROOM, std::memory_order_release);
 		localPlayerIndex_ = networkManager_.GetClient().getLocalPlayer().getNumber();
-
+		const auto& room = networkManager_.GetClient().getCurrentlyJoinedRoom();
+		isMaster_ = room.getMasterClientID() == localPlayerIndex_;
 	}
 }
 void NetworkClient::leaveRoomEventAction(int playerNr, bool isInactive)
 {
 	(void) isInactive;
+	(void) playerNr;
+	const auto& room = networkManager_.GetClient().getCurrentlyJoinedRoom();
+	isMaster_ = room.getMasterClientID() == localPlayerIndex_;
 }
 void NetworkClient::customEventAction(int playerNr, nByte eventCode, const ExitGames::Common::Object& eventContent)
 {
@@ -85,6 +89,12 @@ void NetworkClient::customEventAction(int playerNr, nByte eventCode, const ExitG
 	}
 	case PacketType::CONFIRM_FRAME:
 	{
+		if(state_.load(std::memory_order_consume) == State::IN_GAME)
+		{
+			auto lastReceiveConfirm_ = ExitGames::Common::ValueObject<ConfirmFrameSerializer>(eventContent).getDataCopy();
+			std::scoped_lock<std::mutex> lock(confirmPacketMutex_);
+			lastReceivedConfirmPackets_.push_back(lastReceiveConfirm_.GetConfirmPacket());
+		}
 		break;
 	}
 	default:
@@ -209,12 +219,11 @@ void NetworkClient::OnGui()
 		auto& client = neko::GetLoadBalancingClient();
 		if (!client.getIsInRoom())
 			break;
-		auto& player1 = client.getLocalPlayer();
 		auto& room = client.getCurrentlyJoinedRoom();
 		const auto playerCount = room.getPlayerCount();
-		ImGui::Text("Player Count: %d", room.getPlayerCount());
+		ImGui::Text("Player Count: %d", playerCount);
 		ImGui::Text("Player Nbr: %d", localPlayerIndex_);
-		if(playerCount >= 2 && room.getMasterClientID() == player1.getNumber())
+		if(playerCount >= 2 && isMaster_)
 		{
 			if(ImGui::Button("Start Game"))
 			{
@@ -228,7 +237,6 @@ void NetworkClient::OnGui()
 					ExitGames::LoadBalancing::RaiseEventOptions options{};
 					client.opRaiseEvent(true, (nByte)0, (nByte)PacketType::START_GAME, options);
 				});
-				//todo create the game manager?
 			}
 		}
 
@@ -319,7 +327,7 @@ void NetworkClient::SendInputPacket(const InputPacket& inputPacket)
 		client.opRaiseEvent(false, serializer, (nByte)PacketType::INPUT, options);
 	});
 }
-void NetworkClient::SendConfirmFramePacket([[maybe_unused]] const ConfirmFramePacket& confirmPacket)
+void NetworkClient::SendConfirmFramePacket(const ConfirmFramePacket& confirmPacket)
 {
 	ConfirmFrameSerializer serializer(confirmPacket);
 	std::scoped_lock<std::mutex> lock(networkTasksMutex_);
@@ -362,6 +370,15 @@ std::array<bool, MaxPlayerNmb> NetworkClient::GetConnectedPlayers()
 		connectedPlayers[playerTmp->getNumber()-1] = true;
 	}
 	return connectedPlayers;
+}
+neko::Span<ConfirmFramePacket> NetworkClient::GetConfirmPackets()
+{
+	{
+		std::scoped_lock<std::mutex> lock(confirmPacketMutex_);
+		std::swap(lastReceivedConfirmPackets_, returnedConfirmPackets_);
+		lastReceivedConfirmPackets_.clear();
+	}
+	return {returnedConfirmPackets_.data(), returnedConfirmPackets_.size()};
 }
 NetworkClient* GetNetworkClient()
 {

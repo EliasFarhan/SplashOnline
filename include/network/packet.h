@@ -41,6 +41,7 @@ public:
 	void deserialize(const nByte* pData, short length) override;
 	short serialize(nByte* pRetVal) const override;
 	ExitGames::Common::JString& toString(ExitGames::Common::JString& retStr, bool withTypes) const override;
+	const auto& GetConfirmPacket() const {return confirmFramePacket_;}
 private:
 	ConfirmFramePacket confirmFramePacket_{};
 };

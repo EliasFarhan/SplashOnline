@@ -25,12 +25,7 @@ void ConfirmFrameSerializer::deserialize(const nByte* pData, short length)
 	{
 		return;
 	}
-	confirmFramePacket_.frame = *reinterpret_cast<const int*>(pData+ offsetof(ConfirmFramePacket, frame));
-	confirmFramePacket_.checksum = *reinterpret_cast<const std::uint32_t*>(pData+ offsetof(ConfirmFramePacket, checksum));
-	for(int i = 0; i < MaxPlayerNmb; i++)
-	{
-		confirmFramePacket_.input[i] = reinterpret_cast<const PlayerInput*>(pData + offsetof(ConfirmFramePacket, input))[i];
-	}
+	std::memcpy(&confirmFramePacket_, pData, sizeof(ConfirmFramePacket));
 }
 short ConfirmFrameSerializer::serialize(nByte* pRetVal) const
 {

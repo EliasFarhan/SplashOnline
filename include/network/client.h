@@ -68,6 +68,8 @@ public:
 	void SendInputPacket(const InputPacket& inputPacket);
 	void SendConfirmFramePacket(const ConfirmFramePacket& confirmPacket);
 	neko::Span<InputPacket> GetInputPackets();
+	[[nodiscard]] bool IsMaster() const{return isMaster_;}
+	neko::Span<ConfirmFramePacket> GetConfirmPackets();
 private:
 	void RunNetwork();
 
@@ -76,8 +78,11 @@ private:
 	std::vector<std::function<void()>> networkTasks_;
 	std::vector<InputPacket> lastReceivedInputPackets_;
 	std::vector<InputPacket> returnedInputPackets_;
+	std::vector<ConfirmFramePacket> returnedConfirmPackets_;
+	std::vector<ConfirmFramePacket> lastReceivedConfirmPackets_;
 	std::mutex networkTasksMutex_;
 	std::mutex inputMutex_;
+	std::mutex confirmPacketMutex_;
 	neko::FuncJob networkJob_;
 	std::atomic<State> state_ = State::UNCONNECTED;
 	int systemIndex_ = -1;
@@ -86,6 +91,7 @@ private:
 
 	std::atomic<bool> isRunning_ = true;
 
+	bool isMaster_ = true;
 };
 
 NetworkClient* GetNetworkClient();

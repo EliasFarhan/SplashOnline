@@ -9,6 +9,21 @@
 #include "audio/sound_manager.h"
 #include "utils/log.h"
 
+#include <fmt/format.h>
+
+template <> class fmt::formatter<splash::PlayerInput> {
+public:
+	constexpr auto parse (format_parse_context& ctx) { return ctx.begin(); }
+	template <typename Context>
+	constexpr auto format (splash::PlayerInput const& playerInput, Context& ctx) const {
+		return format_to(ctx.out(), "({}, {})({},{})",
+			(float)playerInput.moveDirX,
+			(float)playerInput.moveDirY,
+			(float)playerInput.targetDirX,
+			(float)playerInput.targetDirY);  // --== KEY LINE ==--
+	}
+};
+
 namespace splash
 {
 
@@ -25,9 +40,6 @@ void GameManager::Update(float dt)
 		return;
 	}
 
-
-
-
 	if(!introDelayTimer_.Over())
 	{
 		int previousTime = (int)introDelayTimer_.RemainingTime();
@@ -41,7 +53,6 @@ void GameManager::Update(float dt)
 				FmodPlaySound(soundEvent);
 			}
 		}
-		//TODO play sound 5, 4, 3, 2, 1
 		if(introDelayTimer_.Over())
 		{
 			currentFrame_ = 0;
@@ -76,24 +87,60 @@ void GameManager::Tick()
 	}
 	else
 	{
-		const auto playerIndex = netClient->GetPlayerIndex();
-		if(playerIndex == -1)
-		{
-			//We are not in game
-			return;
-		}
-		const auto localPlayerinput = GetPlayerInput();
-		playerInputs_[playerIndex-1] = localPlayerinput;
-		rollbackManager_.SetInput(playerIndex-1, localPlayerinput, currentFrame_);
+		const auto localPlayerNumber = netClient->GetPlayerIndex()-1;
+		const auto localPlayerInput = GetPlayerInput();
+		rollbackManager_.SetInput(localPlayerNumber, localPlayerInput, currentFrame_);
 
 		//import network inputs
-		auto inputs = netClient->GetInputPackets();
-		for(auto& input: inputs)
+		auto inputPackets = netClient->GetInputPackets();
+		for(auto& inputPacket: inputPackets)
 		{
-			rollbackManager_.SetInputs(input);
+			rollbackManager_.SetInputs(inputPacket);
 		}
 
-		//TODO import confirm frames
+		//import confirm frames
+		auto confirmPackets = netClient->GetConfirmPackets();
+		for(auto& confirmPacket : confirmPackets)
+		{
+			const auto lastConfirmFrame = confirmPacket.frame;
+			if(lastConfirmFrame != rollbackManager_.GetLastConfirmFrame()+1)
+			{
+				LogError(fmt::format("Not the same Confirm Frame: server {} local {}",
+					lastConfirmFrame,
+					rollbackManager_.GetLastConfirmFrame()+1));
+			}
+			if(lastConfirmFrame > rollbackManager_.GetLastReceivedFrame())
+			{
+				LogWarning("Confirm Frame is further than received from unreliable");
+			}
+			const auto& confirmInputs = confirmPacket.input;
+			for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
+			{
+				if(!IsValid(playerNumber))
+				{
+					continue;
+				}
+				if(rollbackManager_.GetLastReceivedFrame(playerNumber) >= lastConfirmFrame)
+				{
+					const auto checkInput = rollbackManager_.GetInput(playerNumber, lastConfirmFrame);
+					if (confirmInputs[playerNumber] != checkInput)
+					{
+						LogError(fmt::format("Not the same input for confirm input p{}: remote: {} local: {}",
+							playerNumber+1,
+							confirmInputs[playerNumber],
+							checkInput));
+					}
+				}
+				rollbackManager_.SetInput(playerNumber, confirmInputs[playerNumber], lastConfirmFrame);
+			}
+			const auto lastConfirmValue = confirmPacket.checksum;
+			const auto localConfirmValue = rollbackManager_.ConfirmLastFrame();
+			if(localConfirmValue != lastConfirmValue)
+			{
+				LogError("Desync");
+			}
+		}
+
 
 		//rollback if needed
 		if(rollbackManager_.IsDirty())
@@ -101,7 +148,7 @@ void GameManager::Tick()
 			gameSystems_.RollbackFrom(rollbackManager_.GetGameSystems());
 			if(rollbackManager_.GetGameSystems().CalculateChecksum() != gameSystems_.CalculateChecksum())
 			{
-				LogError("Desync");
+				LogError("Current Frame Game System does not have the same confirm value than Confirm Frame System");
 			}
 			int firstFrame = neko::Max(rollbackManager_.GetLastConfirmFrame(), 0);
 			for(int i = 0; i < currentFrame_-firstFrame; i++)
@@ -121,15 +168,29 @@ void GameManager::Tick()
 	if(netClient != nullptr)
 	{
 		//send input
+		const auto playerNumber =  netClient->GetPlayerIndex()-1;
 		InputPacket inputPacket{};
-		inputPacket.playerNumber = netClient->GetPlayerIndex()-1;
+		inputPacket.playerNumber = playerNumber;
 		inputPacket.frame = currentFrame_;
-		const auto inputs = rollbackManager_.GetInputs( inputPacket.playerNumber, currentFrame_);
+		const auto inputs = rollbackManager_.GetInputs( playerNumber, currentFrame_);
 		inputPacket.inputs = inputs.first;
 		inputPacket.inputSize = inputs.second;
 		netClient->SendInputPacket(inputPacket);
 
-		//TODO validate frame if master
+		//validate frame
+		if(netClient->IsMaster())
+		{
+			while(rollbackManager_.GetLastReceivedFrame() > neko::Max(rollbackManager_.GetLastConfirmFrame(), 0))
+			{
+				const auto confirmValue = rollbackManager_.ConfirmLastFrame();
+				const auto lastConfirmFrame = rollbackManager_.GetLastConfirmFrame();
+				ConfirmFramePacket confirmPacket{};
+				confirmPacket.frame = lastConfirmFrame;
+				confirmPacket.checksum = confirmValue;
+				confirmPacket.input = rollbackManager_.GetInputs(lastConfirmFrame);
+				netClient->SendConfirmFramePacket(confirmPacket);
+			}
+		}
 	}
 	currentFrame_++;
 }

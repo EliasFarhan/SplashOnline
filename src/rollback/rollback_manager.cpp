@@ -10,10 +10,17 @@
 namespace splash
 {
 static RollbackManager* instance = nullptr;
-int RollbackManager::ConfirmLastFrame()
+std::uint32_t RollbackManager::ConfirmLastFrame()
 {
-	//TODO implement
-	return 0;
+	const auto inputs = GetInputs(neko::Max(lastConfirmFrame_, 0));
+	confirmFrameGameSystems_.SetPlayerInput(inputs);
+	confirmFrameGameSystems_.Tick();
+	if(lastConfirmFrame_ != -1)
+	{
+		inputs_.erase(inputs_.cbegin());
+	}
+	lastConfirmFrame_++;
+	return confirmFrameGameSystems_.CalculateChecksum();
 }
 int RollbackManager::GetLastReceivedFrame() const
 {
@@ -37,6 +44,10 @@ RollbackManager::RollbackManager(const GameData& gameData)
 }
 void RollbackManager::SetInput(int playerNumber, PlayerInput input, int currentFrame)
 {
+	if(!IsValid(playerNumber))
+	{
+		return;
+	}
 	int index = currentFrame-neko::Max(lastConfirmFrame_, 0);
 	if(index >= (int)inputs_.size())
 	{
@@ -50,7 +61,6 @@ void RollbackManager::SetInput(int playerNumber, PlayerInput input, int currentF
 		{
 			inputs_.push_back(last);
 		}
-
 	}
 	inputs_[index][playerNumber] = input;
 	if(inputDatas_[playerNumber].lastReceivedFrame < currentFrame)
@@ -74,14 +84,15 @@ PlayerInput RollbackManager::GetInput(int playerNumber, int currentFrame) const
 std::pair<std::array<PlayerInput, MaxPlayerInputNmb>, int> RollbackManager::GetInputs(int playerNumber, int currentFrame) const
 {
 	std::array<PlayerInput, MaxPlayerInputNmb> inputsTmp{};
-	auto size = currentFrame-neko::Max(lastConfirmFrame_, 0);
+	auto size = neko::Max(currentFrame-neko::Max(lastConfirmFrame_, 0)+1, 1);
 	if(size > MaxPlayerInputNmb)
 	{
 		size = MaxPlayerInputNmb;
 	}
-	for(std::size_t i = 0; i < size; i++)
+	const auto firstFrame = currentFrame-size+1;
+	for(int i = 0; i < size; i++)
 	{
-		const auto index = currentFrame-size+i;
+		const auto index = firstFrame+i;
 		inputsTmp[i] = inputs_[index][playerNumber];
 	}
 	return {inputsTmp, size};
@@ -105,7 +116,7 @@ void RollbackManager::SetInputs(const InputPacket& packet)
 	const auto playerNumber = packet.playerNumber;
 	const auto currentFrame = packet.frame;
 	const auto lastReceiveFrame = inputDatas_[playerNumber].lastReceivedFrame;
-	const auto firstFrame = currentFrame-packet.inputSize+1;
+	const auto firstFrame = currentFrame-packet.inputSize + 1;
 	for(int i = 0; i < packet.inputSize; i++)
 	{
 		int tmpFrame = firstFrame+i;
@@ -136,6 +147,10 @@ void RollbackManager::Begin()
 void RollbackManager::SetDirty(bool dirty)
 {
 	isDirty_ = dirty;
+}
+int RollbackManager::GetLastReceivedFrame(int playerNumber) const
+{
+	return inputDatas_[playerNumber].lastReceivedFrame;
 }
 bool IsValid(int playerNumber)
 {
