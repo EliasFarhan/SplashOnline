@@ -24,10 +24,10 @@ struct BulletRenderData
 	std::unique_ptr<spine::SkeletonDrawable> drawable{};
 	BulletRenderState state = BulletRenderState::NONE;
 };
-class BulletRenderer
+class BulletView
 {
 public:
-	explicit BulletRenderer(const GameSystems* gameSystems);
+	explicit BulletView(const GameSystems* gameSystems);
 	void Begin();
 
 	void End();

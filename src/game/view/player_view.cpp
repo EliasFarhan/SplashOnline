@@ -1,4 +1,4 @@
-#include "game/graphics/player_renderer.h"
+#include "game/graphics/player_view.h"
 #include "graphics/graphics_manager.h"
 #include "utils/log.h"
 
@@ -30,15 +30,15 @@ static constexpr std::array<std::string_view, MaxPlayerNmb> cloudSkinNames{{
 	"P3_magenta",
 	"P4_turquoise"
 }};
-void PlayerRenderer::Begin()
+void PlayerView::Begin()
 {
 
 }
-void PlayerRenderer::End()
+void PlayerView::End()
 {
 
 }
-void PlayerRenderer::Update([[maybe_unused]]float dt)
+void PlayerView::Update([[maybe_unused]]float dt)
 {
 	if (!IsSpineLoaded())
 		return;
@@ -303,7 +303,7 @@ void PlayerRenderer::Update([[maybe_unused]]float dt)
 
 
 }
-void PlayerRenderer::Draw()
+void PlayerView::Draw()
 {
 #ifdef TRACY_ENABLE
  	ZoneScoped;
@@ -359,19 +359,19 @@ void PlayerRenderer::Draw()
 
 }
 
-PlayerRenderer::PlayerRenderer(const GameSystems* gameSystems): gameSystems_(gameSystems)
+PlayerView::PlayerView(const GameSystems* gameSystems): gameSystems_(gameSystems)
 {
 
 }
 
 
-void PlayerRenderer::SwitchToState(PlayerRenderState state, int playerNumber)
+void PlayerView::SwitchToState(PlayerRenderState state, int playerNumber)
 {
 	playerRenderDatas_[playerNumber].bodyDrawable->animationState->setAnimation(0,
 		playerAnimNames[(int)state].data(), true);
 	playerRenderDatas_[playerNumber].state = state;
 }
-void PlayerRenderer::Load()
+void PlayerView::Load()
 {
 #ifdef TRACY_ENABLE
 	ZoneScoped;
@@ -395,7 +395,7 @@ void PlayerRenderer::Load()
 		playerRenderDatas_[i].cloudDrawable->skeleton->setSkin(cloudSkinNames[i].data());
 	}
 }
-void PlayerRenderer::UpdateTransforms(float dt)
+void PlayerView::UpdateTransforms(float dt)
 {
 	const auto& physicsWorld = gameSystems_->GetPhysicsWorld();
 	const auto& playerManager = gameSystems_->GetPlayerManager();

@@ -1,7 +1,7 @@
 //
 // Created by unite on 08.08.2024.
 //
-#include "game/graphics/level_renderer.h"
+#include "game/graphics/level_view.h"
 #include "graphics/texture_manager.h"
 #include "graphics/const.h"
 #include "graphics/graphics_manager.h"
@@ -12,16 +12,16 @@
 namespace splash
 {
 
-void LevelRenderer::Begin()
+void LevelView::Begin()
 {
 
 }
-void LevelRenderer::End()
+void LevelView::End()
 {
 
 }
 
-void LevelRenderer::Draw()
+void LevelView::Draw()
 {
 	if(backgroundTexture_ == nullptr)
 	{
@@ -64,14 +64,14 @@ void LevelRenderer::Draw()
 		}
 	}
 }
-void LevelRenderer::Update()
+void LevelView::Update()
 {
 	if(platformTextures_[0] == nullptr && IsTextureLoaded())
 	{
 		LoadTextures();
 	}
 }
-void LevelRenderer::LoadTextures()
+void LevelView::LoadTextures()
 {
 	for(std::size_t i = 0; i < platformTextures_.size(); i++)
 	{

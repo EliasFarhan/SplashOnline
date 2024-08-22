@@ -2,7 +2,7 @@
 // Created by unite on 02.08.2024.
 //
 
-#include "game/graphics/bullet_renderer.h"
+#include "game/graphics/bullet_view.h"
 #include "graphics/graphics_manager.h"
 #include "game/game_systems.h"
 
@@ -13,17 +13,17 @@
 namespace splash
 {
 
-void BulletRenderer::Begin()
+void BulletView::Begin()
 {
 
 }
 
-void BulletRenderer::End()
+void BulletView::End()
 {
 
 }
 
-void BulletRenderer::Update(float dt)
+void BulletView::Update(float dt)
 {
 	if (!IsSpineLoaded())
 		return;
@@ -97,7 +97,7 @@ void BulletRenderer::Update(float dt)
 	}
 }
 
-void BulletRenderer::Draw()
+void BulletView::Draw()
 {
 	auto* renderer = GetRenderer();
 	const auto& bulletManager = gameSystems_->GetBulletManager();
@@ -125,7 +125,7 @@ void BulletRenderer::Draw()
 	}
 }
 
-void BulletRenderer::Load()
+void BulletView::Load()
 {
 #ifdef TRACY_ENABLE
 	ZoneScoped;
@@ -138,7 +138,7 @@ void BulletRenderer::Load()
 
 }
 
-BulletRenderer::BulletRenderer(const GameSystems* gameSystems): gameSystems_(gameSystems)
+BulletView::BulletView(const GameSystems* gameSystems): gameSystems_(gameSystems)
 {
 
 }
