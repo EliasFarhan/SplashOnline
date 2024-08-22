@@ -108,7 +108,7 @@ void GameSystems::RollbackFrom(const GameSystems& system)
 {
 	playerManager_.RollbackFrom(system.playerManager_);
 	bulletManager_.RollbackFrom(system.bulletManager_);
-	//TODO rollback physics
+	physicsManager_.CopyFrom(system.physicsManager_);
 
 }
 
