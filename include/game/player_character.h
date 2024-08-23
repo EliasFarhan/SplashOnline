@@ -61,6 +61,7 @@ struct PlayerCharacter
 	Timer<> respawnMoveTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 1.0f }};
 	Timer<> respawnStaticTime{ neko::Scalar{ 2.0f }, neko::Scalar{ 2.0f }};
 	Timer<> invincibleTimer{neko::Scalar {-1}, neko::Scalar {2.0f}};
+	int fallCount_ = 0;
 
 	//Wata Hit
 	Timer<> hitTimer{neko::Scalar{-1}, neko::Scalar{1.5f}};

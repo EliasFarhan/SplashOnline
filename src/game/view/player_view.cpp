@@ -2,6 +2,8 @@
 #include "graphics/graphics_manager.h"
 #include "utils/log.h"
 #include "rollback/rollback_manager.h"
+#include "audio/audio_manager.h"
+#include "audio/player_sound.h"
 
 #include <math/fixed_lut.h>
 #include <fmt/format.h>
@@ -91,6 +93,8 @@ void PlayerView::Update([[maybe_unused]]float dt)
 				!playerCharacter.respawnMoveTimer.Over() ||
 				!playerCharacter.respawnPauseTimer.Over())
 			{
+				//FmodPlaySound(GetPlayerDeathSoundEvent((Character)((int)Character::CAT+playerNumber)));
+				//FmodPlaySound(GetPlayerSoundEvent(PlayerSoundId::EJECT));
 				playerRenderData.isRespawning = true;
 				playerRenderData.cloudDrawable->animationState->setAnimation(0, "respawn", true);
 				SwitchToState(PlayerRenderState::IDLE, playerNumber);

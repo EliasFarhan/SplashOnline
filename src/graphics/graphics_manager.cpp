@@ -115,6 +115,21 @@ void GraphicsManager::Draw()
 		if(drawInterface == nullptr) continue;
 		drawInterface->Draw();
 	}
+	SDL_SetRenderDrawColor(renderer_,0,0,0, 255);
+	if(actualSize_.x < windowSize_.x)
+	{
+		SDL_Rect rect{0,0,offset_.x, windowSize_.y};
+		SDL_RenderFillRect(renderer_, &rect);
+		rect = {offset_.x+ actualSize_.x, 0, offset_.x, windowSize_.y};
+		SDL_RenderFillRect(renderer_, &rect);
+	}
+	else if(actualSize_.y < windowSize_.y)
+	{
+		SDL_Rect rect{0,0,windowSize_.x, offset_.y};
+		SDL_RenderFillRect(renderer_, &rect);
+		rect = {0,offset_.y+ actualSize_.y, windowSize_.x, offset_.y};
+		SDL_RenderFillRect(renderer_, &rect);
+	}
 	guiRenderer_.Draw();
 }
 void GraphicsManager::PreDraw()
