@@ -98,7 +98,7 @@ void SplashManager::Update(float dt)
 		{
 			gameManager_->End();
 			gameManager_ = nullptr;
-			state_ = State::LOBBY;
+			SwitchToState(State::LOBBY);
 		}
 
 		break;
@@ -179,9 +179,17 @@ void SplashManager::SwitchToState(SplashManager::State state)
 	{
 		state_ = State::LOBBY;
 		GetMusicManager().SetParameter("Transition Intro", 0.0f);
+		GetMusicManager().SetParameter("Transition Kittymanjaro", 0.0f);
 		GetMusicManager().SetParameter("Transition Title", 0.5f);
-		client_ = std::make_unique<NetworkClient>();
-		client_->Begin();
+
+
+		if(!client_)
+		{
+			ExitGames::LoadBalancing::ClientConstructOptions clientConstructOptions{};
+			clientConstructOptions.setRegionSelectionMode(ExitGames::LoadBalancing::RegionSelectionMode::SELECT);
+			client_ = std::make_unique<NetworkClient>(clientConstructOptions);
+			client_->Begin();
+		}
 		break;
 	}
 	case State::GAME:

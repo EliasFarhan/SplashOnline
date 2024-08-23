@@ -1,5 +1,11 @@
 # Splash Online
-A C++ implementation of the online version of [Splash Blast Panic](https://playsbp.ch/) used as an example for the CppCon 2024 talk.
+A C++17 implementation of the online version of [Splash Blast Panic](https://playsbp.ch/) used as an example for the CppCon 2024 talk.
+# Supported platforms
+This project is working on x64 and ARM64. It was tested on:
+- Visual Studio 2022 - 17.11.1
+- Ubuntu 22.04.4 LTS (WSL and native)
+- MacOSX x64 Old MacBook Air (Mid 2013 13-inch) with Big Dur
+- Nintendo Switch (if you want access to this repo Switch port, contact me with your Nintendo dev account id) 
 # Assets copyright
 All visual and audio assets are property of Team KwaKwa. You are not allowed to use them/copy them outside of this project!
 # Libraries used
