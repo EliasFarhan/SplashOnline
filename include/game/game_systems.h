@@ -27,6 +27,7 @@ public:
 	void End();
 
 	void SetPlayerInput(neko::Span<PlayerInput> playerInputs);
+	void SetPreviousPlayerInput(neko::Span<PlayerInput> playerInputs);
 
 	[[nodiscard]] const PlayerManager& GetPlayerManager() const{return playerManager_;}
 	[[nodiscard]] const BulletManager& GetBulletManager() const {return bulletManager_;}

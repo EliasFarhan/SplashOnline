@@ -14,10 +14,17 @@ std::uint32_t RollbackManager::ConfirmLastFrame()
 {
 	const auto inputs = GetInputs(neko::Max(lastConfirmFrame_, 0));
 	confirmFrameGameSystems_.SetPlayerInput(inputs);
+	if(lastConfirmFrame_ > 0)
+	{
+		confirmFrameGameSystems_.SetPreviousPlayerInput(GetInputs(lastConfirmFrame_-1));
+	}
 	confirmFrameGameSystems_.Tick();
 	if(lastConfirmFrame_ != -1)
 	{
-		inputs_.erase(inputs_.cbegin());
+		for(std::size_t frame = 0; frame < inputs.size()-1; frame++)
+		{
+			inputs_[frame] = inputs_[frame+1];
+		}
 	}
 	lastConfirmFrame_++;
 	return confirmFrameGameSystems_.CalculateChecksum();
@@ -25,10 +32,10 @@ std::uint32_t RollbackManager::ConfirmLastFrame()
 int RollbackManager::GetLastReceivedFrame() const
 {
 	int lastReceived = std::numeric_limits<int>::max();
-	for(int i = 0; i < MaxPlayerNmb; i++)
+	for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
 	{
-		if(!inputDatas_[i].isValid) continue;
-		lastReceived = neko::Min(inputDatas_[i].lastReceivedFrame, lastReceived);
+		if(!inputDatas_[playerNumber].isValid) continue;
+		lastReceived = neko::Min(inputDatas_[playerNumber].lastReceivedFrame, lastReceived);
 	}
 	return lastReceived;
 }
@@ -84,12 +91,13 @@ PlayerInput RollbackManager::GetInput(int playerNumber, int currentFrame) const
 std::pair<std::array<PlayerInput, MaxPlayerInputNmb>, int> RollbackManager::GetInputs(int playerNumber, int currentFrame) const
 {
 	std::array<PlayerInput, MaxPlayerInputNmb> inputsTmp{};
-	auto size = neko::Max(currentFrame-neko::Max(lastConfirmFrame_, 0)+1, 1);
+	auto size = neko::Max(currentFrame - neko::Max(lastConfirmFrame_, 0) + 1, 1);
+	auto firstFrame = 0;
 	if(size > MaxPlayerInputNmb)
 	{
+		firstFrame += size - MaxPlayerInputNmb;
 		size = MaxPlayerInputNmb;
 	}
-	const auto firstFrame = currentFrame-size+1;
 	for(int i = 0; i < size; i++)
 	{
 		const auto index = firstFrame+i;
@@ -99,24 +107,19 @@ std::pair<std::array<PlayerInput, MaxPlayerInputNmb>, int> RollbackManager::GetI
 }
 std::array<PlayerInput, MaxPlayerNmb> RollbackManager::GetInputs(int currentFrame) const
 {
-	std::array<PlayerInput, MaxPlayerNmb> inputsTmp{};
 	auto index = currentFrame-neko::Max(lastConfirmFrame_, 0);
 	if(index > (int)inputs_.size())
 	{
 		index = (int)inputs_.size()-1;
 	}
-	for(int i = 0; i < MaxPlayerNmb; i++)
-	{
-		inputsTmp[i] = inputs_[index][i];
-	}
-	return inputsTmp;
+	return inputs_[index];
 }
 void RollbackManager::SetInputs(const InputPacket& packet)
 {
 	const auto playerNumber = packet.playerNumber;
 	const auto currentFrame = packet.frame;
 	const auto lastReceiveFrame = inputDatas_[playerNumber].lastReceivedFrame;
-	const auto firstFrame = currentFrame-packet.inputSize + 1;
+	const auto firstFrame = currentFrame - neko::Max(lastConfirmFrame_, 0) - packet.inputSize;
 	for(int i = 0; i < packet.inputSize; i++)
 	{
 		int tmpFrame = firstFrame+i;

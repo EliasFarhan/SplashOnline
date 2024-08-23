@@ -174,6 +174,7 @@ public:
 	[[nodiscard]] const auto& GetPlayerPhysics()const {return playerPhysics_;}
 	[[nodiscard]] const auto& GetPlayerInputs() const { return playerInputs_; }
 	void SetPlayerInput(neko::Span<PlayerInput> playerInputs);
+	void SetPreviousPlayerInput(neko::Span<PlayerInput> playerInputs);
 
 	uint32_t CalculateChecksum() const override;
 

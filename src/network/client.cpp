@@ -58,8 +58,13 @@ void NetworkClient::leaveRoomEventAction(int playerNr, bool isInactive)
 {
 	(void) isInactive;
 	(void) playerNr;
-	const auto& room = networkManager_.GetClient().getCurrentlyJoinedRoom();
+	auto& room = networkManager_.GetClient().getCurrentlyJoinedRoom();
 	isMaster_ = room.getMasterClientID() == localPlayerIndex_;
+	if(state_.load(std::memory_order_consume) == State::IN_GAME)
+	{
+		state_.store(State::IN_ROOM);
+		room.setIsOpen(true);
+	}
 }
 void NetworkClient::customEventAction(int playerNr, nByte eventCode, const ExitGames::Common::Object& eventContent)
 {

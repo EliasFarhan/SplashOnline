@@ -439,6 +439,15 @@ void PlayerManager::SetPlayerInput(neko::Span<PlayerInput> playerInputs)
 		playerInputs_[i] = playerInputs[i];
 	}
 }
+
+
+void PlayerManager::SetPreviousPlayerInput(neko::Span<PlayerInput> playerInputs)
+{
+	for(int i = 0; i < MaxPlayerNmb; i++)
+	{
+		previousPlayerInputs_[i] = playerInputs[i];
+	}
+}
 void PlayerManager::OnTriggerExit(neko::ColliderIndex playerIndex,
 	int playerNumber,
 	const neko::Collider& otherCollider)
@@ -497,4 +506,5 @@ void PlayerManager::RollbackFrom(const PlayerManager& system)
 	playerCharacters_ = system.playerCharacters_;
 	playerPhysics_ = system.playerPhysics_;
 }
+
 }

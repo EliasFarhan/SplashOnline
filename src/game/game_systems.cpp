@@ -99,6 +99,11 @@ void GameSystems::SetPlayerInput(neko::Span<PlayerInput> playerInputs)
 	playerManager_.SetPlayerInput(playerInputs);
 }
 
+void GameSystems::SetPreviousPlayerInput(neko::Span<PlayerInput> playerInputs)
+{
+	playerManager_.SetPreviousPlayerInput(playerInputs);
+}
+
 uint32_t GameSystems::CalculateChecksum() const
 {
 	return playerManager_.CalculateChecksum() + bulletManager_.CalculateChecksum();
@@ -111,5 +116,6 @@ void GameSystems::RollbackFrom(const GameSystems& system)
 	physicsManager_.CopyFrom(system.physicsManager_);
 
 }
+
 
 }

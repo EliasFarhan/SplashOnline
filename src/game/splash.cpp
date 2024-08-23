@@ -94,6 +94,13 @@ void SplashManager::Update(float dt)
 	}
 	case State::GAME:
 	{
+		if(client_->GetState() == NetworkClient::State::IN_ROOM)
+		{
+			gameManager_->End();
+			gameManager_ = nullptr;
+			state_ = State::LOBBY;
+		}
+
 		break;
 	}
 	case State::VICTORY_SCREEN:
