@@ -97,7 +97,7 @@ void GameManager::Tick()
 	else
 	{
 		const auto localPlayerNumber = netClient->GetPlayerIndex()-1;
-		LogDebug(fmt::format("Local Input p{} f{} input: {}", localPlayerNumber+1, currentFrame_, localPlayerInput));
+		//LogDebug(fmt::format("Local Input p{} f{} input: {}", localPlayerNumber+1, currentFrame_, localPlayerInput));
 		rollbackManager_.SetInput(localPlayerNumber, localPlayerInput, currentFrame_);
 		{
 			const auto& inputs = rollbackManager_.GetInputs(currentFrame_);
@@ -110,12 +110,13 @@ void GameManager::Tick()
 		auto inputPackets = netClient->GetInputPackets();
 		for(auto& inputPacket: inputPackets)
 		{
-			LogDebug(fmt::format("Received input from p{} f{} s{} with input: {} at f{}",
+			/*LogDebug(fmt::format("Received input from p{} f{} s{} with input: {} at f{}",
 				inputPacket.playerNumber+1,
 				inputPacket.frame,
 				inputPacket.inputSize,
 				inputPacket.inputs[inputPacket.inputSize-1],
 				currentFrame_));
+			 */
 			rollbackManager_.SetInputs(inputPacket);
 		}
 
@@ -123,7 +124,7 @@ void GameManager::Tick()
 		auto confirmPackets = netClient->GetConfirmPackets();
 		for(auto& confirmPacket : confirmPackets)
 		{
-			LogDebug(fmt::format("Received confirm inputs f{}: p1: {} p2: {}", confirmPacket.frame, confirmPacket.input[0], confirmPacket.input[1]));
+			//LogDebug(fmt::format("Received confirm inputs f{}: p1: {} p2: {}", confirmPacket.frame, confirmPacket.input[0], confirmPacket.input[1]));
 			const auto lastConfirmFrame = confirmPacket.frame;
 			if(lastConfirmFrame != rollbackManager_.GetLastConfirmFrame()+1)
 			{
@@ -134,7 +135,7 @@ void GameManager::Tick()
 			}
 			if(lastConfirmFrame > rollbackManager_.GetLastReceivedFrame())
 			{
-				LogWarning("Confirm Frame is further than received from unreliable");
+				//LogWarning("Confirm Frame is further than received from unreliable");
 			}
 			const auto& confirmInputs = confirmPacket.input;
 			for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
@@ -148,12 +149,11 @@ void GameManager::Tick()
 					const auto checkInput = rollbackManager_.GetInput(playerNumber, lastConfirmFrame);
 					if (confirmInputs[playerNumber] != checkInput)
 					{
-						LogError(fmt::format("Not the same input for confirm input p{} f{}: remote: {} local: {}",
+						LogWarning(fmt::format("Not the same input for confirm input p{} f{}: remote: {} local: {}",
 							playerNumber+1,
 							lastConfirmFrame,
 							confirmInputs[playerNumber],
 							checkInput));
-						std::terminate();
 					}
 				}
 				rollbackManager_.SetInput(playerNumber, confirmInputs[playerNumber], lastConfirmFrame);
@@ -214,12 +214,12 @@ void GameManager::Tick()
 		inputPacket.inputs = inputs.first;
 		inputPacket.inputSize = inputs.second;
 		netClient->SendInputPacket(inputPacket);
-		LogDebug(fmt::format("Sent input from p{} f{} with input: {}",
+		/*LogDebug(fmt::format("Sent input from p{} f{} with input: {}",
 			inputPacket.playerNumber+1,
 			currentFrame_,
 			inputPacket.inputs[inputPacket.inputSize-1]
 			));
-
+		*/
 
 		//validate frame
 		if(netClient->IsMaster())
@@ -232,7 +232,7 @@ void GameManager::Tick()
 				confirmPacket.frame = lastConfirmFrame;
 				confirmPacket.checksum = confirmValue;
 				confirmPacket.input = rollbackManager_.GetInputs(lastConfirmFrame);
-				LogDebug(fmt::format("Sending confirm inputs f{} p1: {} p2: {}", lastConfirmFrame, confirmPacket.input[0], confirmPacket.input[1]));
+				//LogDebug(fmt::format("Sending confirm inputs f{} p1: {} p2: {}", lastConfirmFrame, confirmPacket.input[0], confirmPacket.input[1]));
 				netClient->SendConfirmFramePacket(confirmPacket);
 			}
 		}

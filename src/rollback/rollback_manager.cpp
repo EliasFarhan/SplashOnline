@@ -19,13 +19,7 @@ std::uint32_t RollbackManager::ConfirmLastFrame()
 		confirmFrameGameSystems_.SetPreviousPlayerInput(GetInputs(lastConfirmFrame_-1));
 	}
 	confirmFrameGameSystems_.Tick();
-	if(lastConfirmFrame_ != -1)
-	{
-		for(std::size_t frame = 0; frame < inputs.size()-1; frame++)
-		{
-			inputs_[frame] = inputs_[frame+1];
-		}
-	}
+
 	lastConfirmFrame_++;
 	return confirmFrameGameSystems_.CalculateChecksum();
 }
@@ -55,7 +49,7 @@ void RollbackManager::SetInput(int playerNumber, PlayerInput input, int currentF
 	{
 		return;
 	}
-	int index = currentFrame-neko::Max(lastConfirmFrame_, 0);
+	int index = currentFrame;
 	if(index >= (int)inputs_.size())
 	{
 		const auto delta = (int)inputs_.size()-index+1;
@@ -81,7 +75,7 @@ void RollbackManager::SetInput(int playerNumber, PlayerInput input, int currentF
 }
 PlayerInput RollbackManager::GetInput(int playerNumber, int currentFrame) const
 {
-	int index = currentFrame-neko::Max(lastConfirmFrame_, 0);
+	int index = currentFrame;
 	if(index >= (int)inputs_.size())
 	{
 		index = (int)inputs_.size()-1;
@@ -92,11 +86,11 @@ std::pair<std::array<PlayerInput, MaxPlayerInputNmb>, int> RollbackManager::GetI
 {
 	std::array<PlayerInput, MaxPlayerInputNmb> inputsTmp{};
 	auto size = neko::Max(currentFrame - neko::Max(lastConfirmFrame_, 0) + 1, 1);
-	auto firstFrame = 0;
+	auto firstFrame = neko::Max(lastConfirmFrame_, 0);
 	if(size > MaxPlayerInputNmb)
 	{
-		firstFrame += size - MaxPlayerInputNmb;
 		size = MaxPlayerInputNmb;
+		firstFrame = currentFrame-size+1;
 	}
 	for(int i = 0; i < size; i++)
 	{
@@ -107,7 +101,7 @@ std::pair<std::array<PlayerInput, MaxPlayerInputNmb>, int> RollbackManager::GetI
 }
 std::array<PlayerInput, MaxPlayerNmb> RollbackManager::GetInputs(int currentFrame) const
 {
-	auto index = currentFrame-neko::Max(lastConfirmFrame_, 0);
+	auto index = currentFrame;
 	if(index > (int)inputs_.size())
 	{
 		index = (int)inputs_.size()-1;
@@ -119,7 +113,7 @@ void RollbackManager::SetInputs(const InputPacket& packet)
 	const auto playerNumber = packet.playerNumber;
 	const auto currentFrame = packet.frame;
 	const auto lastReceiveFrame = inputDatas_[playerNumber].lastReceivedFrame;
-	const auto firstFrame = currentFrame - neko::Max(lastConfirmFrame_, 0) - packet.inputSize;
+	const auto firstFrame = currentFrame - packet.inputSize + 1;
 	for(int i = 0; i < packet.inputSize; i++)
 	{
 		int tmpFrame = firstFrame+i;
