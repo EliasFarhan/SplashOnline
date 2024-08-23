@@ -496,7 +496,27 @@ void PlayerManager::Respawn(int playerNumber)
 uint32_t PlayerManager::CalculateChecksum() const
 {
 	//TODO calculate player character checksum
-	return 0;
+	std::uint32_t result = 0;
+	for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
+	{
+		const auto* player = reinterpret_cast<const std::uint32_t*>(&playerCharacters_[playerNumber]);
+		for(int i = 0; i < sizeof(PlayerCharacter)/sizeof(std::uint32_t); i++)
+		{
+			result += player[i];
+		}
+	}
+
+	const auto* playerInput = reinterpret_cast<const std::uint8_t*>(playerInputs_.data());
+	for(int i = 0; i < sizeof(playerInputs_); i++)
+	{
+		result += (std::uint32_t )playerInput[i];
+	}
+	playerInput = reinterpret_cast<const std::uint8_t*>(previousPlayerInputs_.data());
+	for(int i = 0; i < sizeof(playerInputs_); i++)
+	{
+		result += (std::uint32_t )playerInput[i];
+	}
+	return result;
 }
 
 void PlayerManager::RollbackFrom(const PlayerManager& system)

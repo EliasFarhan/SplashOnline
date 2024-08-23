@@ -338,7 +338,7 @@ void PlayerView::Draw()
 
 		// Draw in correct order
 		bodyDrawable->draw(renderer);
-		if(playerRenderDatas_[i].state != PlayerRenderState::DASHPREP)
+		if(playerRenderDatas_[i].state != PlayerRenderState::DASHPREP && playerRenderDatas_[i].state != PlayerRenderState::DASH)
 		{
 			gunDrawable->draw(renderer);
 			armDrawable->draw(renderer);
@@ -487,10 +487,7 @@ void PlayerView::UpdateTransforms(float dt)
 			playerRenderData.targetDir = neko::Vec2<float>(targetDir).Normalized();
 		}
 		float degree = std::acos(neko::Vec2<float>::Dot(playerRenderData.targetDir, { 0.0f, -1.0f })) / (float)M_PI * 180.0f;
-		if(playerRenderData.state == PlayerRenderState::WALK_BACK)
-		{
-			//degree = -degree;
-		}
+
 		auto* rootBone = playerRenderData.armDrawable->skeleton->getRootBone();
 		rootBone->setRotation(degree);
 		rootBone->setAppliedRotation(degree);

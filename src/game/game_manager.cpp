@@ -57,6 +57,7 @@ void GameManager::Update(float dt)
 		if(introDelayTimer_.Over())
 		{
 			currentFrame_ = 0;
+			gameTimer_.Reset();
 			FmodPlaySound(GetGameSoundEvent(GameSoundId::BLAST));
 			auto* netClient = GetNetworkClient();
 			if(netClient != nullptr && netClient->IsMaster())
@@ -66,7 +67,7 @@ void GameManager::Update(float dt)
 		}
 	}
 
-	if(introDelayTimer_.Over())
+	if(introDelayTimer_.Over() && !gameTimer_.Over())
 	{
 		currentTime_ += dt;
 		constexpr auto fixedDt = (float)fixedDeltaTime;
@@ -74,6 +75,17 @@ void GameManager::Update(float dt)
 		{
 			Tick();
 			currentTime_ -= fixedDt;
+		}
+	}
+	if(isGameOver_)
+	{
+		if(rollbackManager_.GetLastConfirmFrame() < currentFrame_)
+		{
+			RollbackUpdate();
+		}
+		else
+		{
+			//todo show victory screen
 		}
 	}
 
@@ -87,6 +99,30 @@ void GameManager::End()
 }
 void GameManager::Tick()
 {
+	const auto gameTime = (int)gameTimer_.RemainingTime();
+	gameTimer_.Update(fixedDeltaTime);
+	if(gameTimer_.Over())
+	{
+		//TODO end game and switch to victory screen
+		FmodPlaySound(GetGameSoundEvent(GameSoundId::ENDGAME));
+		isGameOver_ = true;
+	}
+	else
+	{
+		const auto currentGameTime = (int)gameTimer_.RemainingTime();
+		if(gameTime != currentGameTime)
+		{
+			if(gameTime == 30)
+			{
+				FmodPlaySound(GetGameSoundEvent(GameSoundId::VOICE30));
+			}
+			if(gameTime <= 5)
+			{
+				FmodPlaySound(GetGameSoundEvent((GameSoundId)((int)GameSoundId::VOICE5+(5-gameTime))));
+			}
+		}
+	}
+
 	auto* netClient = GetNetworkClient();
 	PlayerInput localPlayerInput = GetPlayerInput();
 	if(netClient == nullptr)
@@ -106,94 +142,7 @@ void GameManager::Tick()
 				LogError(fmt::format("WTF! Local input: {} Rollback Input: {}", localPlayerInput, inputs[localPlayerNumber]));
 			}
 		}
-		//import network inputs
-		auto inputPackets = netClient->GetInputPackets();
-		for(auto& inputPacket: inputPackets)
-		{
-			/*LogDebug(fmt::format("Received input from p{} f{} s{} with input: {} at f{}",
-				inputPacket.playerNumber+1,
-				inputPacket.frame,
-				inputPacket.inputSize,
-				inputPacket.inputs[inputPacket.inputSize-1],
-				currentFrame_));
-			 */
-			rollbackManager_.SetInputs(inputPacket);
-		}
-
-		//import confirm frames
-		auto confirmPackets = netClient->GetConfirmPackets();
-		for(auto& confirmPacket : confirmPackets)
-		{
-			//LogDebug(fmt::format("Received confirm inputs f{}: p1: {} p2: {}", confirmPacket.frame, confirmPacket.input[0], confirmPacket.input[1]));
-			const auto lastConfirmFrame = confirmPacket.frame;
-			if(lastConfirmFrame != rollbackManager_.GetLastConfirmFrame()+1)
-			{
-				LogError(fmt::format("Not the same Confirm Frame: server {} local {}",
-					lastConfirmFrame,
-					rollbackManager_.GetLastConfirmFrame()+1));
-				std::terminate();
-			}
-			if(lastConfirmFrame > rollbackManager_.GetLastReceivedFrame())
-			{
-				//LogWarning("Confirm Frame is further than received from unreliable");
-			}
-			const auto& confirmInputs = confirmPacket.input;
-			for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
-			{
-				if(!IsValid(playerNumber))
-				{
-					continue;
-				}
-				if(rollbackManager_.GetLastReceivedFrame(playerNumber) >= lastConfirmFrame)
-				{
-					const auto checkInput = rollbackManager_.GetInput(playerNumber, lastConfirmFrame);
-					if (confirmInputs[playerNumber] != checkInput)
-					{
-						LogWarning(fmt::format("Not the same input for confirm input p{} f{}: remote: {} local: {}",
-							playerNumber+1,
-							lastConfirmFrame,
-							confirmInputs[playerNumber],
-							checkInput));
-					}
-				}
-				rollbackManager_.SetInput(playerNumber, confirmInputs[playerNumber], lastConfirmFrame);
-			}
-			const auto lastConfirmValue = confirmPacket.checksum;
-			const auto localConfirmValue = rollbackManager_.ConfirmLastFrame();
-			if(localConfirmValue != lastConfirmValue)
-			{
-				LogError("Desync");
-			}
-		}
-
-
-		//rollback if needed
-		if(rollbackManager_.IsDirty())
-		{
-			gameSystems_.RollbackFrom(rollbackManager_.GetGameSystems());
-			if(rollbackManager_.GetGameSystems().CalculateChecksum() != gameSystems_.CalculateChecksum())
-			{
-				LogError("Current Frame Game System does not have the same confirm value than Confirm Frame System");
-			}
-			int firstFrame = neko::Max(rollbackManager_.GetLastConfirmFrame(), 0);
-			for(int i = 0; i < currentFrame_-firstFrame; i++)
-			{
-				const auto rollbackInputs = rollbackManager_.GetInputs(firstFrame+i);
-				if(firstFrame+i > 0)
-				{
-					gameSystems_.SetPreviousPlayerInput(rollbackManager_.GetInputs(firstFrame+i-1));
-				}
-				gameSystems_.SetPlayerInput(rollbackInputs);
-				gameSystems_.Tick();
-			}
-			rollbackManager_.SetDirty(false);
-		}
-		playerInputs_ = rollbackManager_.GetInputs(currentFrame_);
-		gameSystems_.SetPlayerInput(playerInputs_);
-		if(currentFrame_ > 0)
-		{
-			gameSystems_.SetPreviousPlayerInput(rollbackManager_.GetInputs(currentFrame_-1));
-		}
+		RollbackUpdate();
 	}
 	gameSystems_.Tick();
 	gameRenderer_.Tick();
@@ -243,6 +192,7 @@ GameManager::GameManager(const GameData& gameData):
 	rollbackManager_(gameData),
 	gameRenderer_(&gameSystems_),
 	introDelayTimer_{gameData.introDelay, gameData.introDelay},
+	gameTimer_(neko::Scalar {-1.0f}, gameData.period),
 	connectedPlayers_(gameData.connectedPlayers)
 {
 	AddSystem(this);
@@ -254,5 +204,97 @@ int GameManager::GetSystemIndex() const
 void GameManager::SetSystemIndex(int index)
 {
 	systemIndex_ = index;
+}
+void GameManager::RollbackUpdate()
+{
+	auto* netClient = GetNetworkClient();
+	//import network inputs
+	auto inputPackets = netClient->GetInputPackets();
+	for(auto& inputPacket: inputPackets)
+	{
+		/*LogDebug(fmt::format("Received input from p{} f{} s{} with input: {} at f{}",
+			inputPacket.playerNumber+1,
+			inputPacket.frame,
+			inputPacket.inputSize,
+			inputPacket.inputs[inputPacket.inputSize-1],
+			currentFrame_));
+		 */
+		rollbackManager_.SetInputs(inputPacket);
+	}
+
+	//import confirm frames
+	auto confirmPackets = netClient->GetConfirmPackets();
+	for(auto& confirmPacket : confirmPackets)
+	{
+		//LogDebug(fmt::format("Received confirm inputs f{}: p1: {} p2: {}", confirmPacket.frame, confirmPacket.input[0], confirmPacket.input[1]));
+		const auto lastConfirmFrame = confirmPacket.frame;
+		if(lastConfirmFrame != rollbackManager_.GetLastConfirmFrame()+1)
+		{
+			LogError(fmt::format("Not the same Confirm Frame: server {} local {}",
+				lastConfirmFrame,
+				rollbackManager_.GetLastConfirmFrame()+1));
+			std::terminate();
+		}
+		if(lastConfirmFrame > rollbackManager_.GetLastReceivedFrame())
+		{
+			//LogWarning("Confirm Frame is further than received from unreliable");
+		}
+		const auto& confirmInputs = confirmPacket.input;
+		for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
+		{
+			if(!IsValid(playerNumber))
+			{
+				continue;
+			}
+			if(rollbackManager_.GetLastReceivedFrame(playerNumber) >= lastConfirmFrame)
+			{
+				const auto checkInput = rollbackManager_.GetInput(playerNumber, lastConfirmFrame);
+				if (confirmInputs[playerNumber] != checkInput)
+				{
+					LogWarning(fmt::format("Not the same input for confirm input p{} f{}: remote: {} local: {}",
+						playerNumber+1,
+						lastConfirmFrame,
+						confirmInputs[playerNumber],
+						checkInput));
+				}
+			}
+			rollbackManager_.SetInput(playerNumber, confirmInputs[playerNumber], lastConfirmFrame);
+		}
+		const auto lastConfirmValue = confirmPacket.checksum;
+		const auto localConfirmValue = rollbackManager_.ConfirmLastFrame();
+		if(localConfirmValue != lastConfirmValue)
+		{
+			LogError("Desync");
+		}
+	}
+
+
+	//rollback if needed
+	if(rollbackManager_.IsDirty())
+	{
+		gameSystems_.RollbackFrom(rollbackManager_.GetGameSystems());
+		if(rollbackManager_.GetGameSystems().CalculateChecksum() != gameSystems_.CalculateChecksum())
+		{
+			LogError("Current Frame Game System does not have the same confirm value than Confirm Frame System");
+		}
+		int firstFrame = neko::Max(rollbackManager_.GetLastConfirmFrame(), 0);
+		for(int i = 0; i < currentFrame_-firstFrame; i++)
+		{
+			const auto rollbackInputs = rollbackManager_.GetInputs(firstFrame+i);
+			if(firstFrame+i > 0)
+			{
+				gameSystems_.SetPreviousPlayerInput(rollbackManager_.GetInputs(firstFrame+i-1));
+			}
+			gameSystems_.SetPlayerInput(rollbackInputs);
+			gameSystems_.Tick();
+		}
+		rollbackManager_.SetDirty(false);
+	}
+	playerInputs_ = rollbackManager_.GetInputs(currentFrame_);
+	gameSystems_.SetPlayerInput(playerInputs_);
+	if(currentFrame_ > 0)
+	{
+		gameSystems_.SetPreviousPlayerInput(rollbackManager_.GetInputs(currentFrame_-1));
+	}
 }
 }

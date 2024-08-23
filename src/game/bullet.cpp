@@ -146,7 +146,16 @@ void BulletManager::SpawnWata(
 
 uint32_t BulletManager::CalculateChecksum() const
 {
-	return 0;
+	std::uint32_t result = 0;
+	for(const auto & bullet : bullets_)
+	{
+		const auto* bulletPtr = reinterpret_cast<const std::uint32_t*>(&bullet);
+		for(int j = 0; j < sizeof(Bullet)/sizeof(std::uint32_t); j++)
+		{
+			result += bulletPtr[j];
+		}
+	}
+	return result;
 }
 
 void BulletManager::RollbackFrom(const BulletManager& system)

@@ -30,16 +30,19 @@ public:
 	[[nodiscard]] int GetSystemIndex() const override;
 	void SetSystemIndex(int index) override;
 private:
+	void RollbackUpdate();
 	GameSystems gameSystems_;
 	GameView gameRenderer_;
 	RollbackManager rollbackManager_;
 	Timer<float> introDelayTimer_;
+	Timer<> gameTimer_;
 	float currentTime_ = 0.0f;
 	int currentFrame_ = -1;
 	int systemIndex_ = -1;
 	std::array<bool, MaxPlayerNmb> connectedPlayers_{};
 	std::array<PlayerInput, MaxPlayerNmb> playerInputs_;
 
+	bool isGameOver_ = false;
 };
 }
 #endif //SPLASHONLINE_GAME_GAME_MANAGER_H_

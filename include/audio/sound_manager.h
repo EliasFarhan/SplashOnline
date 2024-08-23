@@ -21,6 +21,7 @@ enum class GameSoundId
 	VOICE2,
 	VOICE1,
 	ENDGAME,
+	VOICE30,
 	LENGTH
 };
 

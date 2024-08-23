@@ -20,7 +20,8 @@ static constexpr std::array<std::string_view, (int)GameSoundId::LENGTH> soundEve
 	"event:/InGame/Voice3_Three",
 	"event:/InGame/Voice2_Two",
 	"event:/InGame/Voice1_One",
-	"event:/GUI/GameEnd"
+	"event:/GUI/GameEnd",
+	"event:/InGame/Voice30_Thirty",
 }};
 
 std::string_view GetGameSoundEvent(GameSoundId gameSoundId)
