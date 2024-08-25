@@ -43,6 +43,27 @@ static constexpr std::array<std::string_view, (int)TextureManager::TextureId::LE
 		"data/sprites/kittymanjaro/plat2.png",
 		"data/sprites/kittymanjaro/plat3.png",
 
+		"data/sprites/ui/arrow_cyan.png",
+		"data/sprites/ui/arrow_orange.png",
+		"data/sprites/ui/arrow_magenta.png",
+		"data/sprites/ui/arrow_turquoise.png",
+		"data/sprites/ui/right_arrow.png",
+		"data/sprites/ui/cat_playerhead.png",
+		"data/sprites/ui/lucha_playerhead.png",
+		"data/sprites/ui/owl_playerhead.png",
+		"data/sprites/ui/robo_playerhead.png",
+		"data/sprites/ui/OOB_cyan.png",
+		"data/sprites/ui/OOB_orange.png",
+		"data/sprites/ui/OOB_magenta.png",
+		"data/sprites/ui/OOB_turquoise.png",
+		"data/sprites/ui/cat_win.png",
+		"data/sprites/ui/lucha_win.png",
+		"data/sprites/ui/owl_win.png",
+		"data/sprites/ui/robo_win.png",
+		"data/sprites/ui/cat_lose.png",
+		"data/sprites/ui/lucha_lose.png",
+		"data/sprites/ui/owl_lose.png",
+		"data/sprites/ui/robo_lose.png",
 
 		"data/spine/kwakwalogo/SBPkwakwa_ver4_2.png",
 		"data/spine/announcer/SBPannouncers_ver4_2.png",
@@ -52,6 +73,8 @@ static constexpr std::array<std::string_view, (int)TextureManager::TextureId::LE
 		"data/spine/water/SBPwater_ver4_2.png",
 		"data/spine/cloud/SBPCloud_ver_4_2.png",
 		"data/spine/FX/SBPfx_ver4_2.png",
+
+
 
 	}};
 

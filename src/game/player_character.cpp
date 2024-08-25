@@ -464,6 +464,46 @@ void PlayerManager::SetPreviousPlayerInput(neko::Span<PlayerInput> playerInputs)
 		previousPlayerInputs_[i] = playerInputs[i];
 	}
 }
+
+
+void PlayerManager::OnTriggerEnter(neko::ColliderIndex playerIndex, int playerNumber, const neko::Collider& otherCollider)
+{
+	const auto* otherUserData = static_cast<const ColliderUserData*>(otherCollider.userData);
+	if(playerIndex == playerPhysics_[playerNumber].footColliderIndex &&
+	   otherUserData->type == ColliderType::PLATFORM)
+	{
+		playerCharacters_[playerNumber].footCount++;
+	}
+
+	if(otherUserData->type == ColliderType::GAME_LIMIT)
+	{
+		Respawn(playerNumber);
+	}
+
+	if(otherUserData->type == ColliderType::BULLET)
+	{
+		//TODO manage wata hit
+	}
+	if(otherUserData->type == ColliderType::PLAYER)
+	{
+		if(playerIndex == playerPhysics_[playerNumber].headColliderIndex)
+		{
+			if(otherCollider.colliderIndex == playerPhysics_[otherUserData->playerNumber].footColliderIndex && playerCharacters_[otherUserData->playerNumber].IsDashing())
+			{
+				//todo dashed
+			}
+		}
+		//dashing on someone head
+		if(playerIndex == playerPhysics_[playerNumber].footColliderIndex && playerCharacters_[playerNumber].IsDashing())
+		{
+			if(otherCollider.colliderIndex == playerPhysics_[otherUserData->playerNumber].headColliderIndex)
+			{
+				//todo bounce?
+			}
+		}
+	}
+}
+
 void PlayerManager::OnTriggerExit(neko::ColliderIndex playerIndex,
 	int playerNumber,
 	const neko::Collider& otherCollider)
@@ -473,23 +513,6 @@ void PlayerManager::OnTriggerExit(neko::ColliderIndex playerIndex,
 		otherUserData->type == ColliderType::PLATFORM)
 	{
 		playerCharacters_[playerNumber].footCount--;
-	}
-	if(otherUserData->type == ColliderType::GAME_LIMIT)
-	{
-		Respawn(playerNumber);
-	}
-	if(otherUserData->type == ColliderType::BULLET)
-	{
-		//TODO manage wata hit
-	}
-}
-void PlayerManager::OnTriggerEnter(neko::ColliderIndex playerIndex, int playerNumber, const neko::Collider& otherCollider)
-{
-	const auto* otherUserData = static_cast<const ColliderUserData*>(otherCollider.userData);
-	if(playerIndex == playerPhysics_[playerNumber].footColliderIndex &&
-		otherUserData->type == ColliderType::PLATFORM)
-	{
-		playerCharacters_[playerNumber].footCount++;
 	}
 }
 
