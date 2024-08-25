@@ -66,6 +66,22 @@ void PlayerManager::Begin()
 		auto& headBox = physicsWorld.aabb(headCollider.shapeIndex);
 		headBox.halfSize = PlayerPhysic::headBox.size/neko::Scalar{2};
 
+		playerPhysic.leftColliderIndex = physicsWorld.AddAabbCollider(playerPhysic.bodyIndex);
+		auto& leftCollider = physicsWorld.collider(playerPhysic.leftColliderIndex);
+		leftCollider.isTrigger = true;
+		leftCollider.offset = PlayerPhysic::leftBox.position+PlayerPhysic::leftBox.offset;
+		leftCollider.userData = &playerPhysic.userData;
+		auto& leftBox = physicsWorld.aabb(leftCollider.shapeIndex);
+		leftBox.halfSize = PlayerPhysic::leftBox.size/neko::Scalar{2};
+
+		playerPhysic.rightColliderIndex = physicsWorld.AddAabbCollider(playerPhysic.bodyIndex);
+		auto& rightCollider = physicsWorld.collider(playerPhysic.rightColliderIndex);
+		rightCollider.isTrigger = true;
+		rightCollider.offset = PlayerPhysic::rightBox.position+PlayerPhysic::rightBox.offset;
+		rightCollider.userData = &playerPhysic.userData;
+		auto& rightBox = physicsWorld.aabb(rightCollider.shapeIndex);
+		rightBox.halfSize = PlayerPhysic::rightBox.size/neko::Scalar{2};
+
 		playerPhysic.userData.type = ColliderType::PLAYER;
 		playerPhysic.userData.playerNumber = playerIndex;
 

@@ -366,6 +366,14 @@ void PlayerView::Draw()
 				GetDrawingRect(body.position + PlayerPhysic::headBox.position+PlayerPhysic::headBox.offset,
 					PlayerPhysic::headBox.size);
 			SDL_RenderDrawRect(renderer, &headRect);
+			const auto right =
+				GetDrawingRect(body.position + PlayerPhysic::rightBox.position+PlayerPhysic::rightBox.offset,
+					PlayerPhysic::rightBox.size);
+			SDL_RenderDrawRect(renderer, &right);
+			const auto leftRect =
+				GetDrawingRect(body.position + PlayerPhysic::leftBox.position+PlayerPhysic::leftBox.offset,
+					PlayerPhysic::leftBox.size);
+			SDL_RenderDrawRect(renderer, &leftRect);
 
 		}
 	}

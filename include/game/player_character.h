@@ -138,18 +138,32 @@ struct PlayerPhysic
 		};
 
 	neko::ColliderIndex footColliderIndex = neko::INVALID_COLLIDER_INDEX;
+	neko::ColliderIndex headColliderIndex = neko::INVALID_COLLIDER_INDEX;
+	neko::ColliderIndex leftColliderIndex = neko::INVALID_COLLIDER_INDEX;
+	neko::ColliderIndex rightColliderIndex = neko::INVALID_COLLIDER_INDEX;
 	static constexpr Box footBox
 		{
 			{},
 			{neko::Scalar{playerScale*0.04818996f}, neko::Scalar{playerScale*0.0f}},
 			{neko::Scalar{playerScale*0.6595958f}, neko::Scalar{playerScale*0.3909828f}}
 		};
-	neko::ColliderIndex headColliderIndex = neko::INVALID_COLLIDER_INDEX;
 	static constexpr Box headBox
 		{
 			{{}, neko::Scalar{2.14f*playerScale}},
 			{neko::Scalar{playerScale*-0.00925f}, neko::Scalar{playerScale*0.08f}},
 			{neko::Scalar{playerScale*1.405238f}, neko::Scalar{playerScale*1.0f}}
+		};
+	static constexpr Box rightBox
+		{
+			{ neko::Scalar{-0.31f*playerScale}, {}},
+			{neko::Scalar{playerScale*0.8151992f}, neko::Scalar{playerScale*0.9742619f}},
+			{neko::Scalar{playerScale*0.4565361f}, neko::Scalar{playerScale*1.331382f}}
+		};
+	static constexpr Box leftBox
+		{
+			{ neko::Scalar{-1.35f*playerScale}, {}},
+			{neko::Scalar{playerScale*0.8151992f}, neko::Scalar{playerScale*0.9742619f}},
+			{neko::Scalar{playerScale*0.4565361f}, neko::Scalar{playerScale*1.331382f}}
 		};
 	ColliderUserData userData{};
 	neko::Vec2f totalForce{};
