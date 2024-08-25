@@ -80,7 +80,7 @@ void BulletManager::OnTriggerEnter(neko::ColliderIndex bulletIndex, const neko::
 		{
 			continue;
 		}
-		//We found the bullet
+		//Now we found the bullet
 		if(colliderUserData->playerNumber == bullet.playerNumber)
 		{
 			return;

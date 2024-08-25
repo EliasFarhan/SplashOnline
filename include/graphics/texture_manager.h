@@ -9,6 +9,7 @@
 #include <SDL_render.h>
 
 #include <array>
+#include "math/vec2.h"
 
 namespace splash
 {
@@ -82,12 +83,15 @@ public:
 	};
 
 	[[nodiscard]] SDL_Texture* GetTexture(TextureId textureId) const noexcept{ return textures_[(int)textureId]; }
+	neko::Vec2i GetTextureSize(TextureId id) const;
 private:
 	SDL_Renderer* renderer_ = nullptr;
 	std::array<SDL_Texture*, (int)TextureId::LENGTH> textures_{};
+	std::array<neko::Vec2i, (int)TextureId::LENGTH> texturesSizes_{};
 };
 
 [[nodiscard]] SDL_Texture* GetTexture(TextureManager::TextureId textureId);
+[[nodiscard]] neko::Vec2i GetTextureSize(TextureManager::TextureId textureId);
 bool IsTextureLoaded();
 
 }

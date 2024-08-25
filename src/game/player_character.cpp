@@ -111,6 +111,7 @@ void PlayerManager::Tick()
 		auto target = neko::Vec2f{neko::Scalar {playerInput.targetDirX}, neko::Scalar {playerInput.targetDirY}};
 
 		playerCharacter.jumpTimer.Update(fixedDeltaTime);
+		playerCharacter.collidedTimer.Update(fixedDeltaTime);
 
 		if(!playerCharacter.respawnStaticTime.Over())
 		{
@@ -211,7 +212,10 @@ void PlayerManager::Tick()
 			const auto velY = body.velocity.y;
 			const auto decreaseFactor = velY > neko::Scalar{} ? neko::Scalar{ 0.75f } : neko::Scalar{ 1.0f };
 			auto force = PlayerCharacter::ReactorForce * reactor * decreaseFactor;
-			if(playerCharacter.jetBurstCoolDownTimer.Over() && !jetbursting && reactor > PlayerCharacter::JetBurstThreshold) //TODO add collided
+			if(playerCharacter.jetBurstCoolDownTimer.Over() &&
+				!jetbursting &&
+				reactor > PlayerCharacter::JetBurstThreshold &&
+				playerCharacter.collidedTimer.Over())
 			{
 				jetbursting = true;
 				playerCharacter.preJetBurstTimer.Reset();
@@ -239,7 +243,10 @@ void PlayerManager::Tick()
 				force *= (t*t*t*t);
 			}
 
-			//TODO reset force at 0 if collided and not on ground
+			if(!playerCharacter.collidedTimer.Over() && !playerCharacter.IsGrounded())
+			{
+				force = {};
+			}
 			if(playerPhysic.priority <= PlayerCharacter::JetPackPriority)
 			{
 				playerPhysic.totalForce += neko::Vec2f{{}, force};
@@ -269,8 +276,7 @@ void PlayerManager::Tick()
 			if(playerCharacter.dashDownTimer.Over())
 			{
 				//Finish stomp
-				playerCharacter.slowDashTimer.Reset();
-				playerCharacter.jetBurstCoolDownTimer.Stop();
+				StopDash(playerNumber, DashFinishType::SLOW);
 			}
 		}
 		if(!playerCharacter.slowDashTimer.Over())
@@ -305,7 +311,8 @@ void PlayerManager::Tick()
 				!playerCharacter.IsDashing() &&
 				!playerCharacter.IsDashPrepping() &&
 				!playerCharacter.IsDashed() &&
-				body.velocity.Length() < PlayerCharacter::StompOrBurstMaxVelocity) // todo not collided
+				body.velocity.Length() < PlayerCharacter::StompOrBurstMaxVelocity &&
+				playerCharacter.collidedTimer.Over())
 			{
 				//Start stomp prep
 				playerCharacter.dashPrepTimer.Reset();
@@ -323,7 +330,8 @@ void PlayerManager::Tick()
 			}
 			else if(playerCharacter.IsDashPrepping() &&
 				!playerCharacter.IsDashing() &&
-				!playerCharacter.IsDashed()) //todo is not collided
+				!playerCharacter.IsDashed() &&
+				playerCharacter.collidedTimer.Over())
 			{
 				if(reactor < PlayerCharacter::StompThreshold)
 				{
@@ -386,9 +394,8 @@ void PlayerManager::Tick()
 		}
 		else
 		{
-			if(isShooting)
+			if(isShooting && !playerCharacter.IsDashPrepping() && !playerCharacter.IsDashing())
 			{
-				//TODO not shooting if stomp prep or dashing
 				//Shoot wata bullet
 				auto& bulletManager = gameSystems_->GetBulletManager();
 				const auto speedFactor = playerCharacter.firstShots>0 ?
@@ -469,10 +476,13 @@ void PlayerManager::SetPreviousPlayerInput(neko::Span<PlayerInput> playerInputs)
 void PlayerManager::OnTriggerEnter(neko::ColliderIndex playerIndex, int playerNumber, const neko::Collider& otherCollider)
 {
 	const auto* otherUserData = static_cast<const ColliderUserData*>(otherCollider.userData);
-	if(playerIndex == playerPhysics_[playerNumber].footColliderIndex &&
-	   otherUserData->type == ColliderType::PLATFORM)
+	if(playerIndex == playerPhysics_[playerNumber].footColliderIndex)
 	{
-		playerCharacters_[playerNumber].footCount++;
+		if(otherUserData->type == ColliderType::PLATFORM)
+		{
+			playerCharacters_[playerNumber].footCount++;
+		}
+
 	}
 
 	if(otherUserData->type == ColliderType::GAME_LIMIT)
@@ -486,9 +496,10 @@ void PlayerManager::OnTriggerEnter(neko::ColliderIndex playerIndex, int playerNu
 	}
 	if(otherUserData->type == ColliderType::PLAYER)
 	{
+		const auto otherPlayerNumber = otherUserData->playerNumber;
 		if(playerIndex == playerPhysics_[playerNumber].headColliderIndex)
 		{
-			if(otherCollider.colliderIndex == playerPhysics_[otherUserData->playerNumber].footColliderIndex && playerCharacters_[otherUserData->playerNumber].IsDashing())
+			if(otherCollider.colliderIndex == playerPhysics_[otherPlayerNumber].footColliderIndex && playerCharacters_[otherPlayerNumber].IsDashing())
 			{
 				//todo dashed
 			}
@@ -496,9 +507,74 @@ void PlayerManager::OnTriggerEnter(neko::ColliderIndex playerIndex, int playerNu
 		//dashing on someone head
 		if(playerIndex == playerPhysics_[playerNumber].footColliderIndex && playerCharacters_[playerNumber].IsDashing())
 		{
-			if(otherCollider.colliderIndex == playerPhysics_[otherUserData->playerNumber].headColliderIndex)
+			if(otherCollider.colliderIndex == playerPhysics_[otherPlayerNumber].headColliderIndex)
 			{
 				//todo bounce?
+				if(playerCharacters_[otherPlayerNumber].IsGrounded())
+				{
+					//Stop dash
+					StopDash(playerNumber, DashFinishType::BOUNCE);
+				}
+			}
+		}
+		//Simple side collision
+		if(playerIndex == playerPhysics_[playerNumber].rightColliderIndex || playerIndex == playerPhysics_[playerNumber].leftColliderIndex)
+		{
+			const auto otherColliderIndex = otherCollider.colliderIndex;
+			if(otherColliderIndex == playerPhysics_[otherPlayerNumber].rightColliderIndex || otherColliderIndex == playerPhysics_[otherPlayerNumber].leftColliderIndex)
+			{
+				if(playerCharacters_[otherPlayerNumber].IsCollided() && playerCharacters_[otherPlayerNumber].collidedPlayer == playerNumber)
+				{
+					return;
+				}
+				//velocity collision
+				//Exchange velocities
+				const auto& body = gameSystems_->GetPhysicsWorld().body(playerPhysics_[playerNumber].bodyIndex);
+				const auto& otherBody = gameSystems_->GetPhysicsWorld().body(otherCollider.bodyIndex);
+
+				const auto playerVel = body.velocity;
+				const auto otherVel = otherBody.velocity;
+
+				if(playerCharacters_[playerNumber].IsDashed())
+				{
+					//Spread dash
+					//other player get dashed velocity priority 3
+					if(playerPhysics_[otherPlayerNumber].priority <= 3)
+					{
+						playerPhysics_[otherPlayerNumber].totalForce +=
+							(neko::Vec2f(body.velocity.x, PlayerCharacter::DashedSpeed)-otherBody.velocity)
+							*otherBody.inverseMass/fixedDeltaTime;
+						playerPhysics_[otherPlayerNumber].priority = 3;
+					}
+
+				}
+
+				if(playerCharacters_[otherPlayerNumber].IsDashed())
+				{
+					//Spread dash
+					//player get dashed velocity priority 3
+					playerPhysics_[playerNumber].totalForce +=
+						(neko::Vec2f(otherBody.velocity.x, PlayerCharacter::DashedSpeed)-body.velocity)
+							*body.inverseMass/fixedDeltaTime;
+					playerPhysics_[playerNumber].priority = 3;
+				}
+
+
+				if(playerPhysics_[playerNumber].priority <= 2)
+				{
+					playerPhysics_[playerNumber].totalForce += (otherVel-playerVel)*body.inverseMass/fixedDeltaTime;
+					playerPhysics_[playerNumber].priority = 2;
+				}
+				if(playerPhysics_[otherPlayerNumber].priority <= 2)
+				{
+					playerPhysics_[otherPlayerNumber].totalForce += (playerVel-otherVel)*body.inverseMass/fixedDeltaTime;
+					playerPhysics_[otherPlayerNumber].priority = 2;
+				}
+				playerCharacters_[playerNumber].collidedTimer.Reset();
+				playerCharacters_[playerNumber].collidedPlayer = otherPlayerNumber;
+				playerCharacters_[otherPlayerNumber].collidedTimer.Reset();
+				playerCharacters_[otherPlayerNumber].collidedPlayer = playerNumber;
+
 			}
 		}
 	}
@@ -564,6 +640,30 @@ void PlayerManager::RollbackFrom(const PlayerManager& system)
 	previousPlayerInputs_ = system.previousPlayerInputs_;
 	playerCharacters_ = system.playerCharacters_;
 	playerPhysics_ = system.playerPhysics_;
+}
+void PlayerManager::StopDash(int playerNumber, PlayerManager::DashFinishType bounce)
+{
+	auto& playerCharacter = playerCharacters_[playerNumber];
+	playerCharacter.dashDownTimer.Stop();
+	playerCharacter.slowDashTimer.Stop();
+
+	switch(bounce)
+	{
+	case DashFinishType::BOUNCE:
+	{
+		playerCharacter.bounceDashTimer.Reset();
+		playerCharacter.stopDashTimer.Reset();
+		break;
+	}
+	case DashFinishType::SLOW:
+	{
+		playerCharacter.slowDashTimer.Reset();
+		playerCharacter.jetBurstCoolDownTimer.Stop();
+		playerCharacter.stopDashTimer.Reset();
+		break;
+	}
+	default:break;
+	}
 }
 
 }

@@ -33,6 +33,11 @@ struct PlayerRenderData
 	std::unique_ptr<spine::SkeletonDrawable> cloudDrawable{};
 	spine::Bone* shoulderBone{};
 	spine::Bone* handBone{};
+
+	SDL_Texture* outIconBg = nullptr;
+	SDL_Texture* outIconCharFace = nullptr;
+	SDL_Texture* outIconArrow = nullptr;
+
 	PlayerRenderState state = PlayerRenderState::IDLE;
 	Timer<float> cloudEndRespawnTimer{-1.0f, 0.367f};
 	bool faceRight = true;

@@ -4,6 +4,7 @@
 #include "rollback/rollback_manager.h"
 #include "audio/audio_manager.h"
 #include "audio/player_sound.h"
+#include "graphics/const.h"
 
 #include <math/fixed_lut.h>
 #include <fmt/format.h>
@@ -353,6 +354,46 @@ void PlayerView::Draw()
 			cloudDrawable->draw(renderer);
 		}
 
+		const neko::Aabbf playerAabb = neko::Aabbf::FromCenter(body.position+PlayerPhysic::box.offset, PlayerPhysic::box.size/neko::Scalar {2});
+		const neko::Vec2f windowHalfSize = neko::Vec2f {neko::Vec2<float>{gameWindowSize}/pixelPerMeter/2.0f};
+		const neko::Aabbf screenAabb = neko::Aabbf::FromCenter({}, windowHalfSize);
+		if(!Intersect(screenAabb,playerAabb) && !playerManager.GetPlayerCharacter()[i].IsRespawning())
+		{
+			//Player is outside, draw oob
+			static constexpr neko::Vec2f bgSize{neko::Scalar{0.25f*3.15f}};
+			neko::Vec2f position = body.position;
+			if(body.position.x < -windowHalfSize.x)
+			{
+				position.x = -windowHalfSize.x+neko::Scalar {1.0f};
+			}
+			if(body.position.x > windowHalfSize.x)
+			{
+				position.x = windowHalfSize.x-neko::Scalar {1.0f};
+			}
+			if(body.position.y < -windowHalfSize.y)
+			{
+				position.y = -windowHalfSize.y+neko::Scalar {1};
+			}
+			if(body.position.y > windowHalfSize.y)
+			{
+				position.y = windowHalfSize.y-neko::Scalar {1};
+			}
+			auto rect = GetDrawingRect(position, bgSize);
+			SDL_RenderCopy(renderer, playerRenderDatas_[i].outIconBg, nullptr, &rect);
+
+			rect = GetDrawingRect(position, (neko::Vec2f )
+				(neko::Vec2<float>(GetTextureSize((TextureManager::TextureId)((int)TextureManager::TextureId::HEAD_P1_CAT+i)))/pixelPerMeter*0.5f));
+			SDL_RenderCopy(renderer, playerRenderDatas_[i].outIconCharFace, nullptr, &rect);
+
+			static constexpr neko::Vec2f arrowSize(neko::Scalar {34.0f/pixelPerMeter}, neko::Scalar{38.0f/pixelPerMeter});
+
+			const auto delta = neko::Vec2<float>(body.position - position).Normalized();
+			const auto angle = std::atan2(-delta.y,neko::Vec2<float>::Dot(delta, neko::Vec2<float>::right() ))/M_PI*180.0f;
+			const auto arrowPosition = position+neko::Vec2f{delta} *neko::Scalar{0.62f};
+			rect = GetDrawingRect(arrowPosition, arrowSize);
+			SDL_RenderCopyEx(renderer, playerRenderDatas_[i].outIconArrow, nullptr, &rect, angle, nullptr, SDL_FLIP_NONE );
+		}
+
 		if (GetDebugConfig().showPhysicsBox)
 		{
 			const auto rect = GetDrawingRect(
@@ -422,6 +463,10 @@ void PlayerView::Load()
 
 		playerRenderDatas_[i].cloudDrawable = CreateSkeletonDrawable(SpineManager::CLOUD);
 		playerRenderDatas_[i].cloudDrawable->skeleton->setSkin(cloudSkinNames[i].data());
+
+		playerRenderDatas_[i].outIconBg = GetTexture((TextureManager::TextureId)((int)TextureManager::TextureId::OOB_P1_CYAN+i));
+		playerRenderDatas_[i].outIconCharFace = GetTexture((TextureManager::TextureId)((int)TextureManager::TextureId::HEAD_P1_CAT+i));
+		playerRenderDatas_[i].outIconArrow = GetTexture(TextureManager::TextureId::RIGHT_ARROW);
 	}
 }
 void PlayerView::UpdateTransforms(float dt)

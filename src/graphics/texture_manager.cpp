@@ -194,6 +194,7 @@ void TextureManager::UpdateLoad()
 		ZoneTextV(loadingTexture, texturePaths[i].data(), texturePaths[i].size());
 #endif
 		textures_[i] = CreateTextureFromSurface(renderer_, surfaces[i]);
+		texturesSizes_[i] = {images[i].width, images[i].height};
 		SDL_FreeSurface(surfaces[i]);
 		stbi_image_free(images[i].pixels);
 
@@ -210,6 +211,10 @@ TextureManager::TextureManager()
 {
 	instance = this;
 }
+neko::Vec2i TextureManager::GetTextureSize(TextureManager::TextureId id) const
+{
+	return texturesSizes_[(int)id];
+}
 SDL_Texture* GetTexture(TextureManager::TextureId textureId)
 {
 	return instance->GetTexture(textureId);
@@ -217,5 +222,9 @@ SDL_Texture* GetTexture(TextureManager::TextureId textureId)
 bool IsTextureLoaded()
 {
 	return instance->IsLoaded();
+}
+neko::Vec2i GetTextureSize(TextureManager::TextureId textureId)
+{
+	return instance->GetTextureSize(textureId);
 }
 }

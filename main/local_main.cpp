@@ -15,6 +15,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
 	splash::GameData gameData{};
 	gameData.introDelay = 0.1f;
 	gameData.connectedPlayers[0] = true;
+	gameData.connectedPlayers[1] = true;
 	splash::GameManager gameManager{gameData};
 	engine.Run();
 	return 0;
