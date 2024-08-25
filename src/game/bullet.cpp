@@ -150,7 +150,7 @@ uint32_t BulletManager::CalculateChecksum() const
 	for(const auto & bullet : bullets_)
 	{
 		const auto* bulletPtr = reinterpret_cast<const std::uint32_t*>(&bullet);
-		for(int j = 0; j < sizeof(Bullet)/sizeof(std::uint32_t); j++)
+		for(std::size_t j = 0; j < sizeof(Bullet)/sizeof(std::uint32_t); j++)
 		{
 			result += bulletPtr[j];
 		}

@@ -189,8 +189,8 @@ void GameManager::Tick()
 	currentFrame_++;
 }
 GameManager::GameManager(const GameData& gameData):
-	rollbackManager_(gameData),
 	gameRenderer_(&gameSystems_),
+	rollbackManager_(gameData),
 	introDelayTimer_{gameData.introDelay, gameData.introDelay},
 	gameTimer_(neko::Scalar {-1.0f}, gameData.period),
 	connectedPlayers_(gameData.connectedPlayers)

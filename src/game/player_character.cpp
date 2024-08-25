@@ -226,7 +226,7 @@ void PlayerManager::Tick()
 				force = PlayerCharacter::ReactorForce;
 			}
 
-			if((playerCharacter.IsGrounded() || jetbursting && playerCharacter.preJetBurstTimer.Over()) &&
+			if((playerCharacter.IsGrounded() || (jetbursting && playerCharacter.preJetBurstTimer.Over())) &&
 				playerCharacter.jumpTimer.Over() &&
 				velY < PlayerCharacter::JumpForce*body.inverseMass*fixedDeltaTime &&
 				body.velocity.Length() < PlayerCharacter::StompOrBurstMaxVelocity)
@@ -615,19 +615,19 @@ uint32_t PlayerManager::CalculateChecksum() const
 	for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
 	{
 		const auto* player = reinterpret_cast<const std::uint32_t*>(&playerCharacters_[playerNumber]);
-		for(int i = 0; i < sizeof(PlayerCharacter)/sizeof(std::uint32_t); i++)
+		for(std::size_t i = 0; i < sizeof(PlayerCharacter)/sizeof(std::uint32_t); i++)
 		{
 			result += player[i];
 		}
 	}
 
 	const auto* playerInput = reinterpret_cast<const std::uint8_t*>(playerInputs_.data());
-	for(int i = 0; i < sizeof(playerInputs_); i++)
+	for(std::size_t i = 0; i < sizeof(playerInputs_); i++)
 	{
 		result += (std::uint32_t )playerInput[i];
 	}
 	playerInput = reinterpret_cast<const std::uint8_t*>(previousPlayerInputs_.data());
-	for(int i = 0; i < sizeof(playerInputs_); i++)
+	for(std::size_t i = 0; i < sizeof(playerInputs_); i++)
 	{
 		result += (std::uint32_t )playerInput[i];
 	}

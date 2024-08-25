@@ -19,7 +19,7 @@ struct GameData
 	neko::Scalar period {60.0f*2.0f}; //two minutes default game
 };
 
-class GameManager : public SystemInterface
+class GameManager final : public SystemInterface
 {
 public:
 	explicit GameManager(const GameData&  = {});

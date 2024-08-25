@@ -15,7 +15,7 @@ struct GameData;
 class RollbackManager
 {
 public:
-	RollbackManager(const GameData& gameData);
+	explicit RollbackManager(const GameData& gameData);
 	void Begin();
 	void SetInput(int playerNumber, PlayerInput input, int currentFrame);
 	[[nodiscard]] PlayerInput GetInput(int playerNumber, int currentFrame) const;
