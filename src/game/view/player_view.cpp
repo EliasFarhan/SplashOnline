@@ -187,6 +187,12 @@ void PlayerView::Update([[maybe_unused]]float dt)
 						if(playerCharacter.jumpTimer.Over())
 						{
 							SwitchToState(PlayerRenderState::JET, playerNumber);
+
+							playerSoundDatas_[playerNumber].jetpackSoundInstance->setParameterValue("Transition Jetpack", 0.0f);
+							if(playerCharacter.preJetBurstTimer.Over())
+							{
+								FmodPlaySound(GetPlayerSoundEvent(PlayerSoundId::JETPACKON));
+							}
 						}
 						else
 						{
@@ -235,6 +241,10 @@ void PlayerView::Update([[maybe_unused]]float dt)
 				{
 					SwitchToState(PlayerRenderState::JETBURST, playerNumber);
 				}
+				if(playerRenderData.state != PlayerRenderState::JET)
+				{
+					playerSoundDatas_[playerNumber].jetpackSoundInstance->setParameterValue("Transition Jetpack", 0.75f);
+				}
 				break;
 
 			}
@@ -245,6 +255,9 @@ void PlayerView::Update([[maybe_unused]]float dt)
 					if (neko::Scalar{ playerInput.moveDirY } > PlayerCharacter::JetBurstThreshold)
 					{
 						SwitchToState(PlayerRenderState::JET, playerNumber);
+						playerSoundDatas_[playerNumber].jetpackSoundInstance->setParameterValue("Transition Jetpack", 0.0f);
+
+						FmodPlaySound(GetPlayerSoundEvent(PlayerSoundId::JETPACKON));
 					}
 					else
 					{
@@ -468,6 +481,9 @@ void PlayerView::Load()
 		playerRenderDatas_[i].outIconBg = GetTexture((TextureManager::TextureId)((int)TextureManager::TextureId::OOB_P1_CYAN+i));
 		playerRenderDatas_[i].outIconCharFace = GetTexture((TextureManager::TextureId)((int)TextureManager::TextureId::HEAD_P1_CAT+i));
 		playerRenderDatas_[i].outIconArrow = GetTexture(TextureManager::TextureId::RIGHT_ARROW);
+
+		playerSoundDatas_[i].jetpackSoundInstance = FmodPlaySound(GetPlayerSoundEvent(PlayerSoundId::JETPACK));
+		playerSoundDatas_[i].jetpackSoundInstance->setParameterValue("Transition Jetpack", 0.75f);
 	}
 }
 void PlayerView::UpdateTransforms(float dt)

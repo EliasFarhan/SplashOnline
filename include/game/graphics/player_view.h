@@ -4,6 +4,8 @@
 #include "game/game_systems.h"
 
 #include <spine-sdl-cpp.h>
+#include <fmod_studio.hpp>
+
 #include <array>
 #include <memory>
 
@@ -47,6 +49,10 @@ struct PlayerRenderData
 	static constexpr auto invincibleFlashPeriod = 0.125f;
 	neko::Vec2<float> targetDir{0.0f,-1.0f};
 };
+struct PlayerSoundData
+{
+	FMOD::Studio::EventInstance* jetpackSoundInstance = nullptr;
+};
 
 class PlayerView
 {
@@ -64,6 +70,7 @@ private:
 	const GameSystems* gameSystems_ = nullptr;
 
 	std::array<PlayerRenderData, MaxPlayerNmb> playerRenderDatas_{};
+	std::array<PlayerSoundData, MaxPlayerNmb> playerSoundDatas_{};
 };
 
 }
