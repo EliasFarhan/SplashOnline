@@ -567,6 +567,7 @@ void PlayerManager::OnTriggerEnter(neko::ColliderIndex playerIndex, int playerNu
 		{
 			playerCharacters_[playerCharacters_[playerNumber].hitPlayer].killCount++;
 		}
+		playerCharacters_[playerNumber].fallCount++;
 		Respawn(playerNumber);
 	}
 

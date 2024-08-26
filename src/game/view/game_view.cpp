@@ -18,6 +18,12 @@ void GameView::Draw()
 	levelRenderer_.Draw();
 	playerRenderer_.Draw();
 	bulletRenderer_.Draw();
+
+	if(isGameOver_)
+	{
+		endScreenView_.Draw();
+	}
+
 	if(GetDebugConfig().showPhysicsBox)
 	{
 		auto* renderer = GetRenderer();
@@ -61,6 +67,11 @@ void GameView::Update(float dt)
 	levelRenderer_.Update();
 	playerRenderer_.Update(dt);
 	bulletRenderer_.Update(dt);
+
+	if(isGameOver_)
+	{
+		endScreenView_.Update(dt);
+	}
 }
 void GameView::End()
 {

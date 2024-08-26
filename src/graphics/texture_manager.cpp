@@ -3,12 +3,15 @@
 //
 
 //#define STB_IMAGE_IMPLEMENTATION //already defined in spine-sdl
-#include <stb_image.h>
+
 
 #include "graphics/texture_manager.h"
 #include "engine/engine.h"
+#include "utils/log.h"
 
 #include <thread/job_system.h>
+#include <stb_image.h>
+#include <fmt/format.h>
 
 #ifdef TRACY_ENABLE
 #include <tracy/Tracy.hpp>
@@ -36,7 +39,7 @@ static constexpr std::array<std::string_view, (int)TextureManager::TextureId::LE
 		"data/sprites/kittymanjaro/floatrock3.png",
 		"data/sprites/kittymanjaro/floatrock4.png",
 		"data/sprites/kittymanjaro/fog.png",
-		"data/sprites/kittymanjaro/frongfog.png",
+		"data/sprites/kittymanjaro/frontfog.png",
 		"data/sprites/kittymanjaro/leafblow_particle.png",
 		"data/sprites/kittymanjaro/midbg.png",
 		"data/sprites/kittymanjaro/plat1.png",
@@ -54,16 +57,16 @@ static constexpr std::array<std::string_view, (int)TextureManager::TextureId::LE
 		"data/sprites/ui/robo_playerhead.png",
 		"data/sprites/ui/OOB_cyan.png",
 		"data/sprites/ui/OOB_orange.png",
-		"data/sprites/ui/OOB_magenta.png",
-		"data/sprites/ui/OOB_turquoise.png",
+		"data/sprites/ui/OOB_mag.png",
+		"data/sprites/ui/OOB_turq.png",
 		"data/sprites/ui/cat_win.png",
 		"data/sprites/ui/lucha_win.png",
-		"data/sprites/ui/owl_win.png",
+		"data/sprites/ui/hoot_win.png",
 		"data/sprites/ui/robo_win.png",
-		"data/sprites/ui/cat_lose.png",
-		"data/sprites/ui/lucha_lose.png",
-		"data/sprites/ui/owl_lose.png",
-		"data/sprites/ui/robo_lose.png",
+		"data/sprites/ui/cat_lost.png",
+		"data/sprites/ui/lucha_lost.png",
+		"data/sprites/ui/hoot_lost.png",
+		"data/sprites/ui/robo_lost.png",
 
 		"data/spine/kwakwalogo/SBPkwakwa_ver4_2.png",
 		"data/spine/announcer/SBPannouncers_ver4_2.png",
@@ -90,6 +93,10 @@ Image LoadImageFromFile(std::string_view path)
 {
 	Image image{};
 	image.pixels = stbi_load(path.data(), &image.width, &image.height, &image.comp, 0);
+	if(image.pixels == nullptr)
+	{
+		LogError(fmt::format("STBI could not load file: {}", path.data()));
+	}
 	return image;
 }
 
@@ -112,7 +119,10 @@ SDL_Surface* CreateSurfaceFromImage(const Image& image)
 			image.width * image.comp,
 			SDL_PIXELFORMAT_RGB24);
 	default:
+	{
+		LogError("Unsupported texture format, invalid comp count");
 		break;
+	}
 	}
 	return nullptr;
 }

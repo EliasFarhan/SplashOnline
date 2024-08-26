@@ -30,6 +30,8 @@ public:
 
 	EndScreenView& GetEndScreenView() {return endScreenView_;}
 
+	void SetGameOver(bool isGameOver){isGameOver_ = isGameOver;}
+	[[nodiscard]] bool IsGameOver() const { return isGameOver_;}
 private:
 	PlayerView playerRenderer_;
 	BulletView bulletRenderer_;
@@ -38,6 +40,7 @@ private:
 	const GameSystems* gameSystems_ = nullptr;
 	int graphicIndex = -1;
 	float timeSinceTick_ = 0.0f;
+	bool isGameOver_ = false;
 };
 
 float GetTimeSinceTick();

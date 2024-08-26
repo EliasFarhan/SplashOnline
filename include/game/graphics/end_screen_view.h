@@ -6,6 +6,7 @@
 #define SPLASHONLINE_END_SCREEN_VIEW_H_
 
 #include "game/const.h"
+#include "utils/timer.h"
 #include "SDL_render.h"
 
 #include <array>
@@ -22,8 +23,9 @@ public:
 private:
 	std::array<int, MaxPlayerNmb> playerScores_{};
 	std::array<int, MaxPlayerNmb> playerRanks_{};
-	std::array<SDL_Texture*, MaxPlayerNmb> playerWinHeads_{};
-	std::array<SDL_Texture*, MaxPlayerNmb> playerLoseHeads_{};
+	std::array<SDL_Texture*, MaxPlayerNmb> playerHeads_{};
+	Timer<float> transitionTimer_{-1.0f, 1.0f};
+	int playerCount_ = 0;
 };
 
 }

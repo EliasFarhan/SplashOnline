@@ -79,26 +79,29 @@ void GameManager::Update(float dt)
 	}
 	if(isGameOver_)
 	{
-		if(rollbackManager_.GetLastConfirmFrame() < currentFrame_)
+		if(GetNetworkClient() != nullptr && rollbackManager_.GetLastConfirmFrame() < currentFrame_)
 		{
 			RollbackUpdate();
 		}
 		else
 		{
-			//todo show victory screen
-			auto& gameEndScreenView = gameRenderer_.GetEndScreenView();
-			std::array<int, MaxPlayerNmb> playerScores{};
-			for(int i = 0; i < MaxPlayerNmb; i++)
+			if(!gameRenderer_.IsGameOver())
 			{
-				if(!IsValid(i))
+				auto& gameEndScreenView = gameRenderer_.GetEndScreenView();
+				std::array<int, MaxPlayerNmb> playerScores{};
+				for (int i = 0; i < MaxPlayerNmb; i++)
 				{
-					playerScores[i] = std::numeric_limits<int>::lowest();
-					continue;
+					if (!IsValid(i))
+					{
+						playerScores[i] = std::numeric_limits<int>::lowest();
+						continue;
+					}
+					const auto& playerCharacter = gameSystems_.GetPlayerManager().GetPlayerCharacter()[i];
+					playerScores[i] = playerCharacter.killCount - playerCharacter.fallCount;
 				}
-				const auto& playerCharacter = gameSystems_.GetPlayerManager().GetPlayerCharacter()[i];
-				playerScores[i] = playerCharacter.killCount-playerCharacter.fallCount;
+				gameEndScreenView.SetPlayerScore(playerScores);
+				gameRenderer_.SetGameOver(true);
 			}
-			gameEndScreenView.SetPlayerScore(playerScores);
 		}
 	}
 
