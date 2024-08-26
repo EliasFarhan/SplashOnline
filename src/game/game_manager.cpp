@@ -86,6 +86,19 @@ void GameManager::Update(float dt)
 		else
 		{
 			//todo show victory screen
+			auto& gameEndScreenView = gameRenderer_.GetEndScreenView();
+			std::array<int, MaxPlayerNmb> playerScores{};
+			for(int i = 0; i < MaxPlayerNmb; i++)
+			{
+				if(!IsValid(i))
+				{
+					playerScores[i] = std::numeric_limits<int>::lowest();
+					continue;
+				}
+				const auto& playerCharacter = gameSystems_.GetPlayerManager().GetPlayerCharacter()[i];
+				playerScores[i] = playerCharacter.killCount-playerCharacter.fallCount;
+			}
+			gameEndScreenView.SetPlayerScore(playerScores);
 		}
 	}
 

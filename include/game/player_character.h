@@ -65,12 +65,14 @@ struct PlayerCharacter
 	Timer<> respawnMoveTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 1.0f }};
 	Timer<> respawnStaticTime{ neko::Scalar{ 2.0f }, neko::Scalar{ 2.0f }};
 	Timer<> invincibleTimer{ neko::Scalar{ -1 }, neko::Scalar{ 2.0f }};
-	int fallCount_ = 0;
+	int fallCount = 0;
+	int killCount = 0;
 
 	//Wata Hit
 	Timer<> hitTimer{ neko::Scalar{ -1 }, neko::Scalar{ 1.5f }};
 	neko::Vec2f hitDirection{};
 	int resistancePhase = 1; //Used for the resistance to wata bullet
+	int hitPlayer = -1;
 
 	//Wata shoot
 	Timer<> reserveWaterTimer{ neko::Scalar{ 4.0f }, neko::Scalar{ 4.0f }};
@@ -92,6 +94,7 @@ struct PlayerCharacter
 
 	Timer<> collidedTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 0.25f }};
 	int collidedPlayer = -1;
+
 
 	int footCount = 0;
 

@@ -118,6 +118,7 @@ void PlayerManager::Tick()
 			playerCharacter.respawnStaticTime.Update(fixedDeltaTime);
 			if(playerCharacter.respawnStaticTime.Over() ||
 				neko::Abs(playerInput.moveDirX) > PlayerCharacter::deadZone ||
+				neko::Abs(playerInput.moveDirY) > PlayerCharacter::deadZone ||
 				reactor > PlayerCharacter::ReactorThreshold)
 			{
 				body.position = spawnPositions[playerNumber];
@@ -158,14 +159,18 @@ void PlayerManager::Tick()
 		//Walk Update
 		if(playerCharacter.IsGrounded())
 		{
+			playerCharacter.dashedTimer.Stop();
+
+			if(reactor > PlayerCharacter::StompThreshold)
+			{
+				playerCharacter.stopDashTimer.Stop();
+			}
 			//on ground
 			const auto wantedSpeed = moveX * PlayerCharacter::WalkSpeed;
 			const auto velX = body.velocity.x;
 			const auto deltaSpeed = wantedSpeed-velX;
-			const auto newCap = PlayerCharacter::CapMoveForce;
+			auto newCap = PlayerCharacter::CapMoveForce;
 
-
-			//TODO add wet cap
 			if(playerPhysic.priority <= PlayerCharacter::MovePriority)
 			{
 				if(playerPhysic.priority < PlayerCharacter::MovePriority)
@@ -177,8 +182,14 @@ void PlayerManager::Tick()
 
 				auto f = deltaSpeed / fixedDeltaTime / body.inverseMass;
 
+				if(playerCharacter.resistancePhase >= 2)
+				{
+					const auto divisor = neko::Exp<neko::Scalar>()*neko::Scalar(playerCharacter.resistancePhase-1);
+					newCap = (PlayerCharacter::CapMoveForce-PlayerCharacter::WetCapMoveForce)/divisor+PlayerCharacter::WetCapMoveForce;
+				}
 				if(newCap > neko::Fixed16{} && neko::Abs(f) > newCap)
 				{
+
 					f = newCap * neko::Sign(deltaSpeed) ;
 				}
 				playerPhysic.totalForce.x = f;
@@ -187,12 +198,14 @@ void PlayerManager::Tick()
 
 		}
 		// In Air Move and not dashing!!!
-		if(!playerCharacter.IsGrounded() && neko::Abs(moveX) > neko::Scalar{PlayerCharacter::deadZone})
+		if(!playerCharacter.IsGrounded() &&
+			neko::Abs(moveX) > neko::Scalar{PlayerCharacter::deadZone} &&
+			!playerCharacter.IsDashing())
 		{
 			if(playerPhysic.priority <= PlayerCharacter::MovePriority)
 			{
 				const auto horizontalForce = PlayerCharacter::InAirForce * moveX;
-				playerPhysic.totalForce += neko::Vec2f{horizontalForce, {}};
+				playerPhysic.totalForce.x += horizontalForce;
 				playerPhysic.priority = PlayerCharacter::MovePriority;
 			}
 		}
@@ -206,8 +219,9 @@ void PlayerManager::Tick()
 		{
 			playerCharacter.preJetBurstTimer.Update(fixedDeltaTime);
 		}
-		if((playerCharacter.IsGrounded() && reactor > PlayerCharacter::GroundReactorThreshold) ||
-			(!playerCharacter.IsGrounded() && reactor > PlayerCharacter::ReactorThreshold))
+		if((playerCharacter.IsGrounded() && (reactor > PlayerCharacter::GroundReactorThreshold || !playerCharacter.jumpTimer.Over())) ||
+			(!playerCharacter.IsGrounded() && reactor > PlayerCharacter::ReactorThreshold) ||
+			(!playerCharacter.IsGrounded() && !playerCharacter.jumpTimer.Over() && playerCharacter.jetBurstCoolDownTimer.Over()))
 		{
 			const auto velY = body.velocity.y;
 			const auto decreaseFactor = velY > neko::Scalar{} ? neko::Scalar{ 0.75f } : neko::Scalar{ 1.0f };
@@ -229,7 +243,10 @@ void PlayerManager::Tick()
 			if((playerCharacter.IsGrounded() || (jetbursting && playerCharacter.preJetBurstTimer.Over())) &&
 				playerCharacter.jumpTimer.Over() &&
 				velY < PlayerCharacter::JumpForce*body.inverseMass*fixedDeltaTime &&
-				body.velocity.Length() < PlayerCharacter::StompOrBurstMaxVelocity)
+				body.velocity.Length() < PlayerCharacter::StompOrBurstMaxVelocity &&
+				playerCharacter.stopDashTimer.Over() &&
+				playerCharacter.collidedTimer.Over() &&
+				!playerCharacter.IsDashed())
 			{
 				//Doing a jet burst
 				const auto jumpSpeed = PlayerCharacter::JumpForce*body.inverseMass*fixedDeltaTime;
@@ -263,7 +280,8 @@ void PlayerManager::Tick()
 			playerCharacter.preJetBurstTimer.Stop();
 			playerCharacter.jetBurstCoolDownTimer.Stop();
 		}
-		if((reactor < PlayerCharacter::ReactorThreshold || body.velocity.y < neko::Fixed{0.0f}) && playerCharacter.jumpTimer.RemainingTime() < PlayerCharacter::JumpCancelTime)
+		if((reactor < PlayerCharacter::ReactorThreshold || body.velocity.y < neko::Fixed{0.0f}) &&
+			playerCharacter.jumpTimer.RemainingTime() < PlayerCharacter::JumpCancelTime)
 		{
 			playerCharacter.jumpTimer.Stop();
 		}
@@ -293,6 +311,19 @@ void PlayerManager::Tick()
 					playerPhysic.totalForce.y += PlayerCharacter::SlowDashForce;
 					playerPhysic.priority = PlayerCharacter::SlowDashPriority;
 				}
+			}
+		}
+		if(!playerCharacter.bounceDashTimer.Over())
+		{
+			if(!playerCharacter.IsGrounded())
+			{
+				playerPhysic.totalForce.y += PlayerCharacter::SlowDashForce;
+				playerPhysic.priority = PlayerCharacter::SlowDashPriority;
+				playerCharacter.bounceDashTimer.Update(fixedDeltaTime);
+			}
+			else
+			{
+				playerCharacter.bounceDashTimer.Stop();
 			}
 		}
 		if(!playerCharacter.IsGrounded())
@@ -452,6 +483,7 @@ void PlayerManager::Tick()
 		else
 		{
 			playerCharacter.resistancePhase = 1;
+			playerCharacter.hitPlayer = -1;
 		}
 		// cap velocity
 		if(playerPhysic.priority < PlayerCharacter::CapVelPriority)
@@ -527,6 +559,14 @@ void PlayerManager::OnTriggerEnter(neko::ColliderIndex playerIndex, int playerNu
 
 	if(otherUserData->type == ColliderType::GAME_LIMIT)
 	{
+		if(!playerCharacters_[playerNumber].collidedTimer.Over())
+		{
+			playerCharacters_[playerCharacters_[playerNumber].collidedPlayer].killCount++;
+		}
+		if(!playerCharacters_[playerNumber].hitTimer.Over())
+		{
+			playerCharacters_[playerCharacters_[playerNumber].hitPlayer].killCount++;
+		}
 		Respawn(playerNumber);
 	}
 
@@ -543,6 +583,7 @@ void PlayerManager::OnTriggerEnter(neko::ColliderIndex playerIndex, int playerNu
 			}
 		}
 		playerCharacters_[playerNumber].hitTimer.Reset();
+		playerCharacters_[playerNumber].hitPlayer = otherUserData->playerNumber;
 	}
 	if(otherUserData->type == ColliderType::PLAYER)
 	{

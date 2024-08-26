@@ -40,7 +40,11 @@ void PlayerView::Begin()
 }
 void PlayerView::End()
 {
-
+	for(auto& playerSound : playerSoundDatas_)
+	{
+		playerSound.jetpackSoundInstance->stop(FMOD_STUDIO_STOP_IMMEDIATE);
+		playerSound.jetpackSoundInstance = nullptr;
+	}
 }
 void PlayerView::Update([[maybe_unused]]float dt)
 {
@@ -514,7 +518,17 @@ void PlayerView::UpdateTransforms(float dt)
 		bodyDrawable->skeleton->setScaleY(scale);
 		if (!playerRenderData.isRespawning)
 		{
-			bodyDrawable->skeleton->setPosition((float)position.x, (float)position.y);
+
+			if(playerCharacter.IsJetBursting())
+			{
+				float deltaX = 0.2f * std::sin(2.0f*(float)neko::Pi<neko::Scalar>()/0.25f*(float)playerCharacter.preJetBurstTimer.CurrentRatio());
+				const auto jetburstPosition = GetGraphicsPosition(body.position+neko::Vec2f{neko::Scalar{deltaX}, {}});
+				bodyDrawable->skeleton->setPosition((float)jetburstPosition.x, (float)jetburstPosition.y);
+			}
+			else
+			{
+				bodyDrawable->skeleton->setPosition((float)position.x, (float)position.y);
+			}
 		}
 		else
 		{
@@ -537,12 +551,67 @@ void PlayerView::UpdateTransforms(float dt)
 				bodyDrawable->skeleton->setPosition(spawnPosition.x, spawnPosition.y);
 			}
 		}
+
 		float animRatio = 1.0f;
 		if (playerRenderData.state == PlayerRenderState::WALK || playerRenderData.state == PlayerRenderState::WALK_BACK)
 		{
 			animRatio = (float)neko::Abs(playerInputs[playerNumber].moveDirX);
 		}
-		bodyDrawable->update(animRatio * dt, spine::Physics_Update);
+
+		bodyDrawable->animationState->update(animRatio * dt);
+		bodyDrawable->animationState->apply(*bodyDrawable->skeleton);
+		float moveAngle = 0.0f;
+		switch(playerRenderData.state)
+		{
+		case PlayerRenderState::IDLE:
+		case PlayerRenderState::SHOOT:
+		case PlayerRenderState::DASHPREP:
+		case PlayerRenderState::WALK:
+		case PlayerRenderState::WALK_BACK:
+		{
+			moveAngle = 0.0f;
+			break;
+		}
+		case PlayerRenderState::JET:
+		case PlayerRenderState::JETBURST:
+		case PlayerRenderState::FALL:
+		case PlayerRenderState::DASH:
+		case PlayerRenderState::BOUNCE:
+		{
+			moveAngle = -(float)playerInputs[playerNumber].moveDirX*30.0f*(playerRenderData.faceRight?1.0f:-1.0f);
+			break;
+		}
+		default:
+			break;
+		}
+		if(playerCharacter.hitTimer.CurrentRatio() < neko::Scalar{0.25f} && playerRenderData.state != PlayerRenderState::DASHPREP)
+		{
+			switch(playerCharacter.resistancePhase)
+			{
+			case 3:
+			{
+				moveAngle = 7.5f*std::cos(2.0f*(float)neko::Pi<neko::Scalar>()/0.1f*(float)playerCharacter.hitTimer.RemainingTime());
+				break;
+			}
+			case 2:
+			{
+				moveAngle += 3.5f*std::cos(2.0f*(float)neko::Pi<neko::Scalar>()/0.1f*(float)playerCharacter.hitTimer.RemainingTime());
+				break;
+			}
+			case 1:
+			{
+				moveAngle += std::cos(2.0f*(float)neko::Pi<neko::Scalar>()/0.1f*(float)playerCharacter.hitTimer.RemainingTime());
+				break;
+			}
+			default:
+				break;
+			}
+		}
+		auto* rootBone = playerRenderData.bodyDrawable->skeleton->getRootBone();
+		rootBone->setRotation(moveAngle);
+		rootBone->setAppliedRotation(moveAngle);
+		bodyDrawable->skeleton->update(animRatio * dt);
+		bodyDrawable->skeleton->updateWorldTransform(spine::Physics_Update);
 
 		auto& armDrawable = playerRenderData.armDrawable;
 		armDrawable->skeleton->setScaleX((playerRenderData.faceRight ? 1.0f : -1.0f) * scale);
@@ -562,7 +631,7 @@ void PlayerView::UpdateTransforms(float dt)
 		}
 		float degree = std::acos(neko::Vec2<float>::Dot(playerRenderData.targetDir, { 0.0f, -1.0f })) / (float)M_PI * 180.0f;
 
-		auto* rootBone = playerRenderData.armDrawable->skeleton->getRootBone();
+		rootBone = playerRenderData.armDrawable->skeleton->getRootBone();
 		rootBone->setRotation(degree);
 		rootBone->setAppliedRotation(degree);
 		armDrawable->skeleton->update(dt);

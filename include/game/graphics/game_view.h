@@ -10,6 +10,7 @@
 #include "game/graphics/bullet_view.h"
 #include "game/game_systems.h"
 #include "game/graphics/level_view.h"
+#include "game/graphics/end_screen_view.h"
 
 namespace splash
 {
@@ -27,10 +28,13 @@ public:
 	[[nodiscard]] int GetGraphicsIndex() const override;
 	[[nodiscard]] float GetTimeSinceTick() const;
 
+	EndScreenView& GetEndScreenView() {return endScreenView_;}
+
 private:
 	PlayerView playerRenderer_;
 	BulletView bulletRenderer_;
 	LevelView levelRenderer_;
+	EndScreenView endScreenView_;
 	const GameSystems* gameSystems_ = nullptr;
 	int graphicIndex = -1;
 	float timeSinceTick_ = 0.0f;
