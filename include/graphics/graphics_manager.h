@@ -40,7 +40,7 @@ public:
 	void PostDraw();
 
 
-	SDL_Rect GetDrawingRect(neko::Vec2f position, neko::Vec2f size) const;
+	[[nodiscard]]SDL_Rect GetDrawingRect(neko::Vec2f position, neko::Vec2f size) const;
 
 	void AddDrawInterface(DrawInterface* drawInterface);
 	void RemoveDrawInterface(DrawInterface* drawInterface);
@@ -49,9 +49,11 @@ public:
 	[[nodiscard]] int GetEventListenerIndex() const override;
 	void SetEventListenerIndex(int index) override;
 
-	float GetScale() const;
+	[[nodiscard]] float GetScale() const;
 
-	neko::Vec2i GetGraphicsPosition(neko::Vec2f vec2) const;
+	[[nodiscard]] neko::Vec2i GetGraphicsPosition(neko::Vec2f vec2) const;
+
+	[[nodiscard]] neko::Vec2i GetActualGameSize() const { return actualSize_;}
 
 private:
 	void ReloadDrawingSize();
@@ -74,6 +76,7 @@ SDL_Renderer* GetRenderer();
 SDL_Rect GetDrawingRect(neko::Vec2f position, neko::Vec2f size);
 float GetGraphicsScale();
 neko::Vec2i GetGraphicsPosition(neko::Vec2f position);
+neko::Vec2i GetActualGameSize();
 }
 
 #endif //SPLASHONLINE_GRAPHICS_MANAGER_H_

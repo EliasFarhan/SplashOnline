@@ -64,7 +64,7 @@ void GameView::Begin()
 void GameView::Update(float dt)
 {
 	timeSinceTick_ += dt;
-	levelRenderer_.Update();
+	levelRenderer_.Update(dt);
 	playerRenderer_.Update(dt);
 	bulletRenderer_.Update(dt);
 

@@ -29,7 +29,6 @@ static TextureManager* instance = nullptr;
 
 static constexpr std::array<std::string_view, (int)TextureManager::TextureId::LENGTH> texturePaths =
 	{{
-		"data/sprites/kittymanjaro/backfog.png",
 		"data/sprites/kittymanjaro/bg.png",
 		"data/sprites/kittymanjaro/cloud1.png",
 		"data/sprites/kittymanjaro/cloud2.png",
@@ -38,7 +37,7 @@ static constexpr std::array<std::string_view, (int)TextureManager::TextureId::LE
 		"data/sprites/kittymanjaro/floatrock2.png",
 		"data/sprites/kittymanjaro/floatrock3.png",
 		"data/sprites/kittymanjaro/floatrock4.png",
-		"data/sprites/kittymanjaro/fog.png",
+		"data/sprites/kittymanjaro/backfog.png",
 		"data/sprites/kittymanjaro/frontfog.png",
 		"data/sprites/kittymanjaro/leafblow_particle.png",
 		"data/sprites/kittymanjaro/midbg.png",

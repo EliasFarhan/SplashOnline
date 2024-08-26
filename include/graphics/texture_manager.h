@@ -27,7 +27,6 @@ public:
 
 	enum class TextureId
 	{
-		BACKFOG,
 		BG,
 		CLOUD1,
 		CLOUD2,
@@ -36,7 +35,7 @@ public:
 		FLOATROCK2,
 		FLOATROCK3,
 		FLOATROCK4,
-		FOG,
+		BACKFOG,
 		FRONTFOG,
 		LEAFBLOW_PARTICULE,
 		MIDBG,

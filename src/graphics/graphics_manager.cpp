@@ -95,6 +95,11 @@ neko::Vec2i GetGraphicsPosition(neko::Vec2f position)
 	return instance->GetGraphicsPosition(position);
 }
 
+neko::Vec2i GetActualGameSize()
+{
+	return instance->GetActualGameSize();
+}
+
 void GraphicsManager::Update([[maybe_unused]]float dt)
 {
 	if(!textureManager_.IsLoaded())
@@ -237,4 +242,5 @@ neko::Vec2i GraphicsManager::GetGraphicsPosition(neko::Vec2f position) const
 	const auto newPosition = neko::Vec2<float>((float)position.x, (float)-position.y)*pixelPerMeter*scale_;
 	return neko::Vec2i(newPosition)+offset_+actualSize_/2;
 }
+
 }
