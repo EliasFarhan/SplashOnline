@@ -299,7 +299,8 @@ void PlayerManager::Tick()
 		{
 			if(!playerCharacter.IsDashing() &&
 				!playerCharacter.IsDashPrepping() &&
-				reactor < PlayerCharacter::FallingThreshold) //TODO add stopdash
+				reactor < PlayerCharacter::FallingThreshold &&
+				playerCharacter.stopDashTimer.Over())
 			{
 				if(playerPhysic.priority <= PlayerCharacter::FallingPriority)
 				{
@@ -414,6 +415,44 @@ void PlayerManager::Tick()
 				}
 			}
 		}
+		// wata hit
+		if(!playerCharacter.hitTimer.Over())
+		{
+			if(playerCharacter.hitTimer.CurrentTime() < PlayerCharacter::HitEffectPeriod)
+			{
+				if(playerCharacter.IsGrounded() &&
+				playerCharacter.hitDirection.y < neko::Scalar{0.1f} &&
+				playerCharacter.resistancePhase == PlayerCharacter::MaxResistancePhase)
+				{
+					if (playerCharacter.hitDirection.y < neko::Scalar{ 0 })
+					{
+						playerCharacter.hitDirection = neko::Vec2f {playerCharacter.hitDirection.x,-playerCharacter.hitDirection.y * neko::Scalar{0.9f}}.Normalized();
+					}
+					else
+					{
+						playerCharacter.hitDirection = neko::Vec2f {playerCharacter.hitDirection.x,neko::Scalar {0.2f}}.Normalized();
+					}
+				}
+
+				neko::Scalar waterForce = PlayerCharacter::WaterForce;
+				const auto forceCoefficient = neko::Scalar{-0.625f}*playerCharacter.hitTimer.CurrentTime()/PlayerCharacter::HitEffectPeriod+neko::Scalar{1};
+				neko::Vec2f newForce = playerCharacter.hitDirection * waterForce * (neko::Scalar)playerCharacter.resistancePhase * forceCoefficient;
+				if(playerPhysic.priority < PlayerCharacter::HitPriority)
+				{
+					playerPhysic.priority = PlayerCharacter::HitPriority;
+					playerPhysic.totalForce = newForce;
+				}
+				else if(playerPhysic.priority == PlayerCharacter::HitPriority)
+				{
+					playerPhysic.totalForce += newForce;
+				}
+			}
+			playerCharacter.hitTimer.Update(fixedDeltaTime);
+		}
+		else
+		{
+			playerCharacter.resistancePhase = 1;
+		}
 		// cap velocity
 		if(playerPhysic.priority < PlayerCharacter::CapVelPriority)
 		{
@@ -425,7 +464,8 @@ void PlayerManager::Tick()
 			if(neko::Abs(body.velocity.y) > PlayerCharacter::MaxSpeed)
 			{
 				if(!(playerCharacter.IsDashed() || playerCharacter.IsDashing()) &&
-					playerCharacter.slowDashTimer.Over())
+					playerCharacter.slowDashTimer.Over() &&
+					playerCharacter.stopDashTimer.Over())
 				{
 					wantedVel.y = PlayerCharacter::MaxSpeed * neko::Sign(body.velocity.y);
 				}
@@ -490,9 +530,19 @@ void PlayerManager::OnTriggerEnter(neko::ColliderIndex playerIndex, int playerNu
 		Respawn(playerNumber);
 	}
 
-	if(otherUserData->type == ColliderType::BULLET)
+	if(otherUserData->type == ColliderType::BULLET && otherUserData->playerNumber != playerNumber)
 	{
-		//TODO manage wata hit
+		const auto& otherBody = gameSystems_->GetPhysicsWorld().body(otherCollider.bodyIndex);
+		playerCharacters_[playerNumber].hitDirection = otherBody.velocity.Normalized();
+		if(!playerCharacters_[playerNumber].hitTimer.Over())
+		{
+			playerCharacters_[playerNumber].resistancePhase++;
+			if (playerCharacters_[playerNumber].resistancePhase >= PlayerCharacter::MaxResistancePhase)
+			{
+				playerCharacters_[playerNumber].resistancePhase = PlayerCharacter::MaxResistancePhase;
+			}
+		}
+		playerCharacters_[playerNumber].hitTimer.Reset();
 	}
 	if(otherUserData->type == ColliderType::PLAYER)
 	{

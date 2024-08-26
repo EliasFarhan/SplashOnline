@@ -90,11 +90,9 @@ void PlayerView::Update([[maybe_unused]]float dt)
 					playerRenderData.faceRight = !playerRenderData.faceRight;
 				}
 			}
-			if(!playerCharacter.respawnStaticTime.Over() ||
-				!playerCharacter.respawnMoveTimer.Over() ||
-				!playerCharacter.respawnPauseTimer.Over())
+			if(playerCharacter.IsRespawning())
 			{
-				//FmodPlaySound(GetPlayerDeathSoundEvent((Character)((int)Character::CAT+playerNumber)));
+				FmodPlaySound(GetPlayerDeathSoundEvent((Character)((int)Character::CAT+playerNumber)));
 				//FmodPlaySound(GetPlayerSoundEvent(PlayerSoundId::EJECT));
 				playerRenderData.isRespawning = true;
 				playerRenderData.cloudDrawable->animationState->setAnimation(0, "respawn", true);
@@ -103,12 +101,14 @@ void PlayerView::Update([[maybe_unused]]float dt)
 				continue;
 			}
 
-			if(playerCharacter.IsDashPrepping())
+			if(playerCharacter.IsDashPrepping() && playerRenderData.state != PlayerRenderState::DASHPREP)
 			{
+				FmodPlaySound(GetPlayerSoundEvent(PlayerSoundId::STOMPPREP));
 				SwitchToState(PlayerRenderState::DASHPREP, playerNumber);
 			}
-			if(playerCharacter.IsDashing())
+			if(playerCharacter.IsDashing() && playerRenderData.state != PlayerRenderState::DASH)
 			{
+				FmodPlaySound(GetPlayerSoundEvent(PlayerSoundId::STOMPING));
 				SwitchToState(PlayerRenderState::DASH, playerNumber);
 			}
 			switch (playerRenderData.state)
@@ -463,6 +463,7 @@ void PlayerView::Load()
 
 		playerRenderDatas_[i].cloudDrawable = CreateSkeletonDrawable(SpineManager::CLOUD);
 		playerRenderDatas_[i].cloudDrawable->skeleton->setSkin(cloudSkinNames[i].data());
+		playerRenderDatas_[i].cloudDrawable->animationState->setAnimation(0, "respawn", true);
 
 		playerRenderDatas_[i].outIconBg = GetTexture((TextureManager::TextureId)((int)TextureManager::TextureId::OOB_P1_CYAN+i));
 		playerRenderDatas_[i].outIconCharFace = GetTexture((TextureManager::TextureId)((int)TextureManager::TextureId::HEAD_P1_CAT+i));

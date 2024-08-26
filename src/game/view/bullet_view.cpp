@@ -5,6 +5,8 @@
 #include "game/graphics/bullet_view.h"
 #include "graphics/graphics_manager.h"
 #include "game/game_systems.h"
+#include "audio/audio_manager.h"
+#include "audio/player_sound.h"
 
 #ifdef TRACY_ENABLE
 #include <tracy/Tracy.hpp>
@@ -47,6 +49,14 @@ void BulletView::Update(float dt)
 		{
 			if(bullet.playerNumber != -1 && body.isActive)
 			{
+				if(body.type == neko::BodyType::KINEMATIC)
+				{
+					FmodPlaySound(GetPlayerSoundEvent(PlayerSoundId::DOUBLEGUN));
+				}
+				else
+				{
+					FmodPlaySound(GetPlayerSoundEvent(PlayerSoundId::GUN));
+				}
 				bulletRenderData.state = BulletRenderData::BulletRenderState::WATA;
 				bulletRenderData.drawable->animationState->setAnimation(0, "water_fly", true);
 				break;
@@ -68,6 +78,7 @@ void BulletView::Update(float dt)
 			}
 			if(!bullet.destroyedTimer.Over())
 			{
+				FmodPlaySound(GetPlayerSoundEvent(PlayerSoundId::IMPACT1));
 				bulletRenderData.state = BulletRenderData::BulletRenderState::DESTROYED;
 				bulletRenderData.drawable->animationState->setAnimation(0, "water_destroy", false);
 

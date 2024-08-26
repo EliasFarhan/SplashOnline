@@ -43,6 +43,8 @@ struct PlayerCharacter
 	static constexpr int CapVelPriority = 2;
 	static constexpr int SlowDashPriority = 1;
 	static constexpr int JetPackPriority = 1;
+	static constexpr int HitPriority = 2;
+	static constexpr int FallingPriority = 0;
 	static constexpr auto JetBurstThreshold = neko::Scalar{ 0.75f };
 	static constexpr auto ReactorThreshold = neko::Scalar{ 0.2f };
 	static constexpr auto GroundReactorThreshold = neko::Scalar{ 0.5f };
@@ -55,6 +57,8 @@ struct PlayerCharacter
 	static constexpr neko::Scalar DashedSpeed{ -30.0f };
 	static constexpr neko::Scalar SlowDashForce{ 30.0f };
 	static constexpr neko::Vec2f WataOffsetPos{{}, neko::Scalar{ 0.5f }};
+	static constexpr neko::Scalar FallingForce{ 5.0f };
+	static constexpr neko::Scalar FallingThreshold{ -0.5f };
 
 	//Respawn
 	Timer<> respawnPauseTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 0.5f }};
@@ -66,7 +70,7 @@ struct PlayerCharacter
 	//Wata Hit
 	Timer<> hitTimer{ neko::Scalar{ -1 }, neko::Scalar{ 1.5f }};
 	neko::Vec2f hitDirection{};
-	int resistancePhase = 0; //Used for the resistance to wata bullet
+	int resistancePhase = 1; //Used for the resistance to wata bullet
 
 	//Wata shoot
 	Timer<> reserveWaterTimer{ neko::Scalar{ 4.0f }, neko::Scalar{ 4.0f }};
@@ -125,9 +129,6 @@ struct PlayerCharacter
 		return !collidedTimer.Over();
 	}
 
-	static constexpr int FallingPriority = 0;
-	static constexpr neko::Scalar FallingForce{ 5.0f };
-	static constexpr neko::Scalar FallingThreshold{ -0.5f };
 
 	bool IsDashed() const
 	{

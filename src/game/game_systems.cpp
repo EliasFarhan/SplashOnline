@@ -16,6 +16,7 @@ GameSystems::GameSystems(): playerManager_(this), bulletManager_(this), physicsM
 							level_(&physicsManager_)
 {
 	physicsManager_.SetBSH(&quadTree_);
+	//physicsManager_.SetBSH(&dumbBsh_);
 	physicsManager_.SetContactListener(this);
 }
 
@@ -63,7 +64,7 @@ void GameSystems::OnTriggerEnter(const neko::ColliderPair& p)
 	{
 		bulletManager_.OnTriggerEnter(p.c1, c2);
 	}
-	if(userData1->type == ColliderType::BULLET)
+	if(userData2->type == ColliderType::BULLET)
 	{
 		bulletManager_.OnTriggerEnter(p.c2, c1);
 	}

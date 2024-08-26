@@ -23,6 +23,7 @@ enum class PlayerSoundId
 	WALK,
 
 	GUN,
+	DOUBLEGUN,
 	IMPACT1,
 	IMPACT2,
 	IMPACT3,

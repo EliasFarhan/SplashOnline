@@ -21,6 +21,7 @@ std::string_view GetPlayerSoundEvent(PlayerSoundId soundId)
 			"event:/Land/LandWalk",
 
 			"event:/Wata/WataShot",
+			"event:/Wata/WataMachineShot",
 			"event:/Impacts/Impact1",
 			"event:/Impacts/Impact2",
 			"event:/Impacts/Impact3",
@@ -41,8 +42,8 @@ std::string_view GetPlayerDeathSoundEvent(Character character)
 	static constexpr std::array<std::string_view, (int)Character::LENGTH> soundEvents
 		{{
 			"event:/Death/DeathCat",
-			"event:/Death/DeathOwl",
 			"event:/Death/DeathLucha",
+			"event:/Death/DeathOwl",
 			"event:/Death/DeathRobo"
 		}};
 	return soundEvents[(int)character];

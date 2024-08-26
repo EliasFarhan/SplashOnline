@@ -41,7 +41,7 @@ struct PlayerRenderData
 	PlayerRenderState state = PlayerRenderState::IDLE;
 	Timer<float> cloudEndRespawnTimer{-1.0f, 0.367f};
 	bool faceRight = true;
-	bool isRespawning = false;
+	bool isRespawning = true;
 	bool wasShooting = false;
 
 	static constexpr auto invincibleFlashPeriod = 0.125f;
