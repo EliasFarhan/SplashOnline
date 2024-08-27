@@ -47,11 +47,15 @@ void GameManager::Update(float dt)
 		int currentTime = (int)introDelayTimer_.RemainingTime();
 		if((int)previousTime != (int)currentTime)
 		{
-			if(previousTime != 0)
+			if(previousTime != 0 && previousTime <= 5)
 			{
 				auto soundEvent = GetGameSoundEvent((GameSoundId)((int)GameSoundId::VOICE5+(5-previousTime)));
 				FmodPlaySound(soundEvent);
-
+			}
+			if(previousTime == 30)
+			{
+				auto soundEvent = GetGameSoundEvent(GameSoundId::VOICE30);
+				FmodPlaySound(soundEvent);
 			}
 		}
 		if(introDelayTimer_.Over())

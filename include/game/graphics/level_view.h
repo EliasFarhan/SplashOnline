@@ -5,6 +5,7 @@
 #ifndef SPLASHONLINE_INCLUDE_GAME_GRAPHICS_LEVEL_RENDERER_H_
 #define SPLASHONLINE_INCLUDE_GAME_GRAPHICS_LEVEL_RENDERER_H_
 
+#include <math/vec2.h>
 #include <SDL_render.h>
 
 #include <array>

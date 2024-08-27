@@ -40,6 +40,7 @@ struct PlayerCharacter
 	static constexpr int MovePriority = 1;
 	static constexpr int DashPrepPriority = 2;
 	static constexpr int DashPriority = 2;
+	static constexpr int DashedPriority = 3;
 	static constexpr int CapVelPriority = 2;
 	static constexpr int SlowDashPriority = 1;
 	static constexpr int JetPackPriority = 1;
@@ -142,8 +143,9 @@ struct PlayerCharacter
 
 static constexpr float playerScale = 0.3f;
 
-struct PlayerPhysic
+class PlayerPhysic
 {
+public:
 	neko::BodyIndex bodyIndex = neko::INVALID_BODY_INDEX;
 	neko::ColliderIndex colliderIndex = neko::INVALID_COLLIDER_INDEX;
 	static constexpr Box box
@@ -182,8 +184,31 @@ struct PlayerPhysic
 			{ neko::Scalar{ playerScale * 0.4565361f }, neko::Scalar{ playerScale * 1.331382f }}
 		};
 	ColliderUserData userData{};
-	neko::Vec2f totalForce{};
-	int priority = 0;
+
+
+	void AddForce(neko::Vec2f force, int priority)
+	{
+		if(priority_ < priority)
+		{
+			totalForce_ = force;
+			priority_ = priority;
+		}
+		else if(priority_ == priority)
+		{
+			totalForce_ += force;
+		}
+	}
+	void Reset()
+	{
+		totalForce_ = {};
+		priority_ = 0;
+	}
+
+	[[nodiscard]] neko::Vec2f GetForce() const { return totalForce_;}
+	[[nodiscard]] int GetPriority() const {return priority_;}
+private:
+	neko::Vec2f totalForce_{};
+	int priority_ = 0;
 
 };
 

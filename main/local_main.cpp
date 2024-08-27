@@ -14,7 +14,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
 	splash::AudioManager audioManager;
 	splash::GameData gameData{};
 	gameData.introDelay = 0.1f;
-	gameData.period = neko::Scalar {15.0f};
+	gameData.period = neko::Scalar {60.0f};
 	gameData.connectedPlayers[0] = true;
 	gameData.connectedPlayers[1] = true;
 	gameData.connectedPlayers[2] = true;

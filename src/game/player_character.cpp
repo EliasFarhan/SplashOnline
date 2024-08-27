@@ -171,13 +171,13 @@ void PlayerManager::Tick()
 			const auto deltaSpeed = wantedSpeed-velX;
 			auto newCap = PlayerCharacter::CapMoveForce;
 
-			if(playerPhysic.priority <= PlayerCharacter::MovePriority)
+			if(playerPhysic.GetPriority() <= PlayerCharacter::MovePriority)
 			{
-				if(playerPhysic.priority < PlayerCharacter::MovePriority)
+				if(playerPhysic.GetPriority() < PlayerCharacter::MovePriority)
 				{
-					playerPhysic.priority = PlayerCharacter::MovePriority;
 					//Counter gravity
-					playerPhysic.totalForce = -physicsWorld.gravity()/body.inverseMass;
+					playerPhysic.AddForce( -physicsWorld.gravity()/body.inverseMass, PlayerCharacter::MovePriority);
+
 				}
 
 				auto f = deltaSpeed / fixedDeltaTime / body.inverseMass;
@@ -192,7 +192,7 @@ void PlayerManager::Tick()
 
 					f = newCap * neko::Sign(deltaSpeed) ;
 				}
-				playerPhysic.totalForce.x = f;
+				playerPhysic.AddForce(neko::Vec2f{f, {}}, PlayerCharacter::MovePriority);
 
 			}
 
@@ -202,12 +202,9 @@ void PlayerManager::Tick()
 			neko::Abs(moveX) > neko::Scalar{PlayerCharacter::deadZone} &&
 			!playerCharacter.IsDashing())
 		{
-			if(playerPhysic.priority <= PlayerCharacter::MovePriority)
-			{
-				const auto horizontalForce = PlayerCharacter::InAirForce * moveX;
-				playerPhysic.totalForce.x += horizontalForce;
-				playerPhysic.priority = PlayerCharacter::MovePriority;
-			}
+			const auto horizontalForce = PlayerCharacter::InAirForce * moveX;
+			playerPhysic.AddForce(neko::Vec2f{horizontalForce, {}}, PlayerCharacter::MovePriority);
+
 		}
 		//Jetpack update
 		bool jetbursting = playerCharacter.IsJetBursting();
@@ -239,18 +236,18 @@ void PlayerManager::Tick()
 			{
 				force = PlayerCharacter::ReactorForce;
 			}
-
+			const auto jumpSpeed = PlayerCharacter::JumpForce*body.inverseMass*fixedDeltaTime;
 			if((playerCharacter.IsGrounded() || (jetbursting && playerCharacter.preJetBurstTimer.Over())) &&
 				playerCharacter.jumpTimer.Over() &&
-				velY < PlayerCharacter::JumpForce*body.inverseMass*fixedDeltaTime &&
+				velY < jumpSpeed &&
 				body.velocity.Length() < PlayerCharacter::StompOrBurstMaxVelocity &&
 				playerCharacter.stopDashTimer.Over() &&
 				playerCharacter.collidedTimer.Over() &&
 				!playerCharacter.IsDashed())
 			{
 				//Doing a jet burst
-				const auto jumpSpeed = PlayerCharacter::JumpForce*body.inverseMass*fixedDeltaTime;
-				force = jumpSpeed-body.velocity.y / fixedDeltaTime / body.inverseMass;
+
+				force = (jumpSpeed-body.velocity.y) / fixedDeltaTime / body.inverseMass;
 				playerCharacter.jumpTimer.Reset();
 			}
 
@@ -264,11 +261,7 @@ void PlayerManager::Tick()
 			{
 				force = {};
 			}
-			if(playerPhysic.priority <= PlayerCharacter::JetPackPriority)
-			{
-				playerPhysic.totalForce += neko::Vec2f{{}, force};
-				playerPhysic.priority = PlayerCharacter::JetPackPriority;
-			}
+			playerPhysic.AddForce( neko::Vec2f{{}, force}, PlayerCharacter::JetPackPriority);
 			if(velY > neko::Scalar {0.0f})
 			{
 				playerCharacter.jetBurstCoolDownTimer.Reset();
@@ -306,19 +299,14 @@ void PlayerManager::Tick()
 			else
 			{
 				playerCharacter.slowDashTimer.Update(fixedDeltaTime);
-				if(playerPhysic.priority <= PlayerCharacter::SlowDashPriority)
-				{
-					playerPhysic.totalForce.y += PlayerCharacter::SlowDashForce;
-					playerPhysic.priority = PlayerCharacter::SlowDashPriority;
-				}
+				playerPhysic.AddForce(neko::Vec2f{{}, PlayerCharacter::SlowDashForce}, PlayerCharacter::SlowDashPriority);
 			}
 		}
 		if(!playerCharacter.bounceDashTimer.Over())
 		{
 			if(!playerCharacter.IsGrounded())
 			{
-				playerPhysic.totalForce.y += PlayerCharacter::SlowDashForce;
-				playerPhysic.priority = PlayerCharacter::SlowDashPriority;
+				playerPhysic.AddForce(neko::Vec2f {{}, PlayerCharacter::SlowDashForce}, PlayerCharacter::SlowDashPriority);
 				playerCharacter.bounceDashTimer.Update(fixedDeltaTime);
 			}
 			else
@@ -333,10 +321,7 @@ void PlayerManager::Tick()
 				reactor < PlayerCharacter::FallingThreshold &&
 				playerCharacter.stopDashTimer.Over())
 			{
-				if(playerPhysic.priority <= PlayerCharacter::FallingPriority)
-				{
-					playerPhysic.totalForce.y += PlayerCharacter::FallingForce * reactor;
-				}
+				playerPhysic.AddForce(neko::Vec2f({}, PlayerCharacter::FallingForce * reactor), PlayerCharacter::FallingPriority);
 			}
 			if(playerInput.GetStomp() &&
 				!previousPlayerInputs_[playerNumber].GetStomp() &&
@@ -349,21 +334,18 @@ void PlayerManager::Tick()
 				//Start stomp prep
 				playerCharacter.dashPrepTimer.Reset();
 			}
-			else if(playerCharacter.IsDashing())
+			else if(playerCharacter.IsDashing() && playerCharacter.stopDashTimer.Over())
 			{
 				//Update stomp with moveX
 				neko::Vec2f vel{moveX*PlayerCharacter::DashSpeed, -PlayerCharacter::DashSpeed};
-				if(playerPhysic.priority < PlayerCharacter::DashPriority)
-				{
-					playerPhysic.totalForce = (vel-body.velocity)/fixedDeltaTime/body.inverseMass;
-					playerPhysic.priority = PlayerCharacter::DashPriority;
-				}
+				playerPhysic.AddForce((vel-body.velocity)/fixedDeltaTime/body.inverseMass, PlayerCharacter::DashPriority);
 
 			}
 			else if(playerCharacter.IsDashPrepping() &&
 				!playerCharacter.IsDashing() &&
 				!playerCharacter.IsDashed() &&
-				playerCharacter.collidedTimer.Over())
+				playerCharacter.collidedTimer.Over() &&
+				playerCharacter.stopDashTimer.Over())
 			{
 				if(reactor < PlayerCharacter::StompThreshold)
 				{
@@ -374,11 +356,8 @@ void PlayerManager::Tick()
 				else
 				{
 					// stomp prepping
-					if(playerPhysic.priority < PlayerCharacter::DashPrepPriority)
-					{
-						playerPhysic.totalForce = ((-body.velocity)/fixedDeltaTime-physicsWorld.gravity())/body.inverseMass;
-						playerPhysic.priority = PlayerCharacter::DashPrepPriority;
-					}
+					playerPhysic.AddForce(((-body.velocity)/fixedDeltaTime-physicsWorld.gravity())/body.inverseMass, PlayerCharacter::DashPrepPriority);
+					//todo add was down recover timer to forbid unlimited use of stomp
 				}
 			}
 		}
@@ -468,15 +447,7 @@ void PlayerManager::Tick()
 				neko::Scalar waterForce = PlayerCharacter::WaterForce;
 				const auto forceCoefficient = neko::Scalar{-0.625f}*playerCharacter.hitTimer.CurrentTime()/PlayerCharacter::HitEffectPeriod+neko::Scalar{1};
 				neko::Vec2f newForce = playerCharacter.hitDirection * waterForce * (neko::Scalar)playerCharacter.resistancePhase * forceCoefficient;
-				if(playerPhysic.priority < PlayerCharacter::HitPriority)
-				{
-					playerPhysic.priority = PlayerCharacter::HitPriority;
-					playerPhysic.totalForce = newForce;
-				}
-				else if(playerPhysic.priority == PlayerCharacter::HitPriority)
-				{
-					playerPhysic.totalForce += newForce;
-				}
+				playerPhysic.AddForce(newForce, PlayerCharacter::HitPriority);
 			}
 			playerCharacter.hitTimer.Update(fixedDeltaTime);
 		}
@@ -486,7 +457,7 @@ void PlayerManager::Tick()
 			playerCharacter.hitPlayer = -1;
 		}
 		// cap velocity
-		if(playerPhysic.priority < PlayerCharacter::CapVelPriority)
+		if(playerPhysic.GetPriority() < PlayerCharacter::CapVelPriority)
 		{
 			neko::Vec2f wantedVel = body.velocity;
 			if(neko::Abs(body.velocity.x) > PlayerCharacter::MaxSpeed)
@@ -504,14 +475,13 @@ void PlayerManager::Tick()
 			}
 			if(wantedVel != body.velocity)
 			{
-				playerPhysic.totalForce = (wantedVel-body.velocity)*body.inverseMass/fixedDeltaTime
-					-physicsWorld.gravity()/body.inverseMass;
+				playerPhysic.AddForce((wantedVel-body.velocity)*body.inverseMass/fixedDeltaTime
+									  -physicsWorld.gravity()/body.inverseMass, PlayerCharacter::CapVelPriority);
 			}
 		}
 		// In the end, apply force to physics
-		body.force = playerPhysic.totalForce;
-		playerPhysic.totalForce = {};
-		playerPhysic.priority = 0;
+		body.force = playerPhysic.GetForce();
+		playerPhysic.Reset();
 	}
 
 	for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
@@ -547,12 +517,19 @@ void PlayerManager::SetPreviousPlayerInput(neko::Span<PlayerInput> playerInputs)
 
 void PlayerManager::OnTriggerEnter(neko::ColliderIndex playerIndex, int playerNumber, const neko::Collider& otherCollider)
 {
+	const auto& body = gameSystems_->GetPhysicsWorld().body(playerPhysics_[playerNumber].bodyIndex);
+	const auto& otherBody = gameSystems_->GetPhysicsWorld().body(otherCollider.bodyIndex);
 	const auto* otherUserData = static_cast<const ColliderUserData*>(otherCollider.userData);
 	if(playerIndex == playerPhysics_[playerNumber].footColliderIndex)
 	{
 		if(otherUserData->type == ColliderType::PLATFORM)
 		{
 			playerCharacters_[playerNumber].footCount++;
+			if(!playerCharacters_[playerNumber].slowDashTimer.Over())
+			{
+				playerCharacters_[playerNumber].slowDashTimer.Stop();
+				playerCharacters_[playerNumber].bounceDashTimer.Reset();
+			}
 		}
 
 	}
@@ -567,13 +544,16 @@ void PlayerManager::OnTriggerEnter(neko::ColliderIndex playerIndex, int playerNu
 		{
 			playerCharacters_[playerCharacters_[playerNumber].hitPlayer].killCount++;
 		}
+		if(playerCharacters_[playerNumber].IsDashed())
+		{
+			playerCharacters_[playerCharacters_[playerNumber].collidedPlayer].killCount++;
+		}
 		playerCharacters_[playerNumber].fallCount++;
 		Respawn(playerNumber);
 	}
 
 	if(otherUserData->type == ColliderType::BULLET && otherUserData->playerNumber != playerNumber)
 	{
-		const auto& otherBody = gameSystems_->GetPhysicsWorld().body(otherCollider.bodyIndex);
 		playerCharacters_[playerNumber].hitDirection = otherBody.velocity.Normalized();
 		if(!playerCharacters_[playerNumber].hitTimer.Over())
 		{
@@ -593,7 +573,12 @@ void PlayerManager::OnTriggerEnter(neko::ColliderIndex playerIndex, int playerNu
 		{
 			if(otherCollider.colliderIndex == playerPhysics_[otherPlayerNumber].footColliderIndex && playerCharacters_[otherPlayerNumber].IsDashing())
 			{
-				//todo dashed
+				//Dashed collision
+				playerCharacters_[playerNumber].dashedTimer.Reset();
+				playerCharacters_[playerNumber].collidedPlayer = otherUserData->playerNumber;
+				const auto dashedVel = neko::Vec2f(otherBody.velocity.x, PlayerCharacter::DashedSpeed);
+				playerPhysics_[playerNumber].AddForce((dashedVel-body.velocity)/body.inverseMass/fixedDeltaTime, PlayerCharacter::DashedPriority);
+
 			}
 		}
 		//dashing on someone head
@@ -601,11 +586,21 @@ void PlayerManager::OnTriggerEnter(neko::ColliderIndex playerIndex, int playerNu
 		{
 			if(otherCollider.colliderIndex == playerPhysics_[otherPlayerNumber].headColliderIndex)
 			{
-				//todo bounce?
+				if(!playerCharacters_[playerNumber].slowDashTimer.Over())
+				{
+					playerCharacters_[playerNumber].slowDashTimer.Stop();
+					playerCharacters_[playerNumber].bounceDashTimer.Reset();
+				}
 				if(playerCharacters_[otherPlayerNumber].IsGrounded())
 				{
 					//Stop dash
 					StopDash(playerNumber, DashFinishType::BOUNCE);
+				}
+				else
+				{
+					const auto wantedVel = neko::Vec2f{body.velocity.x, {}};
+					playerPhysics_[playerNumber].AddForce((wantedVel-body.velocity)/fixedDeltaTime/body.inverseMass, 2);
+					//todo recoil timer?
 				}
 			}
 		}
@@ -621,8 +616,6 @@ void PlayerManager::OnTriggerEnter(neko::ColliderIndex playerIndex, int playerNu
 				}
 				//velocity collision
 				//Exchange velocities
-				const auto& body = gameSystems_->GetPhysicsWorld().body(playerPhysics_[playerNumber].bodyIndex);
-				const auto& otherBody = gameSystems_->GetPhysicsWorld().body(otherCollider.bodyIndex);
 
 				const auto playerVel = body.velocity;
 				const auto otherVel = otherBody.velocity;
@@ -631,13 +624,8 @@ void PlayerManager::OnTriggerEnter(neko::ColliderIndex playerIndex, int playerNu
 				{
 					//Spread dash
 					//other player get dashed velocity priority 3
-					if(playerPhysics_[otherPlayerNumber].priority <= 3)
-					{
-						playerPhysics_[otherPlayerNumber].totalForce +=
-							(neko::Vec2f(body.velocity.x, PlayerCharacter::DashedSpeed)-otherBody.velocity)
-							*otherBody.inverseMass/fixedDeltaTime;
-						playerPhysics_[otherPlayerNumber].priority = 3;
-					}
+					playerPhysics_[otherPlayerNumber].AddForce((neko::Vec2f(body.velocity.x, PlayerCharacter::DashedSpeed)-otherBody.velocity)
+															   *otherBody.inverseMass/fixedDeltaTime, 3);
 
 				}
 
@@ -645,23 +633,13 @@ void PlayerManager::OnTriggerEnter(neko::ColliderIndex playerIndex, int playerNu
 				{
 					//Spread dash
 					//player get dashed velocity priority 3
-					playerPhysics_[playerNumber].totalForce +=
-						(neko::Vec2f(otherBody.velocity.x, PlayerCharacter::DashedSpeed)-body.velocity)
-							*body.inverseMass/fixedDeltaTime;
-					playerPhysics_[playerNumber].priority = 3;
+					playerPhysics_[playerNumber].AddForce((neko::Vec2f(otherBody.velocity.x, PlayerCharacter::DashedSpeed)-body.velocity)
+														  *body.inverseMass/fixedDeltaTime, 3);
 				}
 
 
-				if(playerPhysics_[playerNumber].priority <= 2)
-				{
-					playerPhysics_[playerNumber].totalForce += (otherVel-playerVel)*body.inverseMass/fixedDeltaTime;
-					playerPhysics_[playerNumber].priority = 2;
-				}
-				if(playerPhysics_[otherPlayerNumber].priority <= 2)
-				{
-					playerPhysics_[otherPlayerNumber].totalForce += (playerVel-otherVel)*body.inverseMass/fixedDeltaTime;
-					playerPhysics_[otherPlayerNumber].priority = 2;
-				}
+				playerPhysics_[playerNumber].AddForce((otherVel-playerVel)*body.inverseMass/fixedDeltaTime, 2);
+				playerPhysics_[otherPlayerNumber].AddForce((playerVel-otherVel)*body.inverseMass/fixedDeltaTime, 2);
 				playerCharacters_[playerNumber].collidedTimer.Reset();
 				playerCharacters_[playerNumber].collidedPlayer = otherPlayerNumber;
 				playerCharacters_[otherPlayerNumber].collidedTimer.Reset();
