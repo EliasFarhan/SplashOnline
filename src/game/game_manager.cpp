@@ -71,7 +71,7 @@ void GameManager::Update(float dt)
 		}
 	}
 
-	if(introDelayTimer_.Over() && !gameTimer_.Over())
+	if(introDelayTimer_.Over() && !gameTimer_.Over() && !isGameOver_)
 	{
 		currentTime_ += dt;
 		constexpr auto fixedDt = (float)fixedDeltaTime;
@@ -83,7 +83,7 @@ void GameManager::Update(float dt)
 	}
 	if(isGameOver_)
 	{
-		if(GetNetworkClient() != nullptr && rollbackManager_.GetLastConfirmFrame() < currentFrame_)
+		if(GetNetworkClient() != nullptr && rollbackManager_.GetLastConfirmFrame() == currentFrame_-1)
 		{
 			RollbackUpdate();
 		}
@@ -163,6 +163,13 @@ void GameManager::Tick()
 			}
 		}
 		RollbackUpdate();
+
+		playerInputs_ = rollbackManager_.GetInputs(currentFrame_);
+		gameSystems_.SetPlayerInput(playerInputs_);
+		if(currentFrame_ > 0)
+		{
+			gameSystems_.SetPreviousPlayerInput(rollbackManager_.GetInputs(currentFrame_-1));
+		}
 	}
 	gameSystems_.Tick();
 	gameRenderer_.Tick();
@@ -282,7 +289,7 @@ void GameManager::RollbackUpdate()
 			{
 				const auto confirmValue = rollbackManager_.ConfirmLastFrame();
 				const auto lastConfirmFrame = rollbackManager_.GetLastConfirmFrame();
-				LogDebug(fmt::format("Confirm Frame Sending at f{} with local confirm value: player {} bullet {}", lastConfirmFrame, confirmValue[0], confirmValue[1]));
+				//LogDebug(fmt::format("Confirm Frame Sending at f{} with local confirm value: player {} bullet {}", lastConfirmFrame, confirmValue[0], confirmValue[1]));
 
 				ConfirmFramePacket confirmPacket{};
 				confirmPacket.frame = lastConfirmFrame;
@@ -315,12 +322,6 @@ void GameManager::RollbackUpdate()
 			gameSystems_.Tick();
 		}
 		rollbackManager_.SetDirty(false);
-	}
-	playerInputs_ = rollbackManager_.GetInputs(currentFrame_);
-	gameSystems_.SetPlayerInput(playerInputs_);
-	if(currentFrame_ > 0)
-	{
-		gameSystems_.SetPreviousPlayerInput(rollbackManager_.GetInputs(currentFrame_-1));
 	}
 }
 }
