@@ -155,10 +155,15 @@ Checksum<1> BulletManager::CalculateChecksum() const
 			result += bulletPtr[j];
 		}
 		const auto& body = gameSystems_->GetPhysicsWorld().body(bullet.bodyIndex);
-		auto* bodyPtr = reinterpret_cast<const std::uint32_t*>(&body);
-		for(std::size_t j = 0; j < sizeof(neko::Body)/sizeof(std::uint32_t); j++)
+		auto* bodyPtr = reinterpret_cast<const std::uint8_t *>(&body);
+
+		for(std::size_t i = 0; i < sizeof(neko::Body); i++)
 		{
-			result += bodyPtr[j];
+			result += (std::uint32_t )bodyPtr[i];
+			if(i == offsetof(neko::Body, isActive))
+			{
+				break;
+			}
 		}
 	}
 	return {result};

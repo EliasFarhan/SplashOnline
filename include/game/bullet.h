@@ -47,7 +47,7 @@ public:
 
 private:
 	GameSystems* gameSystems_ = nullptr;
-	std::array<Bullet, MaxBulletNmb> bullets_;
+	std::array<Bullet, MaxBulletNmb> bullets_{};
 };
 }
 #endif //SPLASHONLINE_BULLET_H

@@ -190,21 +190,7 @@ void GameManager::Tick()
 			));
 		*/
 
-		//validate frame
-		if(netClient->IsMaster())
-		{
-			while(rollbackManager_.GetLastReceivedFrame() > neko::Max(rollbackManager_.GetLastConfirmFrame(), 0))
-			{
-				const auto confirmValue = rollbackManager_.ConfirmLastFrame();
-				const auto lastConfirmFrame = rollbackManager_.GetLastConfirmFrame();
-				ConfirmFramePacket confirmPacket{};
-				confirmPacket.frame = lastConfirmFrame;
-				confirmPacket.checksum = confirmValue[0]+confirmValue[1];
-				confirmPacket.input = rollbackManager_.GetInputs(lastConfirmFrame);
-				//LogDebug(fmt::format("Sending confirm inputs f{} p1: {} p2: {}", lastConfirmFrame, confirmPacket.input[0], confirmPacket.input[1]));
-				netClient->SendConfirmFramePacket(confirmPacket);
-			}
-		}
+
 	}
 	currentFrame_++;
 }
@@ -242,49 +228,69 @@ void GameManager::RollbackUpdate()
 		rollbackManager_.SetInputs(inputPacket);
 	}
 
-	//import confirm frames
-	auto confirmPackets = netClient->GetConfirmPackets();
-	for(auto& confirmPacket : confirmPackets)
 	{
-		//LogDebug(fmt::format("Received confirm inputs f{}: p1: {} p2: {}", confirmPacket.frame, confirmPacket.input[0], confirmPacket.input[1]));
-		const auto lastConfirmFrame = confirmPacket.frame;
-		if(lastConfirmFrame != rollbackManager_.GetLastConfirmFrame()+1)
+		//import confirm frames
+		auto confirmPackets = netClient->GetConfirmPackets();
+		for(auto& confirmPacket : confirmPackets)
 		{
-			LogError(fmt::format("Not the same Confirm Frame: server {} local {}",
-				lastConfirmFrame,
-				rollbackManager_.GetLastConfirmFrame()+1));
-			std::terminate();
-		}
-		if(lastConfirmFrame > rollbackManager_.GetLastReceivedFrame())
-		{
-			//LogWarning("Confirm Frame is further than received from unreliable");
-		}
-		const auto& confirmInputs = confirmPacket.input;
-		for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
-		{
-			if(!IsValid(playerNumber))
+			//LogDebug(fmt::format("Received confirm inputs f{}: p1: {} p2: {}", confirmPacket.frame, confirmPacket.input[0], confirmPacket.input[1]));
+			const auto lastConfirmFrame = confirmPacket.frame;
+			if (lastConfirmFrame != rollbackManager_.GetLastConfirmFrame() + 1)
 			{
-				continue;
+				LogError(fmt::format("Not the same Confirm Frame: server {} local {}",
+					lastConfirmFrame,
+					rollbackManager_.GetLastConfirmFrame() + 1));
+				std::terminate();
 			}
-			if(rollbackManager_.GetLastReceivedFrame(playerNumber) >= lastConfirmFrame)
+			if (lastConfirmFrame > rollbackManager_.GetLastReceivedFrame())
 			{
-				const auto checkInput = rollbackManager_.GetInput(playerNumber, lastConfirmFrame);
-				if (confirmInputs[playerNumber] != checkInput)
+				//LogWarning("Confirm Frame is further than received from unreliable");
+			}
+			const auto& confirmInputs = confirmPacket.input;
+			for (int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
+			{
+				if (!IsValid(playerNumber))
 				{
-					LogWarning(fmt::format("Not the same input for confirm input p{} f{}: remote: {} local: {}",
-						playerNumber+1,
-						lastConfirmFrame,
-						confirmInputs[playerNumber],
-						checkInput));
+					continue;
 				}
+				if (rollbackManager_.GetLastReceivedFrame(playerNumber) >= lastConfirmFrame)
+				{
+					const auto checkInput = rollbackManager_.GetInput(playerNumber, lastConfirmFrame);
+					if (confirmInputs[playerNumber] != checkInput)
+					{
+						LogWarning(fmt::format("Not the same input for confirm input p{} f{}: remote: {} local: {}",
+							playerNumber + 1,
+							lastConfirmFrame,
+							confirmInputs[playerNumber],
+							checkInput));
+					}
+				}
+				rollbackManager_.SetInput(playerNumber, confirmInputs[playerNumber], lastConfirmFrame);
 			}
-			rollbackManager_.SetInput(playerNumber, confirmInputs[playerNumber], lastConfirmFrame);
+			const auto lastConfirmValue = confirmPacket.checksum;
+			const auto localConfirmValue = rollbackManager_.ConfirmLastFrame();
+			if (localConfirmValue[0] + localConfirmValue[1] != lastConfirmValue)
+			{
+				LogError(fmt::format("Desync at f{} with local confirm value: player {} bullet {}", rollbackManager_
+					.GetLastConfirmFrame(), localConfirmValue[0], localConfirmValue[1]));
+			}
 		}
-		const auto lastConfirmValue = confirmPacket.checksum;
-		const auto localConfirmValue = rollbackManager_.ConfirmLastFrame();
-		if(localConfirmValue[0]+localConfirmValue[1] != lastConfirmValue)
+		//validate frame
+		if(netClient->IsMaster())
 		{
-			LogError("Desync");
+			while(rollbackManager_.GetLastReceivedFrame() > neko::Max(rollbackManager_.GetLastConfirmFrame(), 0))
+			{
+				const auto confirmValue = rollbackManager_.ConfirmLastFrame();
+				const auto lastConfirmFrame = rollbackManager_.GetLastConfirmFrame();
+				LogDebug(fmt::format("Confirm Frame Sending at f{} with local confirm value: player {} bullet {}", lastConfirmFrame, confirmValue[0], confirmValue[1]));
+
+				ConfirmFramePacket confirmPacket{};
+				confirmPacket.frame = lastConfirmFrame;
+				confirmPacket.checksum = confirmValue[0]+confirmValue[1];
+				confirmPacket.input = rollbackManager_.GetInputs(lastConfirmFrame);
+				//LogDebug(fmt::format("Sending confirm inputs f{} p1: {} p2: {}", lastConfirmFrame, confirmPacket.input[0], confirmPacket.input[1]));
+				netClient->SendConfirmFramePacket(confirmPacket);
+			}
 		}
 	}
 

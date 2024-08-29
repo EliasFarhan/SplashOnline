@@ -39,7 +39,6 @@ void PlayerManager::Begin()
 		auto& body = physicsWorld.body(playerPhysic.bodyIndex);
 		body.position = spawnPositions[playerIndex];
 		body.type = neko::BodyType::DYNAMIC;
-		body.inverseMass = neko::Scalar{1};
 		body.isActive = false;
 
 		auto& collider = physicsWorld.collider(playerPhysic.colliderIndex);
@@ -736,11 +735,15 @@ Checksum<1> PlayerManager::CalculateChecksum() const
 			continue;
 		}
 		const auto& body = gameSystems_->GetPhysicsWorld().body(playerPhysics_[playerNumber].bodyIndex);
-		auto* bodyPtr = reinterpret_cast<const std::uint32_t *>(&body);
+		auto* bodyPtr = reinterpret_cast<const std::uint8_t *>(&body);
 
-		for(std::size_t i = 0; i < sizeof(neko::Body)/sizeof(std::uint32_t); i++)
+		for(std::size_t i = 0; i < sizeof(neko::Body); i++)
 		{
-			result += bodyPtr[i];
+			result += (std::uint32_t )bodyPtr[i];
+			if(i == offsetof(neko::Body, isActive))
+			{
+				break;
+			}
 		}
 	}
 	return {result};
