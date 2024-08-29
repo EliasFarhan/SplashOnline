@@ -65,6 +65,7 @@ public:
 		LOSE_P2_LUCHA,
 		LOSE_P3_OWL,
 		LOSE_P4_ROBO,
+		CONTROLS,
 
 		//Spine pages
 		KWAKWA_LOGO,
