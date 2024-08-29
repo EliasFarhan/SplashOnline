@@ -703,7 +703,7 @@ void PlayerManager::Respawn(int playerNumber)
 	playerCharacter.respawnPauseTimer.Reset();
 }
 
-uint32_t PlayerManager::CalculateChecksum() const
+Checksum<1> PlayerManager::CalculateChecksum() const
 {
 	std::uint32_t result = 0;
 	for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
@@ -743,7 +743,7 @@ uint32_t PlayerManager::CalculateChecksum() const
 			result += bodyPtr[i];
 		}
 	}
-	return result;
+	return {result};
 }
 
 void PlayerManager::RollbackFrom(const PlayerManager& system)

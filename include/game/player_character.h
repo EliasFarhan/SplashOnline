@@ -213,7 +213,7 @@ private:
 };
 
 class GameSystems;
-class PlayerManager : public RollbackInterface<PlayerManager>
+class PlayerManager : public RollbackInterface<PlayerManager, 1>
 {
 public:
 	explicit PlayerManager(GameSystems* gameSystems);
@@ -240,7 +240,7 @@ public:
 	void SetPlayerInput(neko::Span<PlayerInput> playerInputs);
 	void SetPreviousPlayerInput(neko::Span<PlayerInput> playerInputs);
 
-	uint32_t CalculateChecksum() const override;
+	Checksum<1> CalculateChecksum() const override;
 
 	void RollbackFrom(const PlayerManager& system) override;
 

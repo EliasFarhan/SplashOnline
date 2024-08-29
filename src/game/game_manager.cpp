@@ -199,7 +199,7 @@ void GameManager::Tick()
 				const auto lastConfirmFrame = rollbackManager_.GetLastConfirmFrame();
 				ConfirmFramePacket confirmPacket{};
 				confirmPacket.frame = lastConfirmFrame;
-				confirmPacket.checksum = confirmValue;
+				confirmPacket.checksum = confirmValue[0]+confirmValue[1];
 				confirmPacket.input = rollbackManager_.GetInputs(lastConfirmFrame);
 				//LogDebug(fmt::format("Sending confirm inputs f{} p1: {} p2: {}", lastConfirmFrame, confirmPacket.input[0], confirmPacket.input[1]));
 				netClient->SendConfirmFramePacket(confirmPacket);
@@ -282,7 +282,7 @@ void GameManager::RollbackUpdate()
 		}
 		const auto lastConfirmValue = confirmPacket.checksum;
 		const auto localConfirmValue = rollbackManager_.ConfirmLastFrame();
-		if(localConfirmValue != lastConfirmValue)
+		if(localConfirmValue[0]+localConfirmValue[1] != lastConfirmValue)
 		{
 			LogError("Desync");
 		}

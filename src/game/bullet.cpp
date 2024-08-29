@@ -144,7 +144,7 @@ void BulletManager::SpawnWata(
 	bulletBody.velocity = targetDir * speedFactor * Bullet::WataSpeed;
 }
 
-uint32_t BulletManager::CalculateChecksum() const
+Checksum<1> BulletManager::CalculateChecksum() const
 {
 	std::uint32_t result = 0;
 	for(const auto & bullet : bullets_)
@@ -161,7 +161,7 @@ uint32_t BulletManager::CalculateChecksum() const
 			result += bodyPtr[j];
 		}
 	}
-	return result;
+	return {result};
 }
 
 void BulletManager::RollbackFrom(const BulletManager& system)

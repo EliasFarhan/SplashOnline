@@ -21,7 +21,7 @@ public:
 	[[nodiscard]] PlayerInput GetInput(int playerNumber, int currentFrame) const;
 	[[nodiscard]] std::pair<std::array<PlayerInput, MaxPlayerInputNmb>, int> GetInputs(int playerNumber, int currentFrame) const;
 	[[nodiscard]] std::array<PlayerInput, MaxPlayerNmb> GetInputs(int currentFrame) const;
-	[[nodiscard]] std::uint32_t ConfirmLastFrame();
+	[[nodiscard]] Checksum<2> ConfirmLastFrame();
 	[[nodiscard]] int GetLastConfirmFrame() const {return lastConfirmFrame_;}
 	[[nodiscard]] int GetLastReceivedFrame() const;
 	[[nodiscard]] int GetLastReceivedFrame(int playerNumber) const;
