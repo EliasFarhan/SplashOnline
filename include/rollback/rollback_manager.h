@@ -28,7 +28,7 @@ public:
 	void SetInputs(const InputPacket& packet);
 	[[nodiscard]] bool IsValid(int playerNumber) const;
 	[[nodiscard]] bool IsDirty() const { return isDirty_;}
-	const GameSystems& GetGameSystems() const;
+	[[nodiscard]] const GameSystems& GetGameSystems() const;
 	void SetDirty(bool dirty);
 private:
 	struct PlayerInputData

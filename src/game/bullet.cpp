@@ -154,6 +154,12 @@ uint32_t BulletManager::CalculateChecksum() const
 		{
 			result += bulletPtr[j];
 		}
+		const auto& body = gameSystems_->GetPhysicsWorld().body(bullet.bodyIndex);
+		auto* bodyPtr = reinterpret_cast<const std::uint32_t*>(&body);
+		for(std::size_t j = 0; j < sizeof(neko::Body)/sizeof(std::uint32_t); j++)
+		{
+			result += bodyPtr[j];
+		}
 	}
 	return result;
 }

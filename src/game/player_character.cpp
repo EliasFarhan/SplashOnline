@@ -708,6 +708,10 @@ uint32_t PlayerManager::CalculateChecksum() const
 	std::uint32_t result = 0;
 	for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
 	{
+		if(!IsValid(playerNumber))
+		{
+			continue;
+		}
 		const auto* player = reinterpret_cast<const std::uint32_t*>(&playerCharacters_[playerNumber]);
 		for(std::size_t i = 0; i < sizeof(PlayerCharacter)/sizeof(std::uint32_t); i++)
 		{
@@ -721,9 +725,23 @@ uint32_t PlayerManager::CalculateChecksum() const
 		result += (std::uint32_t )playerInput[i];
 	}
 	playerInput = reinterpret_cast<const std::uint8_t*>(previousPlayerInputs_.data());
-	for(std::size_t i = 0; i < sizeof(playerInputs_); i++)
+	for(std::size_t i = 0; i < sizeof(previousPlayerInputs_); i++)
 	{
 		result += (std::uint32_t )playerInput[i];
+	}
+	for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
+	{
+		if(!IsValid(playerNumber))
+		{
+			continue;
+		}
+		const auto& body = gameSystems_->GetPhysicsWorld().body(playerPhysics_[playerNumber].bodyIndex);
+		auto* bodyPtr = reinterpret_cast<const std::uint32_t *>(&body);
+
+		for(std::size_t i = 0; i < sizeof(neko::Body)/sizeof(std::uint32_t); i++)
+		{
+			result += bodyPtr[i];
+		}
 	}
 	return result;
 }
