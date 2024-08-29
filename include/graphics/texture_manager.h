@@ -37,7 +37,6 @@ public:
 		FLOATROCK4,
 		BACKFOG,
 		FRONTFOG,
-		LEAFBLOW_PARTICULE,
 		MIDBG,
 		PLAT1,
 		PLAT2,
@@ -76,8 +75,6 @@ public:
 		WATA,
 		CLOUD_ANIM,
 		FX,
-
-
 
 		LENGTH
 	};

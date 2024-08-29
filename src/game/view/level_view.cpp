@@ -14,15 +14,27 @@
 namespace splash
 {
 
+static constexpr std::array<neko::Vec2f, 4> rockPositions
+	{{
+		 {neko::Scalar{-8.319638f}, neko::Scalar{-3.03f}},
+		 {neko::Scalar{-0.5121031f}, neko::Scalar{-2.901045f}},
+		 {neko::Scalar{1.822861f}, neko::Scalar{-3.582076f}},
+		 {neko::Scalar{8.60885f}, neko::Scalar{-2.876722f}}
+	}};
+
+static constexpr std::array<std::pair<neko::Vec2f, TextureManager::TextureId>, 6> clouds
+	{{
+		 {{neko::Scalar{-11.14f}, neko::Scalar{2.79f}}, TextureManager::TextureId::CLOUD3},
+		 {{neko::Scalar{-1.59f}, neko::Scalar{4.33f}}, TextureManager::TextureId::CLOUD1},
+		 {{neko::Scalar{5.17f}, neko::Scalar{2.67f}}, TextureManager::TextureId::CLOUD1},
+		 {{neko::Scalar{-4.549778f}, neko::Scalar{2.362802f}}, TextureManager::TextureId::CLOUD2},
+		 {{neko::Scalar{-3.93f}, neko::Scalar{-0.03f}}, TextureManager::TextureId::CLOUD3},
+		 {{neko::Scalar{5.071989f}, neko::Scalar{-0.4336729f}}, TextureManager::TextureId::CLOUD1}
+	}};
+
 void LevelView::Begin()
 {
-	std::random_device rd;  // Will be used to obtain a seed for the random number engine
-	std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
-	std::uniform_real_distribution<float> dis(0.0f, (float)gameWindowSize.x);
-	for(float & fogOffset : fogOffsets_)
-	{
-		fogOffset = dis(gen);
-	}
+
 }
 void LevelView::End()
 {
@@ -53,7 +65,33 @@ void LevelView::Draw()
 	bgFogRect.x -= GetActualGameSize().x-1;
 	SDL_RenderCopy(renderer, bgFogTexture, nullptr, &bgFogRect);
 
-	//TODO draw bg behind the front fog
+	//Mid bg
+	const neko::Vec2f midBgSize {(neko::Vec2<float>)GetTextureSize(TextureManager::TextureId::MIDBG)/pixelPerMeter};
+	const neko::Vec2f midBgPos{{}, neko::Scalar {-(float)gameWindowSize.y/pixelPerMeter/2.0f+(float)midBgSize.y/2.0f}};
+	const auto midBgRect = GetDrawingRect(midBgPos, midBgSize);
+	SDL_RenderCopy(renderer, midBgTexture_, nullptr, &midBgRect);
+
+	for(std::size_t i = 0; i < rocks_.size(); i++)
+	{
+		const auto& rock = rocks_[i];
+		neko::Vec2f rockPosition = rockPositions[i];
+		rockPosition.y += neko::Scalar{rock.amplitude* std::sin(2.0f * (float)neko::pi*rock.floatingTime/rock.floatingPeriod)};
+		neko::Vec2f rockSize{neko::Vec2<float>(rock.textureSize)/pixelPerMeter};
+		const auto rockRect = GetDrawingRect(rockPosition, rockSize);
+		SDL_RenderCopy(renderer, rock.texture, nullptr, &rockRect);
+	}
+
+	//Clouds
+	for(std::size_t i = 0; i < clouds_.size(); i++)
+	{
+		const auto& cloud = clouds_[i];
+		auto* texture = GetTexture(clouds[i].second);
+		auto cloudPos = clouds[i].first;
+		cloudPos.x = (neko::Scalar)cloud.currentPosX;
+		const neko::Vec2f cloudSize {(neko::Vec2<float>)GetTextureSize(clouds[i].second)/pixelPerMeter};
+		const auto cloudRect = GetDrawingRect(cloudPos, cloudSize);
+		SDL_RenderCopyEx(renderer, texture, nullptr, &cloudRect, 0.0, nullptr, SDL_FLIP_HORIZONTAL);
+	}
 
 	//Front fog
 	auto* frontFogTexture = GetTexture(TextureManager::TextureId::FRONTFOG);
@@ -94,6 +132,10 @@ void LevelView::Draw()
 }
 void LevelView::Update(float dt)
 {
+	if(!IsTextureLoaded())
+	{
+		return;
+	}
 	if(platformTextures_[0] == nullptr && IsTextureLoaded())
 	{
 		LoadTextures();
@@ -109,6 +151,23 @@ void LevelView::Update(float dt)
 	{
 		fogOffsets_[1] -= gameWindowSize.x/pixelPerMeter;
 	}
+	for(auto& rock : rocks_)
+	{
+		rock.floatingTime += dt;
+		while(rock.floatingTime > rock.floatingPeriod)
+		{
+			rock.floatingTime -= rock.floatingPeriod;
+		}
+	}
+	for(auto& cloud: clouds_)
+	{
+		cloud.currentPosX += cloud.speedX*dt;
+		if(cloud.currentPosX > Cloud::maxDist)
+		{
+			cloud.currentPosX = -Cloud::maxDist;
+		}
+	}
+
 }
 void LevelView::LoadTextures()
 {
@@ -116,10 +175,41 @@ void LevelView::LoadTextures()
 	{
 		platformTextures_[i] = GetTexture((TextureManager::TextureId)((int)TextureManager::TextureId::PLAT1+i));
 	}
+	std::random_device rd;  // Will be used to obtain a seed for the random number engine
+	std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
+	std::uniform_real_distribution<float> dis(0.0f, (float)gameWindowSize.x);
+	for(float & fogOffset : fogOffsets_)
+	{
+		fogOffset = dis(gen);
+	}
 	for(std::size_t i = 0; i < fogTextures_.size(); i++)
 	{
 		fogTextures_[i] = GetTexture((TextureManager::TextureId)((int)TextureManager::TextureId::BACKFOG+i));
 	}
 	backgroundTexture_ = GetTexture(TextureManager::TextureId::BG);
+	midBgTexture_ = GetTexture(TextureManager::TextureId::MIDBG);
+
+	std::uniform_real_distribution<float> dis1(0.3f, 0.75f);
+	std::uniform_real_distribution<float> dis2(5.0f, 15.0f);
+
+	for(std::size_t i = 0; i < rocks_.size(); i++)
+	{
+		auto& rock = rocks_[i];
+		const auto textureId = (TextureManager::TextureId)((std::size_t)TextureManager::TextureId::FLOATROCK1+i);
+		rock.texture = GetTexture(textureId);
+		rock.textureSize = GetTextureSize(textureId);
+
+		rock.amplitude = dis1(gen);
+		rock.floatingPeriod = dis2(gen);
+		std::uniform_real_distribution<float> dis3(0.0f, rock.floatingPeriod);
+		rock.floatingTime = dis3(gen);
+	}
+	std::uniform_real_distribution<float> disCloud(0.1f, 0.4f);
+	for(std::size_t i = 0; i < clouds_.size(); i++)
+	{
+		auto& cloud = clouds_[i];
+		cloud.currentPosX = (float)clouds[i].first.x;
+		cloud.speedX = disCloud(gen);
+	}
 }
 }
