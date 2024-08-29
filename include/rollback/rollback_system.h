@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <initializer_list>
+#include <numeric>
 
 namespace splash
 {
@@ -31,6 +32,11 @@ struct Checksum
 	std::uint32_t operator[](std::size_t index) const
 	{
 		return data_[index];
+	}
+
+	[[nodiscard]] explicit operator std::uint32_t() const
+	{
+		return std::accumulate(data_.begin(), data_.end(), 0);
 	}
 private:
 	std::array<std::uint32_t, argCount> data_{};
