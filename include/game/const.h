@@ -9,6 +9,7 @@
 #include <SDL_pixels.h>
 
 #include <array>
+#include <string_view>
 
 namespace splash
 {
@@ -39,6 +40,14 @@ static constexpr std::array<SDL_Color, MaxPlayerNmb> playerColors
 	 {238,0,126, 255},
 	 {27,255,181, 255},
 }};
+
+static constexpr std::array<std::string_view, MaxPlayerNmb> legacyPlayerColorNames
+	{{
+		"blue",
+		"yellow",
+		"red",
+		"green",
+	}};
 
 enum class ColliderType
 {

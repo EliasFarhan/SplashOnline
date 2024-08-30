@@ -71,6 +71,7 @@ void PlayerView::Update([[maybe_unused]]float dt)
 		}
 		const auto& playerCharacter = playerManager.GetPlayerCharacter()[playerNumber];
 		const auto& playerInput = playerManager.GetPlayerInputs()[playerNumber];
+		const auto& body = gameSystems_->GetPhysicsWorld().body(playerManager.GetPlayerPhysics()[playerNumber].bodyIndex);
 		auto& playerRenderData = playerRenderDatas_[playerNumber];
 		playerRenderData.bodyDrawable->skeleton->setToSetupPose();
 
@@ -200,6 +201,11 @@ void PlayerView::Update([[maybe_unused]]float dt)
 						}
 						else
 						{
+							const auto animName = fmt::format("jetfuse_{}", legacyPlayerColorNames[playerNumber]);
+							playerRenderData.jetBurstFx.StartAnim(
+								animName,
+								body.position,
+								neko::Vec2<float>(playerScale));
 							SwitchToState(PlayerRenderState::JETBURST, playerNumber);
 						}
 					}
@@ -243,6 +249,11 @@ void PlayerView::Update([[maybe_unused]]float dt)
 				}
 				if(!playerCharacter.jumpTimer.Over())
 				{
+					const auto animName = fmt::format("jetfuse_{}", legacyPlayerColorNames[playerNumber]);
+					playerRenderData.jetBurstFx.StartAnim(
+						animName,
+						body.position,
+						neko::Vec2<float>(playerScale));
 					SwitchToState(PlayerRenderState::JETBURST, playerNumber);
 				}
 				if(playerRenderData.state != PlayerRenderState::JET)
@@ -358,6 +369,8 @@ void PlayerView::Draw()
 		auto& armDrawable = playerRenderDatas_[i].armDrawable;
 		auto& gunDrawable = playerRenderDatas_[i].gunDrawable;
 
+
+		playerRenderDatas_[i].jetBurstFx.Draw();
 		// Draw in correct order
 		bodyDrawable->draw(renderer);
 		if(playerRenderDatas_[i].state != PlayerRenderState::DASHPREP && playerRenderDatas_[i].state != PlayerRenderState::DASH)
@@ -488,6 +501,10 @@ void PlayerView::Load()
 
 		playerSoundDatas_[i].jetpackSoundInstance = FmodPlaySound(GetPlayerSoundEvent(PlayerSoundId::JETPACK));
 		playerSoundDatas_[i].jetpackSoundInstance->setParameterValue("Transition Jetpack", 0.75f);
+
+
+		const auto animName = fmt::format("jetfuse_{}", legacyPlayerColorNames[i]);
+		playerRenderDatas_[i].jetBurstFx.Create(SpineManager::JETBOOM, animName);
 	}
 }
 void PlayerView::UpdateTransforms(float dt)
@@ -513,6 +530,9 @@ void PlayerView::UpdateTransforms(float dt)
 		{
 			continue;
 		}
+
+		playerRenderData.jetBurstFx.Update(dt);
+
 		auto& bodyDrawable = playerRenderData.bodyDrawable;
 		bodyDrawable->skeleton->setScaleX((playerRenderData.faceRight ? 1.0f : -1.0f) * scale);
 		bodyDrawable->skeleton->setScaleY(scale);
@@ -521,7 +541,7 @@ void PlayerView::UpdateTransforms(float dt)
 
 			if(playerCharacter.IsJetBursting())
 			{
-				float deltaX = 0.2f * std::sin(2.0f*(float)neko::Pi<neko::Scalar>()/0.25f*(float)playerCharacter.preJetBurstTimer.CurrentRatio());
+				float deltaX = 0.2f * playerScale * std::sin(2.0f*(float)neko::pi/0.25f*(float)playerCharacter.preJetBurstTimer.CurrentRatio());
 				const auto jetburstPosition = GetGraphicsPosition(body.position+neko::Vec2f{neko::Scalar{deltaX}, {}});
 				bodyDrawable->skeleton->setPosition((float)jetburstPosition.x, (float)jetburstPosition.y);
 			}
@@ -680,6 +700,36 @@ void PlayerView::UpdateTransforms(float dt)
 			cloudDrawable->update(dt, spine::Physics_Update);
 
 		}
+	}
+}
+void PlayerRenderData::VisualFx::Create(SpineManager::SkeletonId skeletonId, std::string_view animName)
+{
+	drawable = CreateSkeletonDrawable(skeletonId);
+	animationTimer.SetPeriod(drawable->skeleton->getData()->findAnimation(animName.data())->getDuration());
+}
+void PlayerRenderData::VisualFx::StartAnim(std::string_view animName, neko::Vec2f position, neko::Vec2<float> scale)
+{
+	drawable->animationState->setAnimation(0, animName.data(), false);
+	const auto screenPos = GetGraphicsPosition(position);
+	drawable->skeleton->setPosition((float)screenPos.x, (float)screenPos.y);
+	drawable->skeleton->setScaleX(scale.x);
+	drawable->skeleton->setScaleY(scale.y);
+	animationTimer.Reset();
+}
+void PlayerRenderData::VisualFx::Update(float dt)
+{
+	if(!animationTimer.Over())
+	{
+		animationTimer.Update(dt);
+		drawable->update(dt, spine::Physics_Update);
+	}
+}
+void PlayerRenderData::VisualFx::Draw()
+{
+	if(!animationTimer.Over())
+	{
+		auto* renderer = GetRenderer();
+		drawable->draw(renderer);
 	}
 }
 }

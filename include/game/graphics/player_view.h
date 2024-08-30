@@ -2,6 +2,7 @@
 #define SPLASHONLINE_PLAYER_RENDERER_H_
 
 #include "game/game_systems.h"
+#include "graphics/spine_manager.h"
 
 #include <spine-sdl-cpp.h>
 #include <fmod_studio.hpp>
@@ -33,6 +34,22 @@ struct PlayerRenderData
 	std::unique_ptr<spine::SkeletonDrawable> armDrawable{};
 	std::unique_ptr<spine::SkeletonDrawable> gunDrawable{};
 	std::unique_ptr<spine::SkeletonDrawable> cloudDrawable{};
+
+	class VisualFx
+	{
+	public:
+		void Create(SpineManager::SkeletonId skeletonId, std::string_view animName);
+		void StartAnim(std::string_view animName, neko::Vec2f position, neko::Vec2<float> scale);
+		void Update(float dt);
+		void Draw();
+	private:
+		Timer<float> animationTimer{-1.0f, 0.0f};
+		std::unique_ptr<spine::SkeletonDrawable> drawable{};
+	};
+
+	VisualFx jetBurstFx;
+
+
 	spine::Bone* shoulderBone{};
 	spine::Bone* handBone{};
 
