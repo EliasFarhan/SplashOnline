@@ -39,7 +39,6 @@ void PlayerManager::Begin()
 		auto& body = physicsWorld.body(playerPhysic.bodyIndex);
 		body.position = spawnPositions[playerIndex];
 		body.type = neko::BodyType::DYNAMIC;
-		body.inverseMass = neko::Scalar{1};
 		body.isActive = false;
 
 		auto& collider = physicsWorld.collider(playerPhysic.colliderIndex);
@@ -112,6 +111,16 @@ void PlayerManager::Tick()
 
 		playerCharacter.jumpTimer.Update(fixedDeltaTime);
 		playerCharacter.collidedTimer.Update(fixedDeltaTime);
+		playerCharacter.stopDashTimer.Update(fixedDeltaTime);
+		playerCharacter.wasDownRecoverTimer.Update(fixedDeltaTime);
+
+		playerCharacter.dashedTimer.Update(fixedDeltaTime);
+		if(!playerCharacter.dashedTimer.Over())
+		{
+			const auto dashedVel = neko::Vec2f{body.velocity.x, PlayerCharacter::DashedSpeed};
+			playerPhysic.AddForce((dashedVel-body.velocity)/fixedDeltaTime/body.inverseMass, PlayerCharacter::DashedPriority);
+		}
+
 
 		if(!playerCharacter.respawnStaticTime.Over())
 		{
@@ -176,7 +185,7 @@ void PlayerManager::Tick()
 				if(playerPhysic.GetPriority() < PlayerCharacter::MovePriority)
 				{
 					//Counter gravity
-					playerPhysic.AddForce( -physicsWorld.gravity()/body.inverseMass, PlayerCharacter::MovePriority);
+					//playerPhysic.AddForce( -physicsWorld.gravity()/body.inverseMass, PlayerCharacter::MovePriority);
 
 				}
 
@@ -189,7 +198,6 @@ void PlayerManager::Tick()
 				}
 				if(newCap > neko::Fixed16{} && neko::Abs(f) > newCap)
 				{
-
 					f = newCap * neko::Sign(deltaSpeed) ;
 				}
 				playerPhysic.AddForce(neko::Vec2f{f, {}}, PlayerCharacter::MovePriority);
@@ -204,7 +212,6 @@ void PlayerManager::Tick()
 		{
 			const auto horizontalForce = PlayerCharacter::InAirForce * moveX;
 			playerPhysic.AddForce(neko::Vec2f{horizontalForce, {}}, PlayerCharacter::MovePriority);
-
 		}
 		//Jetpack update
 		bool jetbursting = playerCharacter.IsJetBursting();
@@ -280,7 +287,15 @@ void PlayerManager::Tick()
 		}
 
 		//stomp update
-		playerCharacter.dashPrepTimer.Update(fixedDeltaTime);
+		if(!playerCharacter.dashPrepTimer.Over())
+		{
+			playerCharacter.dashPrepTimer.Update(fixedDeltaTime);
+			if(playerCharacter.dashPrepTimer.Over())
+			{
+				playerCharacter.wasDownRecoverTimer.Reset();
+			}
+		}
+
 		if(!playerCharacter.dashDownTimer.Over())
 		{
 			playerCharacter.dashDownTimer.Update(fixedDeltaTime);
@@ -329,7 +344,8 @@ void PlayerManager::Tick()
 				!playerCharacter.IsDashPrepping() &&
 				!playerCharacter.IsDashed() &&
 				body.velocity.Length() < PlayerCharacter::StompOrBurstMaxVelocity &&
-				playerCharacter.collidedTimer.Over())
+				playerCharacter.collidedTimer.Over() &&
+				playerCharacter.wasDownRecoverTimer.Over())
 			{
 				//Start stomp prep
 				playerCharacter.dashPrepTimer.Reset();
@@ -360,6 +376,14 @@ void PlayerManager::Tick()
 					//todo add was down recover timer to forbid unlimited use of stomp
 				}
 			}
+			else if(reactor >= PlayerCharacter::StompThreshold)
+			{
+				playerCharacter.dashDownTimer.Stop();
+			}
+		}
+		else
+		{
+			playerCharacter.dashDownTimer.Stop();
 		}
 
 		//Water gun update
@@ -475,8 +499,8 @@ void PlayerManager::Tick()
 			}
 			if(wantedVel != body.velocity)
 			{
-				playerPhysic.AddForce((wantedVel-body.velocity)*body.inverseMass/fixedDeltaTime
-									  -physicsWorld.gravity()/body.inverseMass, PlayerCharacter::CapVelPriority);
+				playerPhysic.AddForce((wantedVel-body.velocity)/fixedDeltaTime/body.inverseMass
+									  -physicsWorld.gravity()/body.inverseMass + playerPhysic.GetForce(), PlayerCharacter::CapVelPriority);
 			}
 		}
 		// In the end, apply force to physics
@@ -678,12 +702,15 @@ void PlayerManager::Respawn(int playerNumber)
 	playerCharacter.respawnPauseTimer.Reset();
 }
 
-uint32_t PlayerManager::CalculateChecksum() const
+Checksum<1> PlayerManager::CalculateChecksum() const
 {
-	//TODO calculate player character checksum
 	std::uint32_t result = 0;
 	for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
 	{
+		if(!IsValid(playerNumber))
+		{
+			continue;
+		}
 		const auto* player = reinterpret_cast<const std::uint32_t*>(&playerCharacters_[playerNumber]);
 		for(std::size_t i = 0; i < sizeof(PlayerCharacter)/sizeof(std::uint32_t); i++)
 		{
@@ -697,11 +724,29 @@ uint32_t PlayerManager::CalculateChecksum() const
 		result += (std::uint32_t )playerInput[i];
 	}
 	playerInput = reinterpret_cast<const std::uint8_t*>(previousPlayerInputs_.data());
-	for(std::size_t i = 0; i < sizeof(playerInputs_); i++)
+	for(std::size_t i = 0; i < sizeof(previousPlayerInputs_); i++)
 	{
 		result += (std::uint32_t )playerInput[i];
 	}
-	return result;
+	for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
+	{
+		if(!IsValid(playerNumber))
+		{
+			continue;
+		}
+		const auto& body = gameSystems_->GetPhysicsWorld().body(playerPhysics_[playerNumber].bodyIndex);
+		auto* bodyPtr = reinterpret_cast<const std::uint8_t *>(&body);
+
+		for(std::size_t i = 0; i < sizeof(neko::Body); i++)
+		{
+			result += (std::uint32_t )bodyPtr[i];
+			if(i == offsetof(neko::Body, isActive))
+			{
+				break;
+			}
+		}
+	}
+	return {result};
 }
 
 void PlayerManager::RollbackFrom(const PlayerManager& system)

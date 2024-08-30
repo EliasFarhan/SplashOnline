@@ -55,6 +55,7 @@ private:
 
 	std::unique_ptr<spine::SkeletonDrawable> logo_ = nullptr;
 	SDL_Texture* bg_ = nullptr;
+	SDL_Texture* controls_ = nullptr;
 	State state_ = State::LOGO;
 	int systemIndex_ = -1;
 	int graphicsIndex_ = -1;

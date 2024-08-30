@@ -105,9 +105,9 @@ void GameSystems::SetPreviousPlayerInput(neko::Span<PlayerInput> playerInputs)
 	playerManager_.SetPreviousPlayerInput(playerInputs);
 }
 
-uint32_t GameSystems::CalculateChecksum() const
+Checksum<2> GameSystems::CalculateChecksum() const
 {
-	return playerManager_.CalculateChecksum() + bulletManager_.CalculateChecksum();
+	return { (std::uint32_t)playerManager_.CalculateChecksum(), (std::uint32_t)bulletManager_.CalculateChecksum()};
 }
 
 void GameSystems::RollbackFrom(const GameSystems& system)

@@ -24,7 +24,6 @@ struct PlayerCharacter
 	static constexpr neko::Scalar WalkDeadZone{ 0.1f };
 	static constexpr neko::Scalar InAirForce{ 20.0f };
 	static constexpr neko::Scalar WaterForce{ 140.0f }; //WHen touch by water on ground, origin 100
-	static constexpr neko::Scalar MegaForce{ 400.0f };
 	static constexpr neko::Scalar AttackForce{ 5.0f };  //Recoil in air
 	static constexpr neko::Scalar RecoilGroundFactor{ 0.6f };
 	static constexpr neko::Scalar WalkSpeed{ 5.0f };
@@ -92,6 +91,7 @@ struct PlayerCharacter
 	Timer<> bounceDashTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 0.15f }};
 	Timer<> dashPrepTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 0.5f }};
 	Timer<> dashedTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 0.5f }};
+	Timer<> wasDownRecoverTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 1.0f }};
 
 	Timer<> collidedTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 0.25f }};
 	int collidedPlayer = -1;
@@ -213,7 +213,7 @@ private:
 };
 
 class GameSystems;
-class PlayerManager : public RollbackInterface<PlayerManager>
+class PlayerManager : public RollbackInterface<PlayerManager, 1>
 {
 public:
 	explicit PlayerManager(GameSystems* gameSystems);
@@ -240,7 +240,7 @@ public:
 	void SetPlayerInput(neko::Span<PlayerInput> playerInputs);
 	void SetPreviousPlayerInput(neko::Span<PlayerInput> playerInputs);
 
-	uint32_t CalculateChecksum() const override;
+	Checksum<1> CalculateChecksum() const override;
 
 	void RollbackFrom(const PlayerManager& system) override;
 

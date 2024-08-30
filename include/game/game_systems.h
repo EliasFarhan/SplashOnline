@@ -17,7 +17,7 @@ namespace splash
 {
 
 
-class GameSystems : public neko::ContactListener, public RollbackInterface<GameSystems>
+class GameSystems : public neko::ContactListener, public RollbackInterface<GameSystems, 2>
 {
 public:
 	GameSystems();
@@ -41,7 +41,7 @@ public:
 	void OnCollisionEnter(const neko::ColliderPair& p) override;
 	void OnCollisionExit(const neko::ColliderPair& p) override;
 
-	uint32_t CalculateChecksum() const override;
+	[[nodiscard]] Checksum<2> CalculateChecksum() const override;
 
 	void RollbackFrom(const GameSystems& system) override;
 

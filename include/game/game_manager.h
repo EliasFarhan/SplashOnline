@@ -16,7 +16,7 @@ struct GameData
 {
 	std::array<bool, MaxPlayerNmb> connectedPlayers{};
 	float introDelay = 5.0f;
-	neko::Scalar period {60.0f*2.0f}; //two minutes default game
+	neko::Scalar period {30.0f}; //two minutes default game
 };
 
 class GameManager final : public SystemInterface

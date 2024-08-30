@@ -37,7 +37,6 @@ public:
 		FLOATROCK4,
 		BACKFOG,
 		FRONTFOG,
-		LEAFBLOW_PARTICULE,
 		MIDBG,
 		PLAT1,
 		PLAT2,
@@ -65,6 +64,7 @@ public:
 		LOSE_P2_LUCHA,
 		LOSE_P3_OWL,
 		LOSE_P4_ROBO,
+		CONTROLS,
 
 		//Spine pages
 		KWAKWA_LOGO,
@@ -75,8 +75,6 @@ public:
 		WATA,
 		CLOUD_ANIM,
 		FX,
-
-
 
 		LENGTH
 	};

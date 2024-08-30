@@ -39,7 +39,6 @@ static constexpr std::array<std::string_view, (int)TextureManager::TextureId::LE
 		"data/sprites/kittymanjaro/floatrock4.png",
 		"data/sprites/kittymanjaro/backfog.png",
 		"data/sprites/kittymanjaro/frontfog.png",
-		"data/sprites/kittymanjaro/leafblow_particle.png",
 		"data/sprites/kittymanjaro/midbg.png",
 		"data/sprites/kittymanjaro/plat1.png",
 		"data/sprites/kittymanjaro/plat2.png",
@@ -66,6 +65,7 @@ static constexpr std::array<std::string_view, (int)TextureManager::TextureId::LE
 		"data/sprites/ui/lucha_lost.png",
 		"data/sprites/ui/hoot_lost.png",
 		"data/sprites/ui/robo_lost.png",
+		"data/sprites/ui/switch_procontroller.png",
 
 		"data/spine/kwakwalogo/SBPkwakwa_ver4_2.png",
 		"data/spine/announcer/SBPannouncers_ver4_2.png",

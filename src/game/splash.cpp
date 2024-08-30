@@ -4,6 +4,7 @@
 
 #include "game/splash.h"
 #include "engine/engine.h"
+#include "graphics/const.h"
 
 namespace splash
 {
@@ -46,6 +47,7 @@ void SplashManager::Update(float dt)
 		GetMusicManager().Play();
 		logoTimer_.Reset();
 		bg_ = GetTexture(TextureManager::TextureId::BG);
+		controls_ = GetTexture(TextureManager::TextureId::CONTROLS);
 	}
 
 	switch(state_)
@@ -140,8 +142,11 @@ void SplashManager::Draw()
 	case State::LOBBY:
 	{
 		constexpr neko::Vec2f size{neko::Scalar{19.2f}, neko::Scalar{10.8f}};
-		const auto rect = GetDrawingRect({}, size);
+		auto rect = GetDrawingRect({}, size);
 		SDL_RenderCopy(renderer, bg_, nullptr, &rect);
+		const neko::Vec2f controlSize{ (neko::Vec2<float>)GetTextureSize(TextureManager::TextureId::CONTROLS)/pixelPerMeter};
+		rect = GetDrawingRect({}, controlSize);
+		SDL_RenderCopy(renderer, controls_, nullptr, &rect);
 		break;
 	}
 	case State::GAME:

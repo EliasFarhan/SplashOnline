@@ -28,7 +28,7 @@ struct Bullet
 };
 
 class GameSystems;
-class BulletManager : public RollbackInterface<BulletManager>
+class BulletManager : public RollbackInterface<BulletManager, 1>
 {
 public:
 	explicit BulletManager(GameSystems* gameSystems);
@@ -41,14 +41,13 @@ public:
 	void OnTriggerEnter(neko::ColliderIndex bulletIndex, const neko::Collider& otherCollider);
 
 	[[nodiscard]] const auto& GetBullets() const { return bullets_;}
-
-	uint32_t CalculateChecksum() const override;
+	[[nodiscard]] Checksum<1> CalculateChecksum() const override;
 
 	void RollbackFrom(const BulletManager& system) override;
 
 private:
 	GameSystems* gameSystems_ = nullptr;
-	std::array<Bullet, MaxBulletNmb> bullets_;
+	std::array<Bullet, MaxBulletNmb> bullets_{};
 };
 }
 #endif //SPLASHONLINE_BULLET_H

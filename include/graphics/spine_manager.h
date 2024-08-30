@@ -61,7 +61,7 @@ public:
 		JETBOOM,
 		JETPACK1,
 		JETPACK2,
-		LANDUNG,
+		LANDING,
 		RELOAD,
 		STAR,
 
