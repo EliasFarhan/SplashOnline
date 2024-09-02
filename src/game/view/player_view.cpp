@@ -97,8 +97,58 @@ void PlayerView::Update([[maybe_unused]]float dt)
 			}
 			if(playerCharacter.IsRespawning())
 			{
+				auto ejectPosition = body.position;
+				auto angle = 0.0f;
+				neko::Vec2f bounds{(neko::Vec2<float>)gameWindowSize/pixelPerMeter/2.0f};
+
+				if(ejectPosition.x < -bounds.x)
+				{
+					ejectPosition.x = -bounds.x;
+					angle = -90.0f;
+				}
+
+				if(ejectPosition.x > bounds.x)
+				{
+					ejectPosition.x = bounds.x;
+					angle = 90.0f;
+				}
+
+				if(ejectPosition.y < -bounds.y)
+				{
+					ejectPosition.y = -bounds.y;
+					if(angle == 0.0f)
+					{
+						angle = 0.0f;
+					}
+					else if(angle == 90.0f)
+					{
+						angle = 45.0f;
+					}
+					else if(angle == -90.0f)
+					{
+						angle = -45.0f;
+					}
+				}
+				if(ejectPosition.y > bounds.y)
+				{
+					ejectPosition.y = bounds.y;
+					if(angle == 0.0f)
+					{
+						angle = 180.0f;
+					}
+					else if(angle == 90.0f)
+					{
+						angle = 45.0f+90.0f;
+					}
+					else if(angle == -90.0f)
+					{
+						angle = -45.0f-90.0f;
+					}
+				}
+
+				playerRenderData.ejectFx.StartAnim("eject", ejectPosition, GetGraphicsScale(), angle);
 				FmodPlaySound(GetPlayerDeathSoundEvent((Character)((int)Character::CAT+playerNumber)));
-				//FmodPlaySound(GetPlayerSoundEvent(PlayerSoundId::EJECT));
+				FmodPlaySound(GetPlayerSoundEvent(PlayerSoundId::EJECT));
 				playerRenderData.isRespawning = true;
 				playerRenderData.cloudDrawable->animationState->setAnimation(0, "respawn", true);
 				SwitchToState(PlayerRenderState::IDLE, playerNumber);
@@ -110,6 +160,7 @@ void PlayerView::Update([[maybe_unused]]float dt)
 			{
 				FmodPlaySound(GetPlayerSoundEvent(PlayerSoundId::STOMPPREP));
 				SwitchToState(PlayerRenderState::DASHPREP, playerNumber);
+				playerRenderData.dashPrepFx.StartAnim("dashprep", body.position,{0.5f * GetGraphicsScale()});
 			}
 			if(playerCharacter.IsDashing() && playerRenderData.state != PlayerRenderState::DASH)
 			{
@@ -205,7 +256,7 @@ void PlayerView::Update([[maybe_unused]]float dt)
 							playerRenderData.jetBurstFx.StartAnim(
 								animName,
 								body.position,
-								neko::Vec2<float>(playerScale));
+								neko::Vec2<float>(playerScale * GetGraphicsScale()));
 							SwitchToState(PlayerRenderState::JETBURST, playerNumber);
 						}
 					}
@@ -253,7 +304,7 @@ void PlayerView::Update([[maybe_unused]]float dt)
 					playerRenderData.jetBurstFx.StartAnim(
 						animName,
 						body.position,
-						neko::Vec2<float>(playerScale));
+						neko::Vec2<float>(playerScale * GetGraphicsScale()));
 					SwitchToState(PlayerRenderState::JETBURST, playerNumber);
 				}
 				if(playerRenderData.state != PlayerRenderState::JET)
@@ -369,8 +420,9 @@ void PlayerView::Draw()
 		auto& armDrawable = playerRenderDatas_[i].armDrawable;
 		auto& gunDrawable = playerRenderDatas_[i].gunDrawable;
 
-
 		playerRenderDatas_[i].jetBurstFx.Draw();
+		playerRenderDatas_[i].dashPrepFx.Draw();
+		playerRenderDatas_[i].ejectFx.Draw();
 		// Draw in correct order
 		bodyDrawable->draw(renderer);
 		if(playerRenderDatas_[i].state != PlayerRenderState::DASHPREP && playerRenderDatas_[i].state != PlayerRenderState::DASH)
@@ -505,6 +557,8 @@ void PlayerView::Load()
 
 		const auto animName = fmt::format("jetfuse_{}", legacyPlayerColorNames[i]);
 		playerRenderDatas_[i].jetBurstFx.Create(SpineManager::JETBOOM, animName);
+		playerRenderDatas_[i].dashPrepFx.Create(SpineManager::DASH_PREP, "dashprep");
+		playerRenderDatas_[i].ejectFx.Create(SpineManager::EJECT, "eject");
 	}
 }
 void PlayerView::UpdateTransforms(float dt)
@@ -532,6 +586,8 @@ void PlayerView::UpdateTransforms(float dt)
 		}
 
 		playerRenderData.jetBurstFx.Update(dt);
+		playerRenderData.dashPrepFx.Update(dt);
+		playerRenderData.ejectFx.Update(dt);
 
 		auto& bodyDrawable = playerRenderData.bodyDrawable;
 		bodyDrawable->skeleton->setScaleX((playerRenderData.faceRight ? 1.0f : -1.0f) * scale);
@@ -707,13 +763,15 @@ void PlayerRenderData::VisualFx::Create(SpineManager::SkeletonId skeletonId, std
 	drawable = CreateSkeletonDrawable(skeletonId);
 	animationTimer.SetPeriod(drawable->skeleton->getData()->findAnimation(animName.data())->getDuration());
 }
-void PlayerRenderData::VisualFx::StartAnim(std::string_view animName, neko::Vec2f position, neko::Vec2<float> scale)
+void PlayerRenderData::VisualFx::StartAnim(std::string_view animName, neko::Vec2f position, neko::Vec2<float> scale, float angle)
 {
+	drawable->skeleton->setToSetupPose();
 	drawable->animationState->setAnimation(0, animName.data(), false);
 	const auto screenPos = GetGraphicsPosition(position);
 	drawable->skeleton->setPosition((float)screenPos.x, (float)screenPos.y);
 	drawable->skeleton->setScaleX(scale.x);
 	drawable->skeleton->setScaleY(scale.y);
+	angle_ = angle;
 	animationTimer.Reset();
 }
 void PlayerRenderData::VisualFx::Update(float dt)
@@ -721,7 +779,16 @@ void PlayerRenderData::VisualFx::Update(float dt)
 	if(!animationTimer.Over())
 	{
 		animationTimer.Update(dt);
-		drawable->update(dt, spine::Physics_Update);
+		drawable->animationState->update(dt);
+		drawable->animationState->apply(*drawable->skeleton);
+		if(angle_ != 0.0f)
+		{
+			auto* root = drawable->skeleton->getRootBone();
+			root->setRotation(angle_);
+			root->setAppliedRotation(angle_);
+		}
+		drawable->skeleton->update(dt);
+		drawable->skeleton->updateWorldTransform(spine::Physics_Update);
 	}
 }
 void PlayerRenderData::VisualFx::Draw()

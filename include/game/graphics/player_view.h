@@ -39,15 +39,18 @@ struct PlayerRenderData
 	{
 	public:
 		void Create(SpineManager::SkeletonId skeletonId, std::string_view animName);
-		void StartAnim(std::string_view animName, neko::Vec2f position, neko::Vec2<float> scale);
+		void StartAnim(std::string_view animName, neko::Vec2f position, neko::Vec2<float> scale, float angle = 0.0f);
 		void Update(float dt);
 		void Draw();
 	private:
 		Timer<float> animationTimer{-1.0f, 0.0f};
 		std::unique_ptr<spine::SkeletonDrawable> drawable{};
+		float angle_ = 0.0f;
 	};
 
 	VisualFx jetBurstFx;
+	VisualFx dashPrepFx;
+	VisualFx ejectFx;
 
 
 	spine::Bone* shoulderBone{};
