@@ -106,8 +106,7 @@ void PlayerView::Update([[maybe_unused]]float dt)
 					ejectPosition.x = -bounds.x;
 					angle = -90.0f;
 				}
-
-				if(ejectPosition.x > bounds.x)
+				else if(ejectPosition.x > bounds.x)
 				{
 					ejectPosition.x = bounds.x;
 					angle = 90.0f;
@@ -129,7 +128,7 @@ void PlayerView::Update([[maybe_unused]]float dt)
 						angle = -45.0f;
 					}
 				}
-				if(ejectPosition.y > bounds.y)
+				else if(ejectPosition.y > bounds.y)
 				{
 					ejectPosition.y = bounds.y;
 					if(angle == 0.0f)
@@ -158,9 +157,9 @@ void PlayerView::Update([[maybe_unused]]float dt)
 
 			if(playerCharacter.IsDashPrepping() && playerRenderData.state != PlayerRenderState::DASHPREP)
 			{
-				FmodPlaySound(GetPlayerSoundEvent(PlayerSoundId::STOMPPREP));
+
 				SwitchToState(PlayerRenderState::DASHPREP, playerNumber);
-				playerRenderData.dashPrepFx.StartAnim("dashprep", body.position,{0.5f * GetGraphicsScale()});
+
 			}
 			if(playerCharacter.IsDashing() && playerRenderData.state != PlayerRenderState::DASH)
 			{
@@ -252,11 +251,7 @@ void PlayerView::Update([[maybe_unused]]float dt)
 						}
 						else
 						{
-							const auto animName = fmt::format("jetfuse_{}", legacyPlayerColorNames[playerNumber]);
-							playerRenderData.jetBurstFx.StartAnim(
-								animName,
-								body.position,
-								neko::Vec2<float>(playerScale * GetGraphicsScale()));
+
 							SwitchToState(PlayerRenderState::JETBURST, playerNumber);
 						}
 					}
@@ -300,11 +295,6 @@ void PlayerView::Update([[maybe_unused]]float dt)
 				}
 				if(!playerCharacter.jumpTimer.Over())
 				{
-					const auto animName = fmt::format("jetfuse_{}", legacyPlayerColorNames[playerNumber]);
-					playerRenderData.jetBurstFx.StartAnim(
-						animName,
-						body.position,
-						neko::Vec2<float>(playerScale * GetGraphicsScale()));
 					SwitchToState(PlayerRenderState::JETBURST, playerNumber);
 				}
 				if(playerRenderData.state != PlayerRenderState::JET)
@@ -423,6 +413,7 @@ void PlayerView::Draw()
 		playerRenderDatas_[i].jetBurstFx.Draw();
 		playerRenderDatas_[i].dashPrepFx.Draw();
 		playerRenderDatas_[i].ejectFx.Draw();
+		playerRenderDatas_[i].landingFx.Draw();
 		// Draw in correct order
 		bodyDrawable->draw(renderer);
 		if(playerRenderDatas_[i].state != PlayerRenderState::DASHPREP && playerRenderDatas_[i].state != PlayerRenderState::DASH)
@@ -515,9 +506,41 @@ PlayerView::PlayerView(const GameSystems* gameSystems): gameSystems_(gameSystems
 
 void PlayerView::SwitchToState(PlayerRenderState state, int playerNumber)
 {
-	playerRenderDatas_[playerNumber].bodyDrawable->animationState->setAnimation(0,
+	auto& playerRenderData = playerRenderDatas_[playerNumber];
+	const auto previousState = playerRenderData.state;
+		playerRenderDatas_[playerNumber].bodyDrawable->animationState->setAnimation(0,
 		playerAnimNames[(int)state].data(), true);
 	playerRenderDatas_[playerNumber].state = state;
+	const auto& body = gameSystems_->GetPhysicsWorld().body(gameSystems_->GetPlayerManager().GetPlayerPhysics()[playerNumber].bodyIndex);
+	const auto& playerCharacter = gameSystems_->GetPlayerManager().GetPlayerCharacter()[playerNumber];
+	switch(state)
+	{
+	case PlayerRenderState::DASHPREP:
+	{
+		FmodPlaySound(GetPlayerSoundEvent(PlayerSoundId::STOMPPREP));
+		playerRenderData.dashPrepFx.StartAnim("dashprep", body.position,{0.5f * GetGraphicsScale()});
+		break;
+	}
+	case PlayerRenderState::JETBURST:
+	{
+		const auto animName = fmt::format("jetfuse_{}", legacyPlayerColorNames[playerNumber]);
+		playerRenderData.jetBurstFx.StartAnim(
+			animName,
+			body.position,
+			neko::Vec2<float>(playerScale * GetGraphicsScale()));
+		break;
+	}
+	default:
+		break;
+	}
+	if(playerCharacter.IsGrounded() && (
+		previousState == PlayerRenderState::FALL ||
+		previousState == PlayerRenderState::DASH ||
+		previousState == PlayerRenderState::JET
+		))
+	{
+		playerRenderData.landingFx.StartAnim("land", body.position, GetGraphicsScale()*0.5f, 0.0f);
+	}
 }
 void PlayerView::Load()
 {
@@ -559,6 +582,7 @@ void PlayerView::Load()
 		playerRenderDatas_[i].jetBurstFx.Create(SpineManager::JETBOOM, animName);
 		playerRenderDatas_[i].dashPrepFx.Create(SpineManager::DASH_PREP, "dashprep");
 		playerRenderDatas_[i].ejectFx.Create(SpineManager::EJECT, "eject");
+		playerRenderDatas_[i].landingFx.Create(SpineManager::LANDING, "land");
 	}
 }
 void PlayerView::UpdateTransforms(float dt)
@@ -588,6 +612,7 @@ void PlayerView::UpdateTransforms(float dt)
 		playerRenderData.jetBurstFx.Update(dt);
 		playerRenderData.dashPrepFx.Update(dt);
 		playerRenderData.ejectFx.Update(dt);
+		playerRenderData.landingFx.Update(dt);
 
 		auto& bodyDrawable = playerRenderData.bodyDrawable;
 		bodyDrawable->skeleton->setScaleX((playerRenderData.faceRight ? 1.0f : -1.0f) * scale);

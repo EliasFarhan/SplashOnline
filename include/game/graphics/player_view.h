@@ -51,6 +51,7 @@ struct PlayerRenderData
 	VisualFx jetBurstFx;
 	VisualFx dashPrepFx;
 	VisualFx ejectFx;
+	VisualFx landingFx;
 
 
 	spine::Bone* shoulderBone{};
