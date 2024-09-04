@@ -4,6 +4,7 @@
 #include "game/game_systems.h"
 #include "graphics/spine_manager.h"
 
+#include <container/vector.h>
 #include <spine-sdl-cpp.h>
 #include <fmod_studio.hpp>
 
@@ -34,6 +35,7 @@ struct PlayerRenderData
 	std::unique_ptr<spine::SkeletonDrawable> armDrawable{};
 	std::unique_ptr<spine::SkeletonDrawable> gunDrawable{};
 	std::unique_ptr<spine::SkeletonDrawable> cloudDrawable{};
+	std::unique_ptr<spine::SkeletonDrawable> dashFxDrawable{};
 
 	class VisualFx
 	{
@@ -54,7 +56,11 @@ struct PlayerRenderData
 	VisualFx dashPrepFx{};
 	VisualFx ejectFx{};
 	VisualFx landingFx{};
+	VisualFx dashEndFx{};
 	std::array<VisualFx, 20> jetpackFx{};
+
+	static constexpr int trailLength = 22;
+	neko::SmallVector<neko::Vec2f, trailLength> dashPositions{};
 
 
 	spine::Bone* shoulderBone{};

@@ -350,6 +350,10 @@ void PlayerView::Update([[maybe_unused]]float dt)
 				{
 					SwitchToState(PlayerRenderState::FALL, playerNumber);
 				}
+				else
+				{
+					playerRenderData.dashPositions.insert(playerRenderData.dashPositions.cbegin(), body.position);
+				}
 				break;
 			}
 			case PlayerRenderState::BOUNCE:
@@ -428,16 +432,81 @@ void PlayerView::Draw()
 		playerRenderDatas_[i].dashPrepFx.Draw();
 		playerRenderDatas_[i].ejectFx.Draw();
 		playerRenderDatas_[i].landingFx.Draw();
+		playerRenderDatas_[i].dashEndFx.Draw();
 		for(auto& jetpackFx : playerRenderDatas_[i].jetpackFx)
 		{
 			jetpackFx.Draw();
 		}
+
+		//draw dash trail
+		if(playerRenderDatas_[i].state == PlayerRenderState::DASH)
+		{
+			if(playerRenderDatas_[i].dashPositions.size() > 1)
+			{
+				int positionsCount = (int)playerRenderDatas_[i].dashPositions.size();
+				std::array<neko::Vec2i, 10> dashScreenPos{};
+				for (int j = 0; j < positionsCount; j++)
+				{
+					dashScreenPos[j] = GetGraphicsPosition(playerRenderDatas_[i].dashPositions[j]);
+				}
+				neko::SmallVector<SDL_Vertex, PlayerRenderData::trailLength*2> dashVertexPos{};
+				for (int j = 0; j < positionsCount; j++)
+				{
+					neko::Vec2i delta;
+					if (j == playerRenderDatas_[i].dashPositions.size() - 1)
+					{
+						delta = dashScreenPos[j] - dashScreenPos[j - 1];
+					}
+					else
+					{
+						delta = dashScreenPos[j + 1] - dashScreenPos[j];
+					}
+					auto dir = neko::Vec2<float>{ delta.Perpendicular() }.Normalized();
+					static constexpr float width = 25.0f;
+					auto p1 = neko::Vec2<float>{ dashScreenPos[j] } + dir * (width/(float)(j+1));
+					auto p2 = neko::Vec2<float>{ dashScreenPos[j] } - dir * (width/(float)(j+1));
+					SDL_Vertex v{};
+					v.position = { p1.x, p1.y };
+					v.color = playerColors[i];
+					//v.color.a /= j+1;
+					dashVertexPos.push_back(v);
+					v.position = { p2.x, p2.y };
+					dashVertexPos.push_back(v);
+				}
+				neko::SmallVector<int, (PlayerRenderData::trailLength-1)*6> indices{};
+				for(int j = 0; j < positionsCount-1; j++)
+				{
+					indices.push_back(j*2);
+					indices.push_back(j*2+1);
+					indices.push_back(j*2+3);
+
+					indices.push_back(j*2);
+					indices.push_back(j*2+2);
+					indices.push_back(j*2+3);
+				}
+				SDL_BlendMode blendMode;
+				SDL_GetRenderDrawBlendMode(renderer, &blendMode);
+				SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+				SDL_RenderGeometry(renderer,
+					nullptr,
+					dashVertexPos.data(),
+					(int)dashVertexPos.size(),
+					indices.data(),
+					(int)indices.size());
+				SDL_SetRenderDrawBlendMode(renderer, blendMode);
+			}
+		}
+
 		// Draw in correct order
 		bodyDrawable->draw(renderer);
 		if(playerRenderDatas_[i].state != PlayerRenderState::DASHPREP && playerRenderDatas_[i].state != PlayerRenderState::DASH)
 		{
 			gunDrawable->draw(renderer);
 			armDrawable->draw(renderer);
+		}
+		if(playerRenderDatas_[i].state == PlayerRenderState::DASH)
+		{
+			playerRenderDatas_[i].dashFxDrawable->draw(renderer);
 		}
 		if (playerRenderDatas_[i].isRespawning || !playerRenderDatas_[i].cloudEndRespawnTimer.Over())
 		{
@@ -547,8 +616,17 @@ void PlayerView::SwitchToState(PlayerRenderState state, int playerNumber)
 			neko::Vec2<float>(playerScale * GetGraphicsScale()));
 		break;
 	}
+	case PlayerRenderState::DASH:
+	{
+		playerRenderData.dashPositions.clear();
+		break;
+	}
 	default:
 		break;
+	}
+	if(previousState == PlayerRenderState::DASH && state != previousState)
+	{
+		playerRenderData.dashEndFx.Start(body.position, 2.0f*0.3f*GetGraphicsScale(), 0.0f);
 	}
 	if(playerCharacter.IsGrounded() && (
 		previousState == PlayerRenderState::FALL ||
@@ -594,12 +672,15 @@ void PlayerView::Load()
 		playerSoundDatas_[i].jetpackSoundInstance = FmodPlaySound(GetPlayerSoundEvent(PlayerSoundId::JETPACK));
 		playerSoundDatas_[i].jetpackSoundInstance->setParameterValue("Transition Jetpack", 0.75f);
 
+		playerRenderDatas_[i].dashFxDrawable = CreateSkeletonDrawable(SpineManager::DASH);
+		playerRenderDatas_[i].dashFxDrawable->animationState->setAnimation(0, "animation", true);
 
 		const auto animName = fmt::format("jetfuse_{}", legacyPlayerColorNames[i]);
 		playerRenderDatas_[i].jetBurstFx.Create(SpineManager::JETBOOM, animName);
 		playerRenderDatas_[i].dashPrepFx.Create(SpineManager::DASH_PREP, "dashprep");
 		playerRenderDatas_[i].ejectFx.Create(SpineManager::EJECT, "eject");
 		playerRenderDatas_[i].landingFx.Create(SpineManager::LANDING, "land");
+		playerRenderDatas_[i].dashEndFx.Create(SpineManager::DASH, "dashend");
 		for(std::size_t j = 0; j < playerRenderDatas_[i].jetpackFx.size(); j++)
 		{
 			bool value = j%2==0;
@@ -645,6 +726,7 @@ void PlayerView::UpdateTransforms(float dt)
 		playerRenderData.dashPrepFx.Update(dt);
 		playerRenderData.ejectFx.Update(dt);
 		playerRenderData.landingFx.Update(dt);
+		playerRenderData.dashEndFx.Update(dt);
 		for(auto& jetPackFx: playerRenderData.jetpackFx)
 		{
 			jetPackFx.Update(dt);
@@ -697,6 +779,16 @@ void PlayerView::UpdateTransforms(float dt)
 
 		bodyDrawable->animationState->update(animRatio * dt);
 		bodyDrawable->animationState->apply(*bodyDrawable->skeleton);
+
+		if(playerRenderData.state == PlayerRenderState::DASH)
+		{
+			playerRenderData.dashFxDrawable->skeleton->setScaleX(2.0f * 0.3f * GetGraphicsScale());
+			playerRenderData.dashFxDrawable->skeleton->setScaleY(2.0f * 0.3f * GetGraphicsScale());
+			playerRenderData.dashFxDrawable->skeleton->setPosition(position.x, position.y);
+			playerRenderData.dashFxDrawable->update(dt, spine::Physics_Update);
+		}
+
+
 		float moveAngle = 0.0f;
 		switch(playerRenderData.state)
 		{

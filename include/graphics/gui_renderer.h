@@ -23,7 +23,7 @@ public:
 
 struct DebugConfig
 {
-	bool showPhysicsBox = true;
+	bool showPhysicsBox = false;
 };
 
 class GuiRenderer : public OnEventInterface
