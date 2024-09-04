@@ -39,19 +39,22 @@ struct PlayerRenderData
 	{
 	public:
 		void Create(SpineManager::SkeletonId skeletonId, std::string_view animName);
-		void StartAnim(std::string_view animName, neko::Vec2f position, neko::Vec2<float> scale, float angle = 0.0f);
+		void Start(neko::Vec2f position, neko::Vec2<float> scale, float angle = 0.0f);
 		void Update(float dt);
 		void Draw();
+		[[nodiscard]]bool IsActive() const { return !animationTimer.Over();}
 	private:
 		Timer<float> animationTimer{-1.0f, 0.0f};
 		std::unique_ptr<spine::SkeletonDrawable> drawable{};
+		std::string animName_;
 		float angle_ = 0.0f;
 	};
 
-	VisualFx jetBurstFx;
-	VisualFx dashPrepFx;
-	VisualFx ejectFx;
-	VisualFx landingFx;
+	VisualFx jetBurstFx{};
+	VisualFx dashPrepFx{};
+	VisualFx ejectFx{};
+	VisualFx landingFx{};
+	std::array<VisualFx, 20> jetpackFx{};
 
 
 	spine::Bone* shoulderBone{};
@@ -63,6 +66,7 @@ struct PlayerRenderData
 
 	PlayerRenderState state = PlayerRenderState::IDLE;
 	Timer<float> cloudEndRespawnTimer{-1.0f, 0.367f};
+	Timer<float> jetpackTimer{-1.0f, 0.05f};
 	bool faceRight = true;
 	bool isRespawning = true;
 	bool wasShooting = false;

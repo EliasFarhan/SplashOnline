@@ -145,7 +145,7 @@ void PlayerView::Update([[maybe_unused]]float dt)
 					}
 				}
 
-				playerRenderData.ejectFx.StartAnim("eject", ejectPosition, GetGraphicsScale(), angle);
+				playerRenderData.ejectFx.Start(ejectPosition, GetGraphicsScale(), angle);
 				FmodPlaySound(GetPlayerDeathSoundEvent((Character)((int)Character::CAT+playerNumber)));
 				FmodPlaySound(GetPlayerSoundEvent(PlayerSoundId::EJECT));
 				playerRenderData.isRespawning = true;
@@ -166,6 +166,7 @@ void PlayerView::Update([[maybe_unused]]float dt)
 				FmodPlaySound(GetPlayerSoundEvent(PlayerSoundId::STOMPING));
 				SwitchToState(PlayerRenderState::DASH, playerNumber);
 			}
+
 			switch (playerRenderData.state)
 			{
 
@@ -285,6 +286,19 @@ void PlayerView::Update([[maybe_unused]]float dt)
 			}
 			case PlayerRenderState::JET:
 			{
+				playerRenderData.jetpackTimer.Update(dt);
+				if(playerRenderData.jetpackTimer.Over())
+				{
+					auto it = std::find_if(playerRenderData.jetpackFx.begin(), playerRenderData.jetpackFx.end(),[](const auto& visualFx)
+					{
+						return !visualFx.IsActive();
+					});
+					if(it != playerRenderData.jetpackFx.end())
+					{
+						it->Start(body.position, 0.5f*GetGraphicsScale(), 0.0f);
+					}
+					playerRenderData.jetpackTimer.Reset();
+				}
 				if (playerCharacter.IsGrounded())
 				{
 					SwitchToState(PlayerRenderState::IDLE, playerNumber);
@@ -414,6 +428,10 @@ void PlayerView::Draw()
 		playerRenderDatas_[i].dashPrepFx.Draw();
 		playerRenderDatas_[i].ejectFx.Draw();
 		playerRenderDatas_[i].landingFx.Draw();
+		for(auto& jetpackFx : playerRenderDatas_[i].jetpackFx)
+		{
+			jetpackFx.Draw();
+		}
 		// Draw in correct order
 		bodyDrawable->draw(renderer);
 		if(playerRenderDatas_[i].state != PlayerRenderState::DASHPREP && playerRenderDatas_[i].state != PlayerRenderState::DASH)
@@ -518,14 +536,13 @@ void PlayerView::SwitchToState(PlayerRenderState state, int playerNumber)
 	case PlayerRenderState::DASHPREP:
 	{
 		FmodPlaySound(GetPlayerSoundEvent(PlayerSoundId::STOMPPREP));
-		playerRenderData.dashPrepFx.StartAnim("dashprep", body.position,{0.5f * GetGraphicsScale()});
+		playerRenderData.dashPrepFx.Start(body.position, { 0.5f * GetGraphicsScale() });
 		break;
 	}
 	case PlayerRenderState::JETBURST:
 	{
 		const auto animName = fmt::format("jetfuse_{}", legacyPlayerColorNames[playerNumber]);
-		playerRenderData.jetBurstFx.StartAnim(
-			animName,
+		playerRenderData.jetBurstFx.Start(
 			body.position,
 			neko::Vec2<float>(playerScale * GetGraphicsScale()));
 		break;
@@ -539,7 +556,7 @@ void PlayerView::SwitchToState(PlayerRenderState state, int playerNumber)
 		previousState == PlayerRenderState::JET
 		))
 	{
-		playerRenderData.landingFx.StartAnim("land", body.position, GetGraphicsScale()*0.5f, 0.0f);
+		playerRenderData.landingFx.Start(body.position, GetGraphicsScale() * 0.5f, 0.0f);
 	}
 }
 void PlayerView::Load()
@@ -583,6 +600,21 @@ void PlayerView::Load()
 		playerRenderDatas_[i].dashPrepFx.Create(SpineManager::DASH_PREP, "dashprep");
 		playerRenderDatas_[i].ejectFx.Create(SpineManager::EJECT, "eject");
 		playerRenderDatas_[i].landingFx.Create(SpineManager::LANDING, "land");
+		for(std::size_t j = 0; j < playerRenderDatas_[i].jetpackFx.size(); j++)
+		{
+			bool value = j%2==0;
+			if(value)
+			{
+				playerRenderDatas_[i].jetpackFx[j].Create(SpineManager::JETPACK1, animName);
+			}
+			else
+			{
+				const auto otherAnimName = fmt::format("jetfuse2_{}", legacyPlayerColorNames[i]);
+				playerRenderDatas_[i].jetpackFx[j].Create(SpineManager::JETPACK2, otherAnimName);
+			}
+
+		}
+
 	}
 }
 void PlayerView::UpdateTransforms(float dt)
@@ -613,6 +645,10 @@ void PlayerView::UpdateTransforms(float dt)
 		playerRenderData.dashPrepFx.Update(dt);
 		playerRenderData.ejectFx.Update(dt);
 		playerRenderData.landingFx.Update(dt);
+		for(auto& jetPackFx: playerRenderData.jetpackFx)
+		{
+			jetPackFx.Update(dt);
+		}
 
 		auto& bodyDrawable = playerRenderData.bodyDrawable;
 		bodyDrawable->skeleton->setScaleX((playerRenderData.faceRight ? 1.0f : -1.0f) * scale);
@@ -785,13 +821,14 @@ void PlayerView::UpdateTransforms(float dt)
 }
 void PlayerRenderData::VisualFx::Create(SpineManager::SkeletonId skeletonId, std::string_view animName)
 {
+	animName_ = animName;
 	drawable = CreateSkeletonDrawable(skeletonId);
 	animationTimer.SetPeriod(drawable->skeleton->getData()->findAnimation(animName.data())->getDuration());
 }
-void PlayerRenderData::VisualFx::StartAnim(std::string_view animName, neko::Vec2f position, neko::Vec2<float> scale, float angle)
+void PlayerRenderData::VisualFx::Start(neko::Vec2f position, neko::Vec2<float> scale, float angle)
 {
 	drawable->skeleton->setToSetupPose();
-	drawable->animationState->setAnimation(0, animName.data(), false);
+	drawable->animationState->setAnimation(0, animName_.data(), false);
 	const auto screenPos = GetGraphicsPosition(position);
 	drawable->skeleton->setPosition((float)screenPos.x, (float)screenPos.y);
 	drawable->skeleton->setScaleX(scale.x);
