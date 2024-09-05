@@ -59,6 +59,7 @@ struct PlayerCharacter
 	static constexpr neko::Vec2f WataOffsetPos{{}, neko::Scalar{ 0.5f }};
 	static constexpr neko::Scalar FallingForce{ 5.0f };
 	static constexpr neko::Scalar FallingThreshold{ -0.5f };
+	static constexpr neko::Scalar decreaseFactor{-0.625f};
 
 	//Respawn
 	Timer<> respawnPauseTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 0.5f }};
@@ -92,11 +93,10 @@ struct PlayerCharacter
 	Timer<> dashPrepTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 0.5f }};
 	Timer<> dashedTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 0.5f }};
 	Timer<> wasDownRecoverTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 1.0f }};
-
+	Timer<> recoilTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 0.2f }};
+	neko::Vec2f recoilDirection{};
 	Timer<> collidedTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 0.25f }};
 	int collidedPlayer = -1;
-
-
 	int footCount = 0;
 
 	[[nodiscard]] bool IsRespawning() const
@@ -134,7 +134,7 @@ struct PlayerCharacter
 	}
 
 
-	bool IsDashed() const
+	[[nodiscard]] bool IsDashed() const
 	{
 		return !dashedTimer.Over();
 	}

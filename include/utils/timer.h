@@ -27,7 +27,7 @@ public:
     {
         if (newPeriod < time_)
         {
-            time_ = -1.0f;
+            time_ = T{-1.0f};
         }
         period_ = newPeriod;
     }

@@ -57,6 +57,7 @@ struct PlayerRenderData
 	VisualFx ejectFx{};
 	VisualFx landingFx{};
 	VisualFx dashEndFx{};
+	VisualFx stompStarFx{};
 	std::array<VisualFx, 20> jetpackFx{};
 
 	static constexpr int trailLength = 22;
@@ -73,12 +74,13 @@ struct PlayerRenderData
 	PlayerRenderState state = PlayerRenderState::IDLE;
 	Timer<float> cloudEndRespawnTimer{-1.0f, 0.367f};
 	Timer<float> jetpackTimer{-1.0f, 0.05f};
+	neko::Vec2<float> targetDir{0.0f,-1.0f};
 	bool faceRight = true;
 	bool isRespawning = true;
 	bool wasShooting = false;
+	bool wasDashed = false;
 
 	static constexpr auto invincibleFlashPeriod = 0.125f;
-	neko::Vec2<float> targetDir{0.0f,-1.0f};
 };
 struct PlayerSoundData
 {

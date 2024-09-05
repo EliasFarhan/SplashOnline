@@ -165,7 +165,7 @@ void BulletView::Draw()
 				SDL_Vertex v{};
 				v.position = { p1.x, p1.y };
 				v.color = playerColors[bullet.playerNumber];
-				v.color.a /= j+1;
+				v.color.a /= (Uint8)(j+1);
 				bulletVertices.push_back(v);
 				v.position = { p2.x, p2.y };
 				bulletVertices.push_back(v);

@@ -95,6 +95,13 @@ void PlayerView::Update([[maybe_unused]]float dt)
 					playerRenderData.faceRight = !playerRenderData.faceRight;
 				}
 			}
+			const bool isDashed = playerCharacter.IsDashed();
+			if(isDashed && !playerRenderData.wasDashed)
+			{
+				playerRenderData.stompStarFx.Start(body.position, GetGraphicsScale(), 0.0f);
+				FmodPlaySound(GetPlayerSoundEvent(PlayerSoundId::STOMPIMPACT));
+			}
+			playerRenderData.wasDashed = isDashed;
 			if(playerCharacter.IsRespawning())
 			{
 				auto ejectPosition = body.position;
@@ -433,6 +440,7 @@ void PlayerView::Draw()
 		playerRenderDatas_[i].ejectFx.Draw();
 		playerRenderDatas_[i].landingFx.Draw();
 		playerRenderDatas_[i].dashEndFx.Draw();
+		playerRenderDatas_[i].stompStarFx.Draw();
 		for(auto& jetpackFx : playerRenderDatas_[i].jetpackFx)
 		{
 			jetpackFx.Draw();
@@ -635,6 +643,8 @@ void PlayerView::SwitchToState(PlayerRenderState state, int playerNumber)
 		))
 	{
 		playerRenderData.landingFx.Start(body.position, GetGraphicsScale() * 0.5f, 0.0f);
+		FmodPlaySound(GetPlayerSoundEvent(
+			previousState == PlayerRenderState::DASH ? PlayerSoundId::DASHLAND : PlayerSoundId::LAND));
 	}
 }
 void PlayerView::Load()
@@ -681,6 +691,7 @@ void PlayerView::Load()
 		playerRenderDatas_[i].ejectFx.Create(SpineManager::EJECT, "eject");
 		playerRenderDatas_[i].landingFx.Create(SpineManager::LANDING, "land");
 		playerRenderDatas_[i].dashEndFx.Create(SpineManager::DASH, "dashend");
+		playerRenderDatas_[i].stompStarFx.Create(SpineManager::IMPACT2, "impact2");
 		for(std::size_t j = 0; j < playerRenderDatas_[i].jetpackFx.size(); j++)
 		{
 			bool value = j%2==0;
@@ -727,6 +738,7 @@ void PlayerView::UpdateTransforms(float dt)
 		playerRenderData.ejectFx.Update(dt);
 		playerRenderData.landingFx.Update(dt);
 		playerRenderData.dashEndFx.Update(dt);
+		playerRenderData.stompStarFx.Update(dt);
 		for(auto& jetPackFx: playerRenderData.jetpackFx)
 		{
 			jetPackFx.Update(dt);
@@ -784,7 +796,7 @@ void PlayerView::UpdateTransforms(float dt)
 		{
 			playerRenderData.dashFxDrawable->skeleton->setScaleX(2.0f * 0.3f * GetGraphicsScale());
 			playerRenderData.dashFxDrawable->skeleton->setScaleY(2.0f * 0.3f * GetGraphicsScale());
-			playerRenderData.dashFxDrawable->skeleton->setPosition(position.x, position.y);
+			playerRenderData.dashFxDrawable->skeleton->setPosition((float)position.x, (float)position.y);
 			playerRenderData.dashFxDrawable->update(dt, spine::Physics_Update);
 		}
 

@@ -121,6 +121,12 @@ void PlayerManager::Tick()
 			playerPhysic.AddForce((dashedVel-body.velocity)/fixedDeltaTime/body.inverseMass, PlayerCharacter::DashedPriority);
 		}
 
+		if(!playerCharacter.recoilTimer.Over())
+		{
+			playerCharacter.recoilTimer.Update(fixedDeltaTime);
+			const auto forceCoeff = PlayerCharacter::decreaseFactor*playerCharacter.recoilTimer.CurrentRatio()+neko::Scalar{1};
+			playerPhysic.AddForce(PlayerCharacter::AttackForce*forceCoeff*playerCharacter.recoilDirection, 1);
+		}
 
 		if(!playerCharacter.respawnStaticTime.Over())
 		{
@@ -469,7 +475,7 @@ void PlayerManager::Tick()
 				}
 
 				neko::Scalar waterForce = PlayerCharacter::WaterForce;
-				const auto forceCoefficient = neko::Scalar{-0.625f}*playerCharacter.hitTimer.CurrentTime()/PlayerCharacter::HitEffectPeriod+neko::Scalar{1};
+				const auto forceCoefficient = PlayerCharacter::decreaseFactor*playerCharacter.hitTimer.CurrentTime()/PlayerCharacter::HitEffectPeriod+neko::Scalar{1};
 				neko::Vec2f newForce = playerCharacter.hitDirection * waterForce * (neko::Scalar)playerCharacter.resistancePhase * forceCoefficient;
 				playerPhysic.AddForce(newForce, PlayerCharacter::HitPriority);
 			}
@@ -593,40 +599,37 @@ void PlayerManager::OnTriggerEnter(neko::ColliderIndex playerIndex, int playerNu
 	if(otherUserData->type == ColliderType::PLAYER)
 	{
 		const auto otherPlayerNumber = otherUserData->playerNumber;
-		if(playerIndex == playerPhysics_[playerNumber].headColliderIndex)
+		if(playerIndex == playerPhysics_[playerNumber].headColliderIndex && otherCollider.colliderIndex == playerPhysics_[otherPlayerNumber].footColliderIndex && playerCharacters_[otherPlayerNumber].IsDashing())
 		{
-			if(otherCollider.colliderIndex == playerPhysics_[otherPlayerNumber].footColliderIndex && playerCharacters_[otherPlayerNumber].IsDashing())
+			//LogDebug(fmt::format("Dashed player {} on player {}", playerNumber+1, otherPlayerNumber+1));
+			//Dashed collision
+			playerCharacters_[playerNumber].dashedTimer.Reset();
+			playerCharacters_[playerNumber].collidedPlayer = otherUserData->playerNumber;
+			if(!playerCharacters_[playerNumber].IsGrounded())
 			{
-				//Dashed collision
-				playerCharacters_[playerNumber].dashedTimer.Reset();
-				playerCharacters_[playerNumber].collidedPlayer = otherUserData->playerNumber;
 				const auto dashedVel = neko::Vec2f(otherBody.velocity.x, PlayerCharacter::DashedSpeed);
-				playerPhysics_[playerNumber].AddForce((dashedVel-body.velocity)/body.inverseMass/fixedDeltaTime, PlayerCharacter::DashedPriority);
-
+				playerPhysics_[playerNumber].AddForce((dashedVel - body.velocity) / body.inverseMass / fixedDeltaTime,
+					PlayerCharacter::DashedPriority);
 			}
-		}
-		//dashing on someone head
-		if(playerIndex == playerPhysics_[playerNumber].footColliderIndex && playerCharacters_[playerNumber].IsDashing())
-		{
-			if(otherCollider.colliderIndex == playerPhysics_[otherPlayerNumber].headColliderIndex)
+			//LogDebug(fmt::format("Dashing player {} on player {}", otherPlayerNumber+1, playerNumber+1));
+			if(!playerCharacters_[otherPlayerNumber].slowDashTimer.Over())
 			{
-				if(!playerCharacters_[playerNumber].slowDashTimer.Over())
-				{
-					playerCharacters_[playerNumber].slowDashTimer.Stop();
-					playerCharacters_[playerNumber].bounceDashTimer.Reset();
-				}
-				if(playerCharacters_[otherPlayerNumber].IsGrounded())
-				{
-					//Stop dash
-					StopDash(playerNumber, DashFinishType::BOUNCE);
-				}
-				else
-				{
-					const auto wantedVel = neko::Vec2f{body.velocity.x, {}};
-					playerPhysics_[playerNumber].AddForce((wantedVel-body.velocity)/fixedDeltaTime/body.inverseMass, 2);
-					//todo recoil timer?
-				}
+				playerCharacters_[otherPlayerNumber].slowDashTimer.Stop();
+				playerCharacters_[otherPlayerNumber].bounceDashTimer.Reset();
 			}
+			if(playerCharacters_[playerNumber].IsGrounded())
+			{
+				//Stop dash
+				StopDash(otherPlayerNumber, DashFinishType::BOUNCE);
+			}
+			else
+			{
+				const auto wantedVel = neko::Vec2f{otherBody.velocity.x, {}};
+				playerPhysics_[otherPlayerNumber].AddForce((wantedVel-otherBody.velocity)/fixedDeltaTime/otherBody.inverseMass, 2);
+				playerCharacters_[otherPlayerNumber].recoilDirection = -otherBody.velocity.Normalized();
+				playerCharacters_[otherPlayerNumber].recoilTimer.Reset();
+			}
+
 		}
 		//Simple side collision
 		if(playerIndex == playerPhysics_[playerNumber].rightColliderIndex || playerIndex == playerPhysics_[playerNumber].leftColliderIndex)
