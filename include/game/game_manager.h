@@ -29,6 +29,7 @@ public:
 	void Tick();
 	[[nodiscard]] int GetSystemIndex() const override;
 	void SetSystemIndex(int index) override;
+	neko::Vec2i GetPlayerScreenPos() const;
 private:
 	void RollbackUpdate();
 	GameSystems gameSystems_;
@@ -44,5 +45,7 @@ private:
 
 	bool isGameOver_ = false;
 };
+
+neko::Vec2i GetPlayerScreenPos();
 }
 #endif //SPLASHONLINE_GAME_GAME_MANAGER_H_

@@ -243,4 +243,9 @@ neko::Vec2i GraphicsManager::GetGraphicsPosition(neko::Vec2f position) const
 	return neko::Vec2i(newPosition)+offset_+actualSize_/2;
 }
 
+neko::Vec2i GetOffset()
+{
+	return instance->GetOffset();
+}
+
 }

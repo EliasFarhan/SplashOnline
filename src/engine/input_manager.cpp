@@ -3,7 +3,9 @@
 //
 
 #include "engine/input_manager.h"
+#include "graphics/graphics_manager.h"
 #include "utils/log.h"
+#include "game/game_manager.h"
 
 
 namespace splash
@@ -95,6 +97,41 @@ PlayerInput InputManager::GetPlayerInput() const
 		input.moveDirY = -neko::Fixed8{leftY};
 		input.targetDirX = neko::Fixed8{rightX};
 		input.targetDirY = -neko::Fixed8{rightY};
+	}
+	const Uint8* currentKeyStates = SDL_GetKeyboardState( NULL );
+	if( currentKeyStates[ SDL_SCANCODE_UP ] || currentKeyStates[SDL_SCANCODE_W] )
+	{
+		input.moveDirY = neko::Fixed8{1.0f};
+	}
+	if( currentKeyStates[ SDL_SCANCODE_DOWN ] || currentKeyStates[SDL_SCANCODE_S] )
+	{
+		input.moveDirY = neko::Fixed8{-1.0f};
+	}
+	if( currentKeyStates[ SDL_SCANCODE_LEFT ]  || currentKeyStates[SDL_SCANCODE_A])
+	{
+		input.moveDirX = neko::Fixed8{-1.0f};
+	}
+	if( currentKeyStates[ SDL_SCANCODE_RIGHT ]  || currentKeyStates[SDL_SCANCODE_D])
+	{
+		input.moveDirX = neko::Fixed8{1.0f};
+	}
+
+	if(currentKeyStates[SDL_SCANCODE_LSHIFT])
+	{
+		input.SetStomp(true);
+	}
+	neko::Vec2i mousePos;
+	const auto mouseButtonState = SDL_GetMouseState(&mousePos.x, &mousePos.y);
+	mousePos -= GetOffset();
+	auto targetDir = neko::Vec2<float>(mousePos-GetPlayerScreenPos());
+	if(targetDir.Length() > 1.0f)
+	{
+		targetDir = targetDir.Normalized();
+	}
+	if(mouseButtonState & SDL_BUTTON(1))
+	{
+		input.targetDirX = neko::Fixed8{targetDir.x};
+		input.targetDirY = neko::Fixed8{-targetDir.y};
 	}
 	return input;
 }

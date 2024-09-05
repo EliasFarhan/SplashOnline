@@ -27,8 +27,11 @@ public:
 namespace splash
 {
 
+static GameManager* instance = nullptr;
 void GameManager::Begin()
 {
+
+	instance = this;
 	gameSystems_.Begin();
 	gameRenderer_.Begin();
 	rollbackManager_.Begin();
@@ -116,6 +119,7 @@ void GameManager::End()
 	RemoveSystem(this);
 	gameSystems_.End();
 	gameRenderer_.End();
+	instance = nullptr;
 }
 void GameManager::Tick()
 {
@@ -324,4 +328,26 @@ void GameManager::RollbackUpdate()
 		rollbackManager_.SetDirty(false);
 	}
 }
+
+neko::Vec2i GetPlayerScreenPos()
+{
+	if(instance == nullptr)
+	{
+		return {};
+	}
+	return instance->GetPlayerScreenPos();
+}
+
+neko::Vec2i GameManager::GetPlayerScreenPos() const
+{
+	int playerIndex = 0;
+	auto* netClient = GetNetworkClient();
+	if(netClient != nullptr)
+	{
+		playerIndex = netClient->GetPlayerIndex()-1;
+	}
+	const auto bodyIndex = gameSystems_.GetPlayerManager().GetPlayerPhysics()[playerIndex].bodyIndex;
+	return GetGraphicsPosition(gameSystems_.GetPhysicsWorld().body(bodyIndex).position);
+}
+
 }

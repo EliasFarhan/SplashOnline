@@ -54,7 +54,7 @@ public:
 	[[nodiscard]] neko::Vec2i GetGraphicsPosition(neko::Vec2f vec2) const;
 
 	[[nodiscard]] neko::Vec2i GetActualGameSize() const { return actualSize_;}
-
+	[[nodiscard]] neko::Vec2i GetOffset() const { return offset_;}
 private:
 	void ReloadDrawingSize();
 
@@ -77,6 +77,7 @@ SDL_Rect GetDrawingRect(neko::Vec2f position, neko::Vec2f size);
 float GetGraphicsScale();
 neko::Vec2i GetGraphicsPosition(neko::Vec2f position);
 neko::Vec2i GetActualGameSize();
+neko::Vec2i GetOffset();
 }
 
 #endif //SPLASHONLINE_GRAPHICS_MANAGER_H_
