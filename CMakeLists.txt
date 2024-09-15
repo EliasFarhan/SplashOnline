@@ -8,6 +8,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 #set(CMAKE_CXX_CLANG_TIDY clang-tidy --checks=-*,cppcoreguidelines-*)
 
 option(ENABLE_PROFILER "Enable Tracy Profiling" OFF)
+option(BUILD_SHARED_LIBS "Build the library as a shared library" OFF)
 
 #NekoLib
 set(NEKOLIB_DIR externals/NekoLib)
@@ -21,8 +22,13 @@ add_subdirectory(${NEKOPHYS_DIR})
 #SDL
 set(SDL_DIR externals/SDL)
 add_subdirectory(${SDL_DIR})
-set_target_properties (uninstall SDL2 SDL2_test SDL2main SDL2-static sdl_headers_copy PROPERTIES FOLDER Externals)
+#set_target_properties (uninstall SDL2 SDL2_test SDL2main SDL2-static sdl_headers_copy PROPERTIES FOLDER Externals)
 include_directories(${SDL_DIR}/include ${SDL_DIR}/src)
+
+#SDL ttf
+set(SDL_TTF_DIR externals/SDL_ttf)
+add_subdirectory(${SDL_TTF_DIR})
+include_directories(${SDL_TTF_DIR})
 
 #imgui
 set(IMGUI_DIR externals/imgui)
@@ -55,7 +61,7 @@ endif (ENABLE_PROFILER)
 file(GLOB_RECURSE GAME_FILES src/*.cpp include/*.h)
 
 add_library(SplashLib ${GAME_FILES})
-target_link_libraries(SplashLib PUBLIC SDL2-static SDL2main imgui spine_sdl NekoCore NekoPhysics)
+target_link_libraries(SplashLib PUBLIC SDL2-static SDL2_ttf SDL2main imgui spine_sdl NekoCore NekoPhysics)
 if(ENABLE_PROFILER)
     target_compile_definitions(SplashLib PUBLIC TRACY_ENABLE=1)
     target_link_libraries(SplashLib PUBLIC TracyClient)
