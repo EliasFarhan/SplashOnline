@@ -1,7 +1,3 @@
-//
-// Created by unite on 09.07.2024.
-//
-
 #ifndef SPLASHONLINE_GAME_SYSTEMS_H
 #define SPLASHONLINE_GAME_SYSTEMS_H
 
@@ -16,7 +12,9 @@
 namespace splash
 {
 
-
+/**
+ * \brief GameSystems is the internal game state that needs to run a deterministic simulation
+ */
 class GameSystems : public neko::ContactListener, public RollbackInterface<GameSystems, 2>
 {
 public:

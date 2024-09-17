@@ -6,6 +6,8 @@ This project is working on x64 and ARM64. It was tested on:
 - Ubuntu 22.04.4 LTS (WSL and native)
 - MacOSX x64 Old MacBook Air (Mid 2013 13-inch) with Big Dur
 - Nintendo Switch (if you want access to this repo Switch port, contact me with your Nintendo dev account id) 
+# License
+The source code in include/ src/ main/ is MIT.
 # Assets copyright
 All visual and audio assets are property of Team KwaKwa. You are not allowed to use them/copy them outside of this project!
 # Libraries used
@@ -17,3 +19,7 @@ All visual and audio assets are property of Team KwaKwa. You are not allowed to 
 - [fmt](https://github.com/fmtlib/fmt) (open source license [here](https://github.com/fmtlib/fmt/blob/master/LICENSE))~~~~
 - [tracy](https://github.com/wolfpld/tracy) (3-clause BSD license)
 - [spine](https://fr.esotericsoftware.com/spine-in-depth) (Proprietary license)
+# Improvements 
+- Debugging tools to debug desync between Nintendo Switch and Windows
+- More tests
+- Better documentation

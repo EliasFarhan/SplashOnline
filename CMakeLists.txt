@@ -27,6 +27,7 @@ include_directories(${SDL_DIR}/include ${SDL_DIR}/src)
 
 #SDL ttf
 set(SDL_TTF_DIR externals/SDL_ttf)
+set(SDL2TTF_VENDORED ON  CACHE INTERNAL "Use vendor")
 add_subdirectory(${SDL_TTF_DIR})
 include_directories(${SDL_TTF_DIR})
 

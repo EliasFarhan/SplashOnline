@@ -12,11 +12,10 @@
 namespace splash
 {
 
-GameSystems::GameSystems(): playerManager_(this), bulletManager_(this), physicsManager_({{}, neko::Scalar{-9.81f}}),
-							level_(&physicsManager_)
+GameSystems::GameSystems(): playerManager_(this), bulletManager_(this), level_(&physicsManager_),
+							physicsManager_({{}, neko::Scalar{-9.81f}})
 {
 	physicsManager_.SetBSH(&quadTree_);
-	//physicsManager_.SetBSH(&dumbBsh_);
 	physicsManager_.SetContactListener(this);
 }
 

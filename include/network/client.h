@@ -7,7 +7,7 @@
 
 #include "engine/system.h"
 #include "graphics/gui_renderer.h"
-#include "packet.h"
+#include "network/packet.h"
 
 #include <neko/network_manager.h>
 #include <container/span.h>

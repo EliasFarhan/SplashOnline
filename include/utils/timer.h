@@ -8,7 +8,7 @@
 #include <math/const.h>
 
 
-template<typename T=neko::Scalar, int Period={}, int Dividend=1000>
+template<typename T=neko::Scalar, int Period=0, int Dividend=1000>
 class Timer
 {
 public:
