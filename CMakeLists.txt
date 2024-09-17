@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.16)
 project(SplashOnline)
 
-set (CMAKE_CXX_STANDARD 17)
+set (CMAKE_CXX_STANDARD 20)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -173,3 +173,12 @@ foreach (MAIN_FILE ${MAIN_FILES})
     add_executable(${MAIN_NAME} ${MAIN_FILE})
     target_link_libraries(${MAIN_NAME} PUBLIC SplashLib)
 endforeach ()
+
+#catch2
+set(CATCH_PATH "externals/Catch2")
+add_subdirectory(${CATCH_PATH})
+
+
+file(GLOB TEST_FILES test/*.cpp)
+add_executable(SplashTest ${TEST_FILES})
+target_link_libraries(SplashTest PUBLIC SplashLib Catch2WithMain)

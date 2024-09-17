@@ -51,7 +51,7 @@ private:
 	std::unique_ptr<NetworkClient> client_{};
 	std::unique_ptr<GameManager> gameManager_{};
 
-	Timer<float> logoTimer_{-1.0f, 2.0f};
+	Timer<float, 2.0f> logoTimer_{-1.0f};
 
 	std::unique_ptr<spine::SkeletonDrawable> logo_ = nullptr;
 	SDL_Texture* bg_ = nullptr;

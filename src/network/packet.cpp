@@ -53,7 +53,7 @@ void InputSerializer::deserialize(const nByte* pData, short length)
 	const auto packetInputSize = *reinterpret_cast<const int*>(pData+sizeof(int));
 	if(inputSize != packetInputSize)
 	{
-		LogError(fmt::format("Input size is not the same: {} vs {}"));
+		LogError(fmt::format("Input size is not the same: {} vs {}", inputSize, packetInputSize));
 		return;
 	}
 	inputPacket_.frame = *reinterpret_cast<const int*>(pData);

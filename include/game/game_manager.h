@@ -35,8 +35,8 @@ private:
 	GameSystems gameSystems_;
 	GameView gameRenderer_;
 	RollbackManager rollbackManager_;
-	Timer<float> introDelayTimer_;
-	Timer<> gameTimer_;
+	RunTimeTimer<float> introDelayTimer_;
+	RunTimeTimer<neko::Scalar> gameTimer_;
 	float currentTime_ = 0.0f;
 	int currentFrame_ = -1;
 	int systemIndex_ = -1;

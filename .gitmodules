@@ -23,3 +23,6 @@
 [submodule "externals/SDL_ttf"]
 	path = externals/SDL_ttf
 	url = https://github.com/libsdl-org/SDL_ttf.git
+[submodule "externals/Catch2"]
+	path = externals/Catch2
+	url = https://github.com/catchorg/Catch2.git

@@ -67,7 +67,7 @@ public:
 		splash::RemoveDrawInterface(this);
 	}
 
-	void Update(float dt) override
+	void Update([[maybe_unused]] float dt) override
 	{
 
 	}

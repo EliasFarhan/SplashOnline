@@ -46,7 +46,7 @@ struct PlayerRenderData
 		void Draw();
 		[[nodiscard]]bool IsActive() const { return !animationTimer.Over();}
 	private:
-		Timer<float> animationTimer{-1.0f, 0.0f};
+		RunTimeTimer<float> animationTimer{-1.0f, 0.0f};
 		std::unique_ptr<spine::SkeletonDrawable> drawable{};
 		std::string animName_;
 		float angle_ = 0.0f;
@@ -72,8 +72,8 @@ struct PlayerRenderData
 	SDL_Texture* outIconArrow = nullptr;
 
 	PlayerRenderState state = PlayerRenderState::IDLE;
-	Timer<float> cloudEndRespawnTimer{-1.0f, 0.367f};
-	Timer<float> jetpackTimer{-1.0f, 0.05f};
+	Timer<float, 0.367f> cloudEndRespawnTimer{-1.0f};
+	Timer<float, 0.05f> jetpackTimer{-1.0f};
 	neko::Vec2<float> targetDir{0.0f,-1.0f};
 	bool faceRight = true;
 	bool isRespawning = true;

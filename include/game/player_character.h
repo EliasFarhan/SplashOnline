@@ -62,40 +62,40 @@ struct PlayerCharacter
 	static constexpr neko::Scalar decreaseFactor{-0.625f};
 
 	//Respawn
-	Timer<> respawnPauseTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 0.5f }};
-	Timer<> respawnMoveTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 1.0f }};
-	Timer<> respawnStaticTime{ neko::Scalar{ 2.0f }, neko::Scalar{ 2.0f }};
-	Timer<> invincibleTimer{ neko::Scalar{ -1 }, neko::Scalar{ 2.0f }};
+	Timer<neko::Scalar, 0.5f> respawnPauseTimer{ neko::Scalar{ -1.0f }};
+	Timer<neko::Scalar, 1.0f> respawnMoveTimer{ neko::Scalar{ -1.0f }};
+	Timer<neko::Scalar, 2.0f> respawnStaticTime{ neko::Scalar{ 2.0f }};
+	Timer<neko::Scalar, 2.0f> invincibleTimer{ neko::Scalar{ -1 }};
 	int fallCount = 0;
 	int killCount = 0;
 
 	//Wata Hit
-	Timer<> hitTimer{ neko::Scalar{ -1 }, neko::Scalar{ 1.5f }};
+	Timer<neko::Scalar, 1.5f> hitTimer{ neko::Scalar{ -1 }};
 	neko::Vec2f hitDirection{};
 	int resistancePhase = 1; //Used for the resistance to wata bullet
 	int hitPlayer = -1;
 
 	//Wata shoot
-	Timer<> reserveWaterTimer{ neko::Scalar{ 4.0f }, neko::Scalar{ 4.0f }};
+	Timer<neko::Scalar, 4.0f> reserveWaterTimer{ neko::Scalar{ 4.0f }};
 	int firstShots = FirstShotsCount;
-	Timer<> waterTimer{ neko::Scalar{ 0.3f }, neko::Scalar{ 0.2f }};
-	Timer<> reloadTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 1.033f }};
+	Timer<neko::Scalar, 0.2f> waterTimer{ neko::Scalar{ 0.3f }};
+	Timer<neko::Scalar, 1.033f> reloadTimer{ neko::Scalar{ -1.0f }};
 
-	Timer<> jetBurstCoolDownTimer{ neko::Scalar{ 1 }, neko::Scalar{ 0.1f }};
-	Timer<> jumpTimer{ neko::Scalar{ -1 }, neko::Scalar{ 1.0f }};
-	Timer<> preJetBurstTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 0.5f }};
+	Timer<neko::Scalar, 0.1f> jetBurstCoolDownTimer{ neko::Scalar{ 1 }};
+	Timer<neko::Scalar, 1.0f> jumpTimer{ neko::Scalar{ -1 }};
+	Timer<neko::Scalar, 0.5f> preJetBurstTimer{ neko::Scalar{ -1.0f }};
 
 	//Dash
-	Timer<> dashDownTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 0.15f }};
-	Timer<> stopDashTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 0.15f }};
-	Timer<> slowDashTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 0.3f }};
-	Timer<> bounceDashTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 0.15f }};
-	Timer<> dashPrepTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 0.5f }};
-	Timer<> dashedTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 0.5f }};
-	Timer<> wasDownRecoverTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 1.0f }};
-	Timer<> recoilTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 0.2f }};
+	Timer<neko::Scalar,0.15f> dashDownTimer{ neko::Scalar{ -1.0f }};
+	Timer<neko::Scalar,0.15f> stopDashTimer{ neko::Scalar{ -1.0f }};
+	Timer<neko::Scalar,0.3f> slowDashTimer{ neko::Scalar{ -1.0f }};
+	Timer<neko::Scalar,0.15f> bounceDashTimer{ neko::Scalar{ -1.0f }};
+	Timer<neko::Scalar,0.5f> dashPrepTimer{ neko::Scalar{ -1.0f }};
+	Timer<neko::Scalar,0.5f> dashedTimer{ neko::Scalar{ -1.0f }};
+	Timer<neko::Scalar,1.0f> wasDownRecoverTimer{ neko::Scalar{ -1.0f }};
+	Timer<neko::Scalar,0.2f> recoilTimer{ neko::Scalar{ -1.0f }};
 	neko::Vec2f recoilDirection{};
-	Timer<> collidedTimer{ neko::Scalar{ -1.0f }, neko::Scalar{ 0.25f }};
+	Timer<neko::Scalar, 0.25f> collidedTimer{ neko::Scalar{ -1.0f }};
 	int collidedPlayer = -1;
 	int footCount = 0;
 
