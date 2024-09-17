@@ -24,7 +24,7 @@ private:
 	std::array<int, MaxPlayerNmb> playerScores_{};
 	std::array<int, MaxPlayerNmb> playerRanks_{};
 	std::array<SDL_Texture*, MaxPlayerNmb> playerHeads_{};
-	Timer<float, 1.0f> transitionTimer_{-1.0f};
+	Timer<float, 1000> transitionTimer_{-1.0f};
 	int playerCount_ = 0;
 };
 

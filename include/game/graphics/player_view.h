@@ -72,8 +72,8 @@ struct PlayerRenderData
 	SDL_Texture* outIconArrow = nullptr;
 
 	PlayerRenderState state = PlayerRenderState::IDLE;
-	Timer<float, 0.367f> cloudEndRespawnTimer{-1.0f};
-	Timer<float, 0.05f> jetpackTimer{-1.0f};
+	Timer<float, 367> cloudEndRespawnTimer{-1.0f};
+	Timer<float, 50> jetpackTimer{-1.0f};
 	neko::Vec2<float> targetDir{0.0f,-1.0f};
 	bool faceRight = true;
 	bool isRespawning = true;

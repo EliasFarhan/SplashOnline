@@ -49,9 +49,9 @@ SCENARIO("Rollback can receive an InputPacket")
 				inputs[i] = neko::Fixed8{-0.8f+0.25f*(float)i};
 				inputPacket.inputs[i] = {inputs[i]};
 			}
-			inputPacket.inputSize = inputs.size();
+			inputPacket.inputSize = (int)inputs.size();
 			inputPacket.playerNumber = 0;
-			inputPacket.frame = inputs.size()-1;
+			inputPacket.frame = (int)inputs.size()-1;
 
 			rollbackManager.SetInputs(inputPacket);
 
@@ -59,7 +59,7 @@ SCENARIO("Rollback can receive an InputPacket")
 			{
 				for(std::size_t i = 0; i < inputs.size(); i++)
 				{
-					REQUIRE(inputs[i] == rollbackManager.GetInput(0, i).moveDirX);
+					REQUIRE(inputs[i] == rollbackManager.GetInput(0, (int)i).moveDirX);
 				}
 			}
 		}

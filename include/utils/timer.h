@@ -8,11 +8,11 @@
 #include <math/const.h>
 
 
-template<typename T=neko::Scalar, float Period={}>
+template<typename T=neko::Scalar, int Period={}, int Dividend=1000>
 class Timer
 {
 public:
-	static constexpr T period{Period};
+	static constexpr T period{(float)Period/(float)Dividend};
 	constexpr explicit Timer(T time): time_(time){}
 
 	constexpr void Update(T deltaTime) noexcept
