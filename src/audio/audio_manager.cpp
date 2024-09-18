@@ -36,7 +36,7 @@ void AudioManager::Begin()
 #endif
 	  if(system_->initialize(1024, FMOD_STUDIO_INIT_NORMAL, FMOD_INIT_NORMAL, nullptr))
 	  {
-		  std::terminate();
+		  return;
 	  }
 #ifdef TRACY_ENABLE
 	  TracyCZoneEnd(systemInit);

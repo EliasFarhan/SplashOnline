@@ -7,6 +7,8 @@
 
 #include "engine/window.h"
 
+#include <container/vector.h>
+
 #include <SDL.h>
 #include <vector>
 
@@ -50,6 +52,7 @@ private:
 	std::vector<OnGuiInterface*> guiInterfaces_;
 	DebugConfig debugConfig_{};
 	int eventListenerIndex_ = -1;
+	neko::SmallVector<float, 20> deltaTimes_{};
 
 };
 

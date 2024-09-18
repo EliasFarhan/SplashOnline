@@ -461,7 +461,7 @@ void PlayerView::Draw()
 				for (int j = 0; j < positionsCount; j++)
 				{
 					neko::Vec2i delta;
-					if (j == playerRenderDatas_[i].dashPositions.size() - 1)
+					if (j == (int)playerRenderDatas_[i].dashPositions.size() - 1)
 					{
 						delta = dashScreenPos[j] - dashScreenPos[j - 1];
 					}

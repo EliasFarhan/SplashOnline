@@ -12,6 +12,7 @@
 #include <imgui_impl_sdl2.h>
 
 #include <algorithm>
+#include <numeric>
 
 
 namespace splash
@@ -93,6 +94,14 @@ void GuiRenderer::Update()
 
 	ImGui::Begin("Splash Online");
 	ImGui::Text("FPS %f", 1.0f/GetDeltaTime());
+	if(deltaTimes_.is_full())
+	{
+		deltaTimes_.erase(deltaTimes_.begin());
+	}
+	deltaTimes_.push_back(GetDeltaTime());
+	ImGui::Text("Avg FPS %f", 1.0f/(std::accumulate(deltaTimes_.begin(), deltaTimes_.end(), 0.0f)/(float)deltaTimes_.size()));
+
+	ImGui::PlotLines("FPS", deltaTimes_.data(), (int)deltaTimes_.size());
 	const auto playerInput = GetPlayerInput();
 	ImGui::Text("Input: Move(%1.2f, %1.2f), Target(%1.2f, %1.2f)",
 		(float)playerInput.moveDirX,

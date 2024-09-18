@@ -89,7 +89,7 @@ void BulletView::Update(float dt)
 			{
 				if(bulletRenderData.previousPositions[0] != body.position)
 				{
-					if(bulletRenderData.previousPositions.size() == bulletRenderData.previousPositions.capacity())
+					if(bulletRenderData.previousPositions.is_full())
 					{
 						bulletRenderData.previousPositions.erase(bulletRenderData.previousPositions.cend()-1);
 					}
