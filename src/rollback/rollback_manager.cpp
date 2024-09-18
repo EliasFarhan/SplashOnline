@@ -122,7 +122,7 @@ void RollbackManager::SetInputs(const InputPacket& packet)
 			continue;
 		}
 		const auto newInput = packet.inputs[i];
-		if(GetInput(playerNumber, tmpFrame) != newInput)
+		if(!inputs_.empty() && GetInput(playerNumber, tmpFrame) != newInput)
 		{
 			isDirty_ = true;
 		}

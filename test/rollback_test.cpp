@@ -65,3 +65,34 @@ SCENARIO("Rollback can receive an InputPacket")
 		}
 	}
 }
+
+SCENARIO("Rollback gives a confirm value when confirming")
+{
+	GIVEN("A rollback system with inputs")
+	{
+		splash::GameData gameData{{ true, true, false, false }};
+		splash::RollbackManager rollbackManager{ gameData };
+		static constexpr auto frameCount = 5;
+		for(int i = 0; i < frameCount; i++)
+		{
+			rollbackManager.SetInput(0, {neko::Fixed8{-0.8f+0.25f*(float)i}}, (int)i);
+			rollbackManager.SetInput(1, {neko::Fixed8{0.8f-0.25f*(float)i}}, (int)i);
+		}
+		REQUIRE(rollbackManager.GetLastReceivedFrame() == frameCount-1);
+		REQUIRE(rollbackManager.GetLastConfirmFrame() == -1);
+
+		rollbackManager.Begin();
+		WHEN("Confirming the frames")
+		{
+			int confirmFrameCount = 0;
+			while(rollbackManager.GetLastReceivedFrame() > rollbackManager.GetLastConfirmFrame())
+			{
+				const auto checksum = rollbackManager.ConfirmLastFrame();
+				confirmFrameCount++;
+			}
+			REQUIRE(confirmFrameCount == frameCount);
+			REQUIRE(rollbackManager.GetLastConfirmFrame() == frameCount-1);
+		}
+
+	}
+}
