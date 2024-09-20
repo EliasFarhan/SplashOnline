@@ -144,7 +144,7 @@ void BulletManager::SpawnWata(
 	bulletBody.velocity = targetDir * speedFactor * Bullet::WataSpeed;
 }
 
-Checksum<1> BulletManager::CalculateChecksum() const
+Checksum<(int)BulletChecksumIndex::LENGTH> BulletManager::CalculateChecksum() const
 {
 	std::uint32_t bulletResult = 0;
 	std::uint32_t bulletBodyResult = 0;
@@ -176,11 +176,11 @@ Checksum<1> BulletManager::CalculateChecksum() const
 		{
 			if(i*sizeof(std::uint32_t) == offsetof(neko::Collider, type))
 			{
-				bulletBodyResult += (std::uint32_t)body.type;
-				bulletBodyResult += body.isActive;
+				bulletColliderResult += (std::uint32_t)body.type;
+				bulletColliderResult += body.isActive;
 				break;
 			}
-			bulletBodyResult += colliderPtr[i];
+			bulletColliderResult  += colliderPtr[i];
 		}
 	}
 	return {bulletResult, bulletBodyResult, bulletColliderResult};

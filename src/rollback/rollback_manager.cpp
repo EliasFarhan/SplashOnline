@@ -10,7 +10,7 @@
 namespace splash
 {
 static RollbackManager* instance = nullptr;
-Checksum<2> RollbackManager::ConfirmLastFrame()
+Checksum<(int)BulletChecksumIndex::LENGTH+(int)PlayerChecksumIndex::LENGTH> RollbackManager::ConfirmLastFrame()
 {
 	const auto inputs = GetInputs(neko::Max(lastConfirmFrame_, 0));
 	confirmFrameGameSystems_.SetPlayerInput(inputs);

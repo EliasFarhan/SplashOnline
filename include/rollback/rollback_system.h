@@ -5,6 +5,8 @@
 #ifndef SPLASHONLINE_ROLLBACK_SYSTEM_H
 #define SPLASHONLINE_ROLLBACK_SYSTEM_H
 
+#include <container/vector.h>
+
 #include <cstdint>
 #include <initializer_list>
 #include <numeric>
@@ -15,10 +17,11 @@ namespace splash
 template<int argCount>
 struct Checksum
 {
-	Checksum(std::initializer_list<std::uint32_t> list ){
+	Checksum(std::initializer_list<std::uint32_t> list )
+	{
 		for(std::size_t i = 0; i < list.size(); i++)
 		{
-			data_[i] = data(list)[i];
+			data_.push_back(data(list)[i]);
 		}
 	}
 	bool operator==(const Checksum& other) const
@@ -36,10 +39,19 @@ struct Checksum
 
 	[[nodiscard]] explicit operator std::uint32_t() const
 	{
-		return std::accumulate(data_.begin(), data_.end(), 0);
+		return std::accumulate(data_.cbegin(), data_.cend(), 0);
+	}
+
+	template<int otherArgCount>
+	void push_back(const Checksum<otherArgCount>& otherChecksum )
+	{
+		for(int i = 0; i < otherArgCount; i++)
+		{
+			data_.push_back(otherChecksum[i]);
+		}
 	}
 private:
-	std::array<std::uint32_t, argCount> data_{};
+	neko::SmallVector<std::uint32_t, argCount> data_{};
 };
 
 	template<typename T, int argCount>
