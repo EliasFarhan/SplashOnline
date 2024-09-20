@@ -146,27 +146,44 @@ void BulletManager::SpawnWata(
 
 Checksum<1> BulletManager::CalculateChecksum() const
 {
-	std::uint32_t result = 0;
+	std::uint32_t bulletResult = 0;
+	std::uint32_t bulletBodyResult = 0;
+	std::uint32_t bulletColliderResult = 0;
 	for(const auto & bullet : bullets_)
 	{
 		const auto* bulletPtr = reinterpret_cast<const std::uint32_t*>(&bullet);
 		for(std::size_t j = 0; j < sizeof(Bullet)/sizeof(std::uint32_t); j++)
 		{
-			result += bulletPtr[j];
+			bulletResult += bulletPtr[j];
 		}
 		const auto& body = gameSystems_->GetPhysicsWorld().body(bullet.bodyIndex);
-		auto* bodyPtr = reinterpret_cast<const std::uint8_t *>(&body);
+		auto* bodyPtr = reinterpret_cast<const std::uint32_t *>(&body);
 
-		for(std::size_t i = 0; i < sizeof(neko::Body); i++)
+		for(std::size_t i = 0; i < sizeof(neko::Body)/sizeof(std::uint32_t); i++)
 		{
-			result += (std::uint32_t )bodyPtr[i];
-			if(i == offsetof(neko::Body, isActive))
+			if(i*sizeof(std::uint32_t)== offsetof(neko::Body, type))
 			{
+				bulletBodyResult += (std::uint32_t)body.type;
+				bulletBodyResult += body.isActive;
 				break;
 			}
+			bulletBodyResult += (std::uint32_t )bodyPtr[i];
+
+		}
+		const auto& collider = gameSystems_->GetPhysicsWorld().collider(bullet.colliderIndex);
+		auto* colliderPtr = reinterpret_cast<const std::uint32_t*>(&collider);
+		for(std::size_t i = 0; i < sizeof(neko::Collider)/sizeof(std::uint32_t ); i++)
+		{
+			if(i*sizeof(std::uint32_t) == offsetof(neko::Collider, type))
+			{
+				bulletBodyResult += (std::uint32_t)body.type;
+				bulletBodyResult += body.isActive;
+				break;
+			}
+			bulletBodyResult += colliderPtr[i];
 		}
 	}
-	return {result};
+	return {bulletResult, bulletBodyResult, bulletColliderResult};
 }
 
 void BulletManager::RollbackFrom(const BulletManager& system)

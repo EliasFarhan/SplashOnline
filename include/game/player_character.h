@@ -143,7 +143,7 @@ struct PlayerCharacter
 
 static constexpr float playerScale = 0.3f;
 
-class PlayerPhysic
+class PlayerPhysic final
 {
 public:
 	neko::BodyIndex bodyIndex = neko::INVALID_BODY_INDEX;
@@ -213,7 +213,19 @@ private:
 };
 
 class GameSystems;
-class PlayerManager : public RollbackInterface<PlayerManager, 1>
+
+enum PlayerChecksumIndex
+{
+	PLAYER_CHARACTER,
+	PLAYER_PHYSICS,
+	PLAYER_INPUT,
+	PLAYER_PREVIOUS_INPUT,
+	PLAYER_BODIES,
+	PLAYER_COLLIDERS,
+	LENGTH
+};
+
+class PlayerManager : public RollbackInterface<PlayerManager, (int)PlayerChecksumIndex::LENGTH>
 {
 public:
 	explicit PlayerManager(GameSystems* gameSystems);
@@ -240,7 +252,7 @@ public:
 	void SetPlayerInput(neko::Span<PlayerInput> playerInputs);
 	void SetPreviousPlayerInput(neko::Span<PlayerInput> playerInputs);
 
-	Checksum<1> CalculateChecksum() const override;
+	[[nodiscard]] Checksum<(int)PlayerChecksumIndex::LENGTH> CalculateChecksum() const override;
 
 	void RollbackFrom(const PlayerManager& system) override;
 

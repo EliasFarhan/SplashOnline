@@ -28,6 +28,14 @@ struct Bullet
 };
 
 class GameSystems;
+
+enum class BulletChecksumIndex
+{
+	BULLET,
+	BODY,
+	COLLIDER
+};
+
 class BulletManager : public RollbackInterface<BulletManager, 1>
 {
 public:

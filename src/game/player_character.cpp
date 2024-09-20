@@ -705,9 +705,10 @@ void PlayerManager::Respawn(int playerNumber)
 	playerCharacter.respawnPauseTimer.Reset();
 }
 
-Checksum<1> PlayerManager::CalculateChecksum() const
+Checksum<(int)PlayerChecksumIndex::LENGTH> PlayerManager::CalculateChecksum() const
 {
-	std::uint32_t result = 0;
+	std::uint32_t playerCharacterResult = 0;
+	std::uint32_t playerPhysicsResult = 0;
 	for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
 	{
 		if(!IsValid(playerNumber))
@@ -717,20 +718,32 @@ Checksum<1> PlayerManager::CalculateChecksum() const
 		const auto* player = reinterpret_cast<const std::uint32_t*>(&playerCharacters_[playerNumber]);
 		for(std::size_t i = 0; i < sizeof(PlayerCharacter)/sizeof(std::uint32_t); i++)
 		{
-			result += player[i];
+			playerCharacterResult += player[i];
+		}
+
+		const auto* physics = reinterpret_cast<const std::uint32_t*>(&playerPhysics_[playerNumber]);
+		for(std::size_t i = 0; i < sizeof(PlayerPhysic)/sizeof(std::uint32_t); i++)
+		{
+			playerPhysicsResult += physics[i];
 		}
 	}
 
-	const auto* playerInput = reinterpret_cast<const std::uint8_t*>(playerInputs_.data());
+	std::uint32_t playerInputResult = 0;
+	const auto* playerInputPtr = reinterpret_cast<const std::uint8_t*>(playerInputs_.data());
 	for(std::size_t i = 0; i < sizeof(playerInputs_); i++)
 	{
-		result += (std::uint32_t )playerInput[i];
+		playerInputResult += (std::uint32_t )playerInputPtr[i];
 	}
-	playerInput = reinterpret_cast<const std::uint8_t*>(previousPlayerInputs_.data());
+
+	std::uint32_t previousPlayerInputResult = 0;
+	playerInputPtr = reinterpret_cast<const std::uint8_t*>(previousPlayerInputs_.data());
 	for(std::size_t i = 0; i < sizeof(previousPlayerInputs_); i++)
 	{
-		result += (std::uint32_t )playerInput[i];
+		previousPlayerInputResult += (std::uint32_t )playerInputPtr[i];
 	}
+
+	std::uint32_t playerBodyResult = 0;
+	std::uint32_t playerColliderResult = 0;
 	for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
 	{
 		if(!IsValid(playerNumber))
@@ -738,18 +751,61 @@ Checksum<1> PlayerManager::CalculateChecksum() const
 			continue;
 		}
 		const auto& body = gameSystems_->GetPhysicsWorld().body(playerPhysics_[playerNumber].bodyIndex);
-		auto* bodyPtr = reinterpret_cast<const std::uint8_t *>(&body);
+		auto* bodyPtr = reinterpret_cast<const std::uint32_t *>(&body);
 
-		for(std::size_t i = 0; i < sizeof(neko::Body); i++)
+		for(std::size_t i = 0; i < sizeof(neko::Body)/sizeof(std::uint32_t); i++)
 		{
-			result += (std::uint32_t )bodyPtr[i];
-			if(i == offsetof(neko::Body, isActive))
+			if(i*sizeof(std::uint32_t) == offsetof(neko::Body, type))
 			{
+				playerBodyResult += (std::uint32_t)body.type;
+				playerBodyResult += (std::uint32_t)body.isActive;
+				break;
+			}
+			playerBodyResult += bodyPtr[i];
+		}
+		std::array colliders = {playerPhysics_[playerNumber].colliderIndex,
+								playerPhysics_[playerNumber].headColliderIndex,
+								playerPhysics_[playerNumber].rightColliderIndex,
+								playerPhysics_[playerNumber].leftColliderIndex,
+								playerPhysics_[playerNumber].footColliderIndex};
+		for(const auto& colliderIndex : colliders)
+		{
+			const auto& collider = gameSystems_->GetPhysicsWorld().collider(colliderIndex);
+			auto* colliderPtr = reinterpret_cast<const std::uint32_t*>(&collider);
+			for(int i = 0; i < sizeof(neko::Collider)/sizeof(std::uint32_t); i++)
+			{
+				if(i*sizeof(std::uint32_t) == offsetof(neko::Collider, type))
+				{
+					playerColliderResult += (std::uint32_t)collider.type;
+					playerColliderResult += collider.isTrigger;
+					break;
+				}
+				playerColliderResult += colliderPtr[i];
+			}
+			switch(collider.type)
+			{
+			case neko::ShapeType::AABB:
+			{
+				const auto& aabb = gameSystems_->GetPhysicsWorld().aabb(collider.shapeIndex);
+				auto* aabbPtr = reinterpret_cast<const std::uint32_t*>(&aabb);
+				for(int i = 0; i < sizeof(neko::Aabbf); i++)
+				{
+					playerColliderResult += aabbPtr[i];
+				}
+				break;
+			}
+			case neko::ShapeType::CIRCLE:
+			{
+				const auto& circle = gameSystems_->GetPhysicsWorld().circle(collider.shapeIndex);
+				playerColliderResult += *reinterpret_cast<const std::uint32_t*>(&circle);
+				break;
+			}
+			default:
 				break;
 			}
 		}
 	}
-	return {result};
+	return {playerCharacterResult, playerPhysicsResult, playerInputResult, previousPlayerInputResult, playerBodyResult, playerColliderResult};
 }
 
 void PlayerManager::RollbackFrom(const PlayerManager& system)
