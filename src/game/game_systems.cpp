@@ -24,7 +24,6 @@ void GameSystems::Begin()
 	playerManager_.Begin();
 	level_.Begin();
 	bulletManager_.Begin();
-
 }
 
 void GameSystems::Tick()

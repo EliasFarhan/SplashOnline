@@ -23,6 +23,11 @@ public:
 private:
 	FMOD::Studio::EventInstance* eventInstance_ = nullptr;
 };
+
+void PlayMusic();
+void SetMusicParameter(std::string_view name, float value);
+float GetMusicVolume();
+void SetMusicVolume(float newVolume);
 }
 
 #endif //SPLASHONLINE_MUSIC_MANAGER_H

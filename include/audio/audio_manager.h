@@ -37,7 +37,6 @@ private:
 
 FMOD::Studio::EventDescription* GetEventDescription(std::string_view eventName);
 bool IsFmodLoaded();
-MusicManager& GetMusicManager();
 FMOD::Studio::EventInstance* FmodPlaySound(std::string_view eventName);
 
 }

@@ -6,6 +6,10 @@
 #include "engine/engine.h"
 #include "graphics/const.h"
 
+#ifdef ENABLE_DESYNC_DEBUG
+#include "utils/game_db.h"
+#endif
+
 namespace splash
 {
 
@@ -44,7 +48,7 @@ void SplashManager::Update(float dt)
 	{
 		logo_ = CreateSkeletonDrawable(SpineManager::KWAKWA_LOGO);
 		logo_->animationState->setAnimation(0,"kwakwa",false);
-		GetMusicManager().Play();
+		PlayMusic();
 		logoTimer_.Reset();
 		bg_ = GetTexture(TextureManager::TextureId::BG);
 		controls_ = GetTexture(TextureManager::TextureId::CONTROLS);
@@ -75,12 +79,12 @@ void SplashManager::Update(float dt)
 				if(!switchToTitle)
 				{
 					switchToTitle = true;
-					GetMusicManager().SetParameter("Transition Intro", 0.5f);
+					SetMusicParameter("Transition Intro", 0.5f);
 				}
 				else
 				{
-					GetMusicManager().SetParameter("Transition Intro", 0.0f);
-					GetMusicManager().SetParameter("Transition Title", 0.5f);
+					SetMusicParameter("Transition Intro", 0.0f);
+					SetMusicParameter("Transition Title", 0.5f);
 				}
 			}
 		}
@@ -183,9 +187,9 @@ void SplashManager::SwitchToState(SplashManager::State state)
 	case State::LOBBY:
 	{
 		state_ = State::LOBBY;
-		GetMusicManager().SetParameter("Transition Intro", 0.0f);
-		GetMusicManager().SetParameter("Transition Kittymanjaro", 0.0f);
-		GetMusicManager().SetParameter("Transition Title", 0.5f);
+		SetMusicParameter("Transition Intro", 0.0f);
+		SetMusicParameter("Transition Kittymanjaro", 0.0f);
+		SetMusicParameter("Transition Title", 0.5f);
 
 
 		if(!client_)
@@ -203,9 +207,12 @@ void SplashManager::SwitchToState(SplashManager::State state)
 		gameData.connectedPlayers = client_->GetConnectedPlayers();
 		gameManager_ = std::make_unique<GameManager>(gameData);
 		gameManager_->Begin();
-		GetMusicManager().SetParameter("Transition Title", 0.0f);
-		GetMusicManager().SetParameter("Transition Kittymanjaro", 0.5f);
-		GetMusicManager().SetParameter("Transition Start", 0.5f);
+		SetMusicParameter("Transition Title", 0.0f);
+		SetMusicParameter("Transition Kittymanjaro", 0.5f);
+		SetMusicParameter("Transition Start", 0.5f);
+#ifdef ENABLE_DESYNC_DEBUG
+		OpenDatabase(client_->GetPlayerIndex()-1);
+#endif
 		break;
 	}
 	case State::VICTORY_SCREEN:

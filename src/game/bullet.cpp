@@ -148,7 +148,6 @@ Checksum<(int)BulletChecksumIndex::LENGTH> BulletManager::CalculateChecksum() co
 {
 	std::uint32_t bulletResult = 0;
 	std::uint32_t bulletBodyResult = 0;
-	std::uint32_t bulletColliderResult = 0;
 	for(const auto & bullet : bullets_)
 	{
 		const auto* bulletPtr = reinterpret_cast<const std::uint32_t*>(&bullet);
@@ -170,20 +169,9 @@ Checksum<(int)BulletChecksumIndex::LENGTH> BulletManager::CalculateChecksum() co
 			bulletBodyResult += (std::uint32_t )bodyPtr[i];
 
 		}
-		const auto& collider = gameSystems_->GetPhysicsWorld().collider(bullet.colliderIndex);
-		auto* colliderPtr = reinterpret_cast<const std::uint32_t*>(&collider);
-		for(std::size_t i = 0; i < sizeof(neko::Collider)/sizeof(std::uint32_t ); i++)
-		{
-			if(i*sizeof(std::uint32_t) == offsetof(neko::Collider, type))
-			{
-				bulletColliderResult += (std::uint32_t)body.type;
-				bulletColliderResult += body.isActive;
-				break;
-			}
-			bulletColliderResult  += colliderPtr[i];
-		}
+
 	}
-	return {bulletResult, bulletBodyResult, bulletColliderResult};
+	return {bulletResult, bulletBodyResult};
 }
 
 void BulletManager::RollbackFrom(const BulletManager& system)

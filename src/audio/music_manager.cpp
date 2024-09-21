@@ -10,8 +10,11 @@
 namespace splash
 {
 
+static MusicManager* instance = nullptr;
+
 void MusicManager::Begin()
 {
+	instance = this;
 	FMOD::Studio::EventDescription* eventDescription = GetEventDescription("event:/Music/Music"); //"event:/Music/Music"
 
 	if(eventDescription->createInstance(&eventInstance_) != FMOD_OK)
@@ -24,6 +27,7 @@ void MusicManager::End()
 {
 	eventInstance_->stop(FMOD_STUDIO_STOP_IMMEDIATE);
 	eventInstance_->release();
+	instance = nullptr;
 }
 
 void MusicManager::Play()
@@ -57,5 +61,41 @@ void MusicManager::SetVolume(float newVolume)
 	{
 		eventInstance_->setVolume(newVolume);
 	}
+}
+
+void PlayMusic()
+{
+	if(instance == nullptr)
+	{
+		return;
+	}
+	instance->Play();
+}
+
+void SetMusicParameter(std::string_view name, float value)
+{
+	if(instance == nullptr)
+	{
+		return;
+	}
+	instance->SetParameter(name, value);
+}
+
+float GetMusicVolume()
+{
+	if(instance == nullptr)
+	{
+		return 0.0f;
+	}
+	return instance->GetVolume();
+}
+
+void SetMusicVolume(float newVolume)
+{
+	if(instance == nullptr)
+	{
+		return;
+	}
+	instance->SetVolume(newVolume);
 }
 }

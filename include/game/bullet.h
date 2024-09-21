@@ -33,7 +33,6 @@ enum class BulletChecksumIndex
 {
 	BULLET,
 	BODY,
-	COLLIDER,
 	LENGTH
 };
 

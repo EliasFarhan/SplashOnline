@@ -11,6 +11,10 @@
 
 #include <fmt/format.h>
 
+#ifdef ENABLE_DESYNC_DEBUG
+#include "utils/game_db.h"
+#endif
+
 template <> class fmt::formatter<splash::PlayerInput> {
 public:
 	constexpr auto parse (format_parse_context& ctx) { return ctx.begin(); }
@@ -30,7 +34,6 @@ namespace splash
 static GameManager* instance = nullptr;
 void GameManager::Begin()
 {
-
 	instance = this;
 	gameSystems_.Begin();
 	gameRenderer_.Begin();
@@ -116,6 +119,9 @@ void GameManager::Update(float dt)
 }
 void GameManager::End()
 {
+#ifdef ENABLE_DESYNC_DEBUG
+	CloseDatabase();
+#endif
 	RemoveSystem(this);
 	gameSystems_.End();
 	gameRenderer_.End();
@@ -280,6 +286,9 @@ void GameManager::RollbackUpdate()
 			}
 			const auto lastConfirmValue = confirmPacket.checksum;
 			const auto localConfirmValue = rollbackManager_.ConfirmLastFrame();
+#ifdef ENABLE_DESYNC_DEBUG
+			AddConfirmFrame(localConfirmValue, lastConfirmFrame);
+#endif
 			if ((std::uint32_t )localConfirmValue != lastConfirmValue)
 			{
 				LogError(fmt::format("Desync at f{} with local confirm value: player {} bullet {}", rollbackManager_
@@ -300,6 +309,9 @@ void GameManager::RollbackUpdate()
 				confirmPacket.checksum = (std::uint32_t)confirmValue;
 				confirmPacket.input = rollbackManager_.GetInputs(lastConfirmFrame);
 				//LogDebug(fmt::format("Sending confirm inputs f{} p1: {} p2: {}", lastConfirmFrame, confirmPacket.input[0], confirmPacket.input[1]));
+#ifdef ENABLE_DESYNC_DEBUG
+				AddConfirmFrame(confirmValue, lastConfirmFrame);
+#endif
 				netClient->SendConfirmFramePacket(confirmPacket);
 			}
 		}

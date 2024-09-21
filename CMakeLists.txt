@@ -9,6 +9,13 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 option(ENABLE_PROFILER "Enable Tracy Profiling" OFF)
 option(BUILD_SHARED_LIBS "Build the library as a shared library" OFF)
+option(ENABLE_DESYNC_DEBUG "Register states in sqlite3 for debug" OFF)
+
+#tracy profiler
+if(ENABLE_PROFILER)
+    set(TRACY_DIR externals/tracy)
+    add_subdirectory(${TRACY_DIR})
+endif (ENABLE_PROFILER)
 
 #NekoLib
 set(NEKOLIB_DIR externals/NekoLib)
@@ -51,18 +58,19 @@ add_compile_definitions(FMT_HEADER_ONLY=1)
 set(FMT_DIR externals/fmt)
 add_subdirectory(${FMT_DIR})
 
-
-#tracy profiler
-if(ENABLE_PROFILER)
-    set(TRACY_DIR externals/tracy)
-    add_subdirectory(${TRACY_DIR})
-endif (ENABLE_PROFILER)
-
+if(ENABLE_DESYNC_DEBUG)
+    set(SQLITE3_DIR "externals/sqlite3")
+    add_subdirectory(${SQLITE3_DIR})
+endif(ENABLE_DESYNC_DEBUG)
 
 file(GLOB_RECURSE GAME_FILES src/*.cpp include/*.h)
 
 add_library(SplashLib ${GAME_FILES})
 target_link_libraries(SplashLib PUBLIC SDL2-static SDL2_ttf SDL2main imgui spine_sdl NekoCore NekoPhysics)
+if(ENABLE_DESYNC_DEBUG)
+    target_link_libraries(SplashLib PUBLIC sqlite3)
+    target_compile_definitions(SplashLib PUBLIC ENABLE_DESYNC_DEBUG)
+endif(ENABLE_DESYNC_DEBUG)
 if(ENABLE_PROFILER)
     target_compile_definitions(SplashLib PUBLIC TRACY_ENABLE=1)
     target_link_libraries(SplashLib PUBLIC TracyClient)
@@ -75,7 +83,7 @@ link_directories(${FMOD_DIR}/lowlevel/lib ${FMOD_DIR}/studio/lib)
 
 if(MSVC)
     target_link_libraries(SplashLib PUBLIC fmodstudio64_vc.lib)
-    target_compile_options(SplashLib PUBLIC "/utf-8" "/W4")
+    target_compile_options(SplashLib PUBLIC "/utf-8" "/W4" "/permissive-")
     file(COPY ${FMOD_DIR}/studio/lib/fmodstudio64.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
     file(COPY ${FMOD_DIR}/lowlevel/lib/fmod64.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 elseif(APPLE)

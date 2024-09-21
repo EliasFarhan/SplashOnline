@@ -743,7 +743,6 @@ Checksum<(int)PlayerChecksumIndex::LENGTH> PlayerManager::CalculateChecksum() co
 	}
 
 	std::uint32_t playerBodyResult = 0;
-	std::uint32_t playerColliderResult = 0;
 	for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
 	{
 		if(!IsValid(playerNumber))
@@ -763,49 +762,8 @@ Checksum<(int)PlayerChecksumIndex::LENGTH> PlayerManager::CalculateChecksum() co
 			}
 			playerBodyResult += bodyPtr[i];
 		}
-		std::array colliders = {playerPhysics_[playerNumber].colliderIndex,
-								playerPhysics_[playerNumber].headColliderIndex,
-								playerPhysics_[playerNumber].rightColliderIndex,
-								playerPhysics_[playerNumber].leftColliderIndex,
-								playerPhysics_[playerNumber].footColliderIndex};
-		for(const auto& colliderIndex : colliders)
-		{
-			const auto& collider = gameSystems_->GetPhysicsWorld().collider(colliderIndex);
-			auto* colliderPtr = reinterpret_cast<const std::uint32_t*>(&collider);
-			for(int i = 0; i < sizeof(neko::Collider)/sizeof(std::uint32_t); i++)
-			{
-				if(i*sizeof(std::uint32_t) == offsetof(neko::Collider, type))
-				{
-					playerColliderResult += (std::uint32_t)collider.type;
-					playerColliderResult += collider.isTrigger;
-					break;
-				}
-				playerColliderResult += colliderPtr[i];
-			}
-			switch(collider.type)
-			{
-			case neko::ShapeType::AABB:
-			{
-				const auto& aabb = gameSystems_->GetPhysicsWorld().aabb(collider.shapeIndex);
-				auto* aabbPtr = reinterpret_cast<const std::uint32_t*>(&aabb);
-				for(int i = 0; i < sizeof(neko::Aabbf); i++)
-				{
-					playerColliderResult += aabbPtr[i];
-				}
-				break;
-			}
-			case neko::ShapeType::CIRCLE:
-			{
-				const auto& circle = gameSystems_->GetPhysicsWorld().circle(collider.shapeIndex);
-				playerColliderResult += *reinterpret_cast<const std::uint32_t*>(&circle);
-				break;
-			}
-			default:
-				break;
-			}
-		}
 	}
-	return {playerCharacterResult, playerPhysicsResult, playerInputResult, previousPlayerInputResult, playerBodyResult, playerColliderResult};
+	return {playerCharacterResult, playerPhysicsResult, playerInputResult, previousPlayerInputResult, playerBodyResult};
 }
 
 void PlayerManager::RollbackFrom(const PlayerManager& system)
