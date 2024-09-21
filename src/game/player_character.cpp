@@ -362,6 +362,11 @@ void PlayerManager::Tick()
 				neko::Vec2f vel{moveX*PlayerCharacter::DashSpeed, -PlayerCharacter::DashSpeed};
 				playerPhysic.AddForce((vel-body.velocity)/fixedDeltaTime/body.inverseMass, PlayerCharacter::DashPriority);
 
+				if(playerCharacter.dashPositions.is_full())
+				{
+					playerCharacter.dashPositions.erase(playerCharacter.dashPositions.cend()-1);
+				}
+				playerCharacter.dashPositions.insert(playerCharacter.dashPositions.cbegin(), body.position);
 			}
 			else if(playerCharacter.IsDashPrepping() &&
 				!playerCharacter.IsDashing() &&
@@ -374,6 +379,8 @@ void PlayerManager::Tick()
 					//Start stomping
 					playerCharacter.dashDownTimer.Reset();
 					playerCharacter.dashPrepTimer.Stop();
+					playerCharacter.dashPositions.clear();
+
 				}
 				else
 				{

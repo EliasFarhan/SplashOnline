@@ -45,6 +45,10 @@ void GameManager::Update(float dt)
 	{
 		return;
 	}
+	if(isGameOver_ && hasDesync_)
+	{
+		return;
+	}
 
 	if(!introDelayTimer_.Over())
 	{
@@ -155,6 +159,9 @@ void GameManager::Tick()
 
 	auto* netClient = GetNetworkClient();
 	PlayerInput localPlayerInput = GetPlayerInput();
+#ifdef ENABLE_DESYNC_DEBUG
+	AddLocalInput(currentFrame_, localPlayerInput);
+#endif
 	if(netClient == nullptr)
 	{
 		playerInputs_[0] = localPlayerInput;
@@ -195,7 +202,7 @@ void GameManager::Tick()
 		if(localPlayerInput != inputs.first[inputs.second-1])
 		{
 			LogError(fmt::format("WTF! Local input: {} Rollback Input: {}", localPlayerInput, inputs.first[inputs.second-1]));
-			std::terminate();
+			this->ExitGame();
 		}
 		inputPacket.inputs = inputs.first;
 		inputPacket.inputSize = inputs.second;
@@ -257,7 +264,8 @@ void GameManager::RollbackUpdate()
 				LogError(fmt::format("Not the same Confirm Frame: server {} local {}",
 					lastConfirmFrame,
 					rollbackManager_.GetLastConfirmFrame() + 1));
-				std::terminate();
+				ExitGame();
+				return;
 			}
 			if (lastConfirmFrame > rollbackManager_.GetLastReceivedFrame())
 			{
@@ -360,6 +368,13 @@ neko::Vec2i GameManager::GetPlayerScreenPos() const
 	}
 	const auto bodyIndex = gameSystems_.GetPlayerManager().GetPlayerPhysics()[playerIndex].bodyIndex;
 	return GetGraphicsPosition(gameSystems_.GetPhysicsWorld().body(bodyIndex).position);
+}
+
+void GameManager::ExitGame()
+{
+	isGameOver_ = true;
+	hasDesync_ = true;
+	LogError(fmt::format("Desync happened, please send splash_p{}.db to the developers", GetNetworkClient()->GetPlayerIndex()-1));
 }
 
 }

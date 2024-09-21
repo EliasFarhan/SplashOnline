@@ -44,11 +44,22 @@ void BulletManager::Tick()
 		if(!bullet.timeToLiveTimer.Over())
 		{
 			bullet.timeToLiveTimer.Update(fixedDeltaTime);
+			auto& body = physicsWorld.body(bullet.bodyIndex);
 			if(bullet.timeToLiveTimer.Over())
 			{
-				auto& body = physicsWorld.body(bullet.bodyIndex);
 				body.isActive = false;
 				bullet.destroyedTimer.Reset();
+			}
+			else
+			{
+				if(bullet.previousPositions[0] != body.position)
+				{
+					if(bullet.previousPositions.is_full())
+					{
+						bullet.previousPositions.erase(bullet.previousPositions.cend()-1);
+					}
+					bullet.previousPositions.insert(bullet.previousPositions.cbegin(), body.position);
+				}
 			}
 		}
 		if(!bullet.destroyedTimer.Over())
@@ -137,11 +148,13 @@ void BulletManager::SpawnWata(
 	newBullet->playerNumber = playerNumber;
 	newBullet->colliderUserData.playerNumber = playerNumber;
 	newBullet->timeToLiveTimer.Reset();
+	newBullet->previousPositions.clear();
 	auto& bulletBody = gameSystems_->GetPhysicsWorld().body(newBullet->bodyIndex);
 	bulletBody.isActive = true;
 	bulletBody.type = straight ? neko::BodyType::KINEMATIC : neko::BodyType::DYNAMIC;
 	bulletBody.position = position;
 	bulletBody.velocity = targetDir * speedFactor * Bullet::WataSpeed;
+	newBullet->previousPositions.insert(newBullet->previousPositions.cbegin(), bulletBody.position);
 }
 
 Checksum<(int)BulletChecksumIndex::LENGTH> BulletManager::CalculateChecksum() const

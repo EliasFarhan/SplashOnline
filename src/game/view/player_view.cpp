@@ -357,10 +357,6 @@ void PlayerView::Update([[maybe_unused]]float dt)
 				{
 					SwitchToState(PlayerRenderState::FALL, playerNumber);
 				}
-				else
-				{
-					playerRenderData.dashPositions.insert(playerRenderData.dashPositions.cbegin(), body.position);
-				}
 				break;
 			}
 			case PlayerRenderState::BOUNCE:
@@ -449,19 +445,20 @@ void PlayerView::Draw()
 		//draw dash trail
 		if(playerRenderDatas_[i].state == PlayerRenderState::DASH)
 		{
-			if(playerRenderDatas_[i].dashPositions.size() > 1)
+			const auto& playerCharacter = playerManager.GetPlayerCharacter()[i];
+			if(playerCharacter.dashPositions.size() > 1)
 			{
-				int positionsCount = (int)playerRenderDatas_[i].dashPositions.size();
+				int positionsCount = (int)playerCharacter.dashPositions.size();
 				std::array<neko::Vec2i, 10> dashScreenPos{};
 				for (int j = 0; j < positionsCount; j++)
 				{
-					dashScreenPos[j] = GetGraphicsPosition(playerRenderDatas_[i].dashPositions[j]);
+					dashScreenPos[j] = GetGraphicsPosition(playerCharacter.dashPositions[j]);
 				}
-				neko::SmallVector<SDL_Vertex, PlayerRenderData::trailLength*2> dashVertexPos{};
+				neko::SmallVector<SDL_Vertex, PlayerCharacter::trailLength*2> dashVertexPos{};
 				for (int j = 0; j < positionsCount; j++)
 				{
 					neko::Vec2i delta;
-					if (j == (int)playerRenderDatas_[i].dashPositions.size() - 1)
+					if (j == (int)playerCharacter.dashPositions.size() - 1)
 					{
 						delta = dashScreenPos[j] - dashScreenPos[j - 1];
 					}
@@ -481,7 +478,7 @@ void PlayerView::Draw()
 					v.position = { p2.x, p2.y };
 					dashVertexPos.push_back(v);
 				}
-				neko::SmallVector<int, (PlayerRenderData::trailLength-1)*6> indices{};
+				neko::SmallVector<int, (PlayerCharacter::trailLength-1)*6> indices{};
 				for(int j = 0; j < positionsCount-1; j++)
 				{
 					indices.push_back(j*2);
@@ -622,11 +619,6 @@ void PlayerView::SwitchToState(PlayerRenderState state, int playerNumber)
 		playerRenderData.jetBurstFx.Start(
 			body.position,
 			neko::Vec2<float>(playerScale * GetGraphicsScale()));
-		break;
-	}
-	case PlayerRenderState::DASH:
-	{
-		playerRenderData.dashPositions.clear();
 		break;
 	}
 	default:

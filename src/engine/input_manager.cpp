@@ -12,7 +12,11 @@ namespace splash
 {
 void InputManager::Begin()
 {
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
 	AddEventListener(this);
+	SDL_GameControllerAddMappingsFromFile("data/config/gamecontrollerdb.txt");
 	controller_ = FindGameController();
 	if(controller_ == nullptr)
 	{

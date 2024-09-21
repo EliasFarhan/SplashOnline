@@ -60,8 +60,8 @@ void BulletView::Update(float dt)
 				}
 				bulletRenderData.state = BulletRenderData::BulletRenderState::WATA;
 				bulletRenderData.drawable->animationState->setAnimation(0, "water_fly", true);
-				bulletRenderData.previousPositions.clear();
-				bulletRenderData.previousPositions.insert(bulletRenderData.previousPositions.cbegin(), body.position);
+
+
 				break;
 			}
 			if(bullet.playerNumber != -1 && !body.isActive && !bullet.destroyedTimer.Over())
@@ -84,18 +84,6 @@ void BulletView::Update(float dt)
 				FmodPlaySound(GetPlayerSoundEvent(PlayerSoundId::IMPACT1));
 				bulletRenderData.state = BulletRenderData::BulletRenderState::DESTROYED;
 				bulletRenderData.drawable->animationState->setAnimation(0, "water_destroy", false);
-			}
-			else
-			{
-				if(bulletRenderData.previousPositions[0] != body.position)
-				{
-					if(bulletRenderData.previousPositions.is_full())
-					{
-						bulletRenderData.previousPositions.erase(bulletRenderData.previousPositions.cend()-1);
-					}
-					bulletRenderData.previousPositions.insert(bulletRenderData.previousPositions.cbegin(), body.position);
-				}
-
 			}
 
 
@@ -138,19 +126,19 @@ void BulletView::Draw()
 		}
 
 
-		if(bulletRenderData.previousPositions.size() > 1 && bulletRenderData.state == BulletRenderData::BulletRenderState::WATA)
+		if(bullet.previousPositions.size() > 1 && bulletRenderData.state == BulletRenderData::BulletRenderState::WATA)
 		{
-			int positionsCount = (int)bulletRenderData.previousPositions.size();
+			int positionsCount = (int)bullet.previousPositions.size();
 			std::array<neko::Vec2i, 10> bulletScreenPos{};
 			for (int j = 0; j < positionsCount; j++)
 			{
-				bulletScreenPos[j] = GetGraphicsPosition(bulletRenderData.previousPositions[j]);
+				bulletScreenPos[j] = GetGraphicsPosition(bullet.previousPositions[j]);
 			}
 			neko::SmallVector<SDL_Vertex, 20> bulletVertices{};
 			for (int j = 0; j < positionsCount; j++)
 			{
 				neko::Vec2i delta;
-				if (j == bulletRenderData.previousPositions.size() - 1)
+				if (j == bullet.previousPositions.size() - 1)
 				{
 					delta = bulletScreenPos[j] - bulletScreenPos[j - 1];
 				}

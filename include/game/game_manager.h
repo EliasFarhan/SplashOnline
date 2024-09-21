@@ -29,7 +29,8 @@ public:
 	void Tick();
 	[[nodiscard]] int GetSystemIndex() const override;
 	void SetSystemIndex(int index) override;
-	neko::Vec2i GetPlayerScreenPos() const;
+	[[nodiscard]] neko::Vec2i GetPlayerScreenPos() const;
+	[[nodiscard]] bool HasDesync() const {return hasDesync_;}
 private:
 	void RollbackUpdate();
 	GameSystems gameSystems_;
@@ -44,6 +45,9 @@ private:
 	std::array<PlayerInput, MaxPlayerNmb> playerInputs_;
 
 	bool isGameOver_ = false;
+	bool hasDesync_ = false;
+
+	void ExitGame();
 };
 
 neko::Vec2i GetPlayerScreenPos();

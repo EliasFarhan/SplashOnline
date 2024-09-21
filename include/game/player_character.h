@@ -86,6 +86,9 @@ struct PlayerCharacter
 	Timer<neko::Scalar, 500> preJetBurstTimer{ neko::Scalar{ -1.0f }};
 
 	//Dash
+
+	static constexpr int trailLength = 22;
+	neko::SmallVector<neko::Vec2f, trailLength> dashPositions{};
 	Timer<neko::Scalar,150> dashDownTimer{ neko::Scalar{ -1.0f }};
 	Timer<neko::Scalar,150> stopDashTimer{ neko::Scalar{ -1.0f }};
 	Timer<neko::Scalar,300> slowDashTimer{ neko::Scalar{ -1.0f }};

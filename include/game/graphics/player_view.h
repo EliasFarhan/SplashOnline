@@ -60,8 +60,6 @@ struct PlayerRenderData
 	VisualFx stompStarFx{};
 	std::array<VisualFx, 20> jetpackFx{};
 
-	static constexpr int trailLength = 22;
-	neko::SmallVector<neko::Vec2f, trailLength> dashPositions{};
 
 
 	spine::Bone* shoulderBone{};

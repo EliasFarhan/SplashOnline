@@ -20,6 +20,7 @@ struct Bullet
 	Timer<neko::Scalar, 200> destroyedTimer{neko::Scalar{-1}};
 	Timer<neko::Scalar, 3000> timeToLiveTimer{neko::Scalar{3.0f}};
 	ColliderUserData colliderUserData{};
+	neko::SmallVector<neko::Vec2f, 5> previousPositions{};
 	int playerNumber = -1;
 
 	static constexpr neko::Scalar Radius{ 0.2f};

@@ -25,7 +25,6 @@ struct BulletRenderData
 	std::unique_ptr<spine::SkeletonDrawable> drawable{};
 	BulletRenderState state = BulletRenderState::NONE;
 
-	neko::SmallVector<neko::Vec2f, 5> previousPositions{};
 };
 class BulletView
 {
