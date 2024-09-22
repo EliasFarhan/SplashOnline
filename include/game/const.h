@@ -24,7 +24,7 @@ enum class Character
 	LENGTH
 };
 
-static constexpr int MaxPlayerNmb = (int)Character::LENGTH;
+static constexpr auto MaxPlayerNmb = static_cast<int>(Character::LENGTH);
 
 struct Box
 {

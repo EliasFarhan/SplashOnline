@@ -18,7 +18,7 @@ void Engine::Run()
 	networkQueue_ = jobSystem_.SetupNewQueue(1);
 
 	Begin();
-	double freq = (double)SDL_GetPerformanceFrequency();
+	double freq = static_cast<double>(SDL_GetPerformanceFrequency());
 	Uint64 previous = SDL_GetPerformanceCounter();
 	while (window_.IsOpen())
 	{
@@ -26,10 +26,10 @@ void Engine::Run()
 		ZoneNamedN(engineLoop, "Engine Loop", true);
 #endif
 		current_ = SDL_GetPerformanceCounter();
-		auto delta =  (double)(current_ - previous);
+		auto delta =  static_cast<double>(current_ - previous);
 		previous = current_;
 
-		dt_ = (float)(delta/freq);
+		dt_ = static_cast<float>(delta/freq);
 		window_.Update();
 
 		graphicsManager_.Update(dt_);
@@ -108,11 +108,11 @@ void Engine::AddSystem(SystemInterface* system)
 	if(it != systems_.end())
 	{
 		*it = system;
-		system->SetSystemIndex((int)std::distance(systems_.begin(), it));
+		system->SetSystemIndex(static_cast<int>(std::distance(systems_.begin(), it)));
 	}
 	else
 	{
-		system->SetSystemIndex((int)systems_.size());
+		system->SetSystemIndex(static_cast<int>(systems_.size()));
 		systems_.push_back(system);
 	}
 }

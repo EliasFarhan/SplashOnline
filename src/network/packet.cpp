@@ -49,7 +49,7 @@ void InputSerializer::duplicate(ExitGames::Common::CustomTypeBase* pRetVal) cons
 }
 void InputSerializer::deserialize(const nByte* pData, short length)
 {
-	const auto inputSize = (int)((length - 2*sizeof(int))/sizeof(PlayerInput));
+	const auto inputSize = static_cast<int>((length - 2*sizeof(int))/sizeof(PlayerInput));
 	const auto packetInputSize = *reinterpret_cast<const int*>(pData+sizeof(int));
 	if(inputSize != packetInputSize)
 	{
@@ -71,7 +71,7 @@ short InputSerializer::serialize(nByte* pRetVal) const
 		*reinterpret_cast<int*>(pRetVal+2*sizeof(int)) = inputPacket_.playerNumber;
 		std::memcpy(pRetVal+3*sizeof(int), inputPacket_.inputs.data(), inputPacket_.inputSize*sizeof(PlayerInput));
 	}
-	return (short)(inputPacket_.inputSize*sizeof(PlayerInput)+3*sizeof(int));
+	return static_cast<short>(inputPacket_.inputSize*sizeof(PlayerInput)+3*sizeof(int));
 }
 ExitGames::Common::JString& InputSerializer::toString(ExitGames::Common::JString& retStr, [[maybe_unused]]bool withTypes) const
 {

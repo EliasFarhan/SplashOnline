@@ -23,7 +23,7 @@ namespace splash
 
 static SpineManager* instance = nullptr;
 
-static constexpr std::array<std::string_view, (int)SpineManager::AtlasId::LENGTH> atlasPaths
+static constexpr std::array<std::string_view, static_cast<int>(SpineManager::AtlasId::LENGTH)> atlasPaths
 {{
 	"data/spine/kwakwalogo/SBPkwakwa_ver4_2.atlas",
 	"data/spine/announcer/SBPannouncers_ver4_2.atlas",
@@ -34,7 +34,7 @@ static constexpr std::array<std::string_view, (int)SpineManager::AtlasId::LENGTH
 	"data/spine/cloud/SBPCloud_ver_4_2.atlas",
 	"data/spine/FX/SBPfx_ver4_2.atlas",
 }};
-static constexpr std::array<std::string_view, (int)SpineManager::SkeletonId::LENGTH> skeletonPaths
+static constexpr std::array<std::string_view, static_cast<int>(SpineManager::SkeletonId::LENGTH)> skeletonPaths
 	{{
 		 "data/spine/kwakwalogo/SBP_kwakwalogo.skel",
 		 "data/spine/announcer/FX_announcers.skel",
@@ -74,7 +74,7 @@ static constexpr std::array<std::string_view, (int)SpineManager::SkeletonId::LEN
 void SpineManager::load([[maybe_unused]] spine::AtlasPage& page, [[maybe_unused]] const spine::String& path)
 {
 	static int i = 0;
-	auto* texture = GetTexture((TextureManager::TextureId)((int)TextureManager::TextureId::KWAKWA_LOGO+i));
+	auto* texture = GetTexture(static_cast<TextureManager::TextureId>(static_cast<int>(TextureManager::TextureId::KWAKWA_LOGO)+i));
 	page.texture = texture;
 	SDL_QueryTexture(texture, nullptr, nullptr, &page.width, &page.height);
 	switch (page.magFilter) {
@@ -103,14 +103,14 @@ void SpineManager::UpdateLoad()
 	{
 		return;
 	}
-	auto freq = (double)SDL_GetPerformanceFrequency();
+	auto freq = static_cast<double>(SDL_GetPerformanceFrequency());
 	auto current = SDL_GetPerformanceCounter();
-	auto delta =  (double)(current - GetCurrentFrameTime());
-	if( (float)(delta/freq) > 0.01f)
+	auto delta =  static_cast<double>(current - GetCurrentFrameTime());
+	if( static_cast<float>(delta/freq) > 0.01f)
 	{
 		return;
 	}
-	for(int i = 0; i < (int)AtlasId::LENGTH; i++)
+	for(int i = 0; i < static_cast<int>(AtlasId::LENGTH); i++)
 	{
 #ifdef TRACY_ENABLE
 		ZoneNamedN(loadingAtlas, "Loading Atlas", true);
@@ -125,15 +125,15 @@ void SpineManager::UpdateLoad()
 		attachmentLoaders_[i] = std::make_unique<spine::AtlasAttachmentLoader>(atlases_[i].get());
 
 		current = SDL_GetPerformanceCounter();
-		delta =  (double)(current - GetCurrentFrameTime());
+		delta =  static_cast<double>(current - GetCurrentFrameTime());
 
-		if( (float)(delta/freq) > 0.01f)
+		if( static_cast<float>(delta/freq) > 0.01f)
 		{
 			return;
 		}
 	}
 	int j = 0;
-	for(int i = 0; i < (int) SkeletonId::LENGTH; i++)
+	for(int i = 0; i < static_cast<int>(SkeletonId::LENGTH); i++)
 	{
 		if(atlases_[j] == nullptr)
 		{
@@ -141,17 +141,17 @@ void SpineManager::UpdateLoad()
 		}
 		if(skeletonJsons_[i] != nullptr || skeletonData_[i] != nullptr)
 		{
-			switch((SkeletonId)i)
+			switch(static_cast<SkeletonId>(i))
 			{
-			case CAT_NOARM:
-			case LUCHA_NOARM:
-			case OWL_NOARM:
-			case CAT_ARM:
-			case LUCHA_ARM:
-			case OWL_ARM:
+			case SkeletonId::CAT_NOARM:
+			case SkeletonId::LUCHA_NOARM:
+			case SkeletonId::OWL_NOARM:
+			case SkeletonId::CAT_ARM:
+			case SkeletonId::LUCHA_ARM:
+			case SkeletonId::OWL_ARM:
 				continue;
 			default:
-				if(j < (int)AtlasId::LENGTH-1)
+				if(j < static_cast<int>(AtlasId::LENGTH)-1)
 				{
 					j++;
 				}
@@ -180,26 +180,26 @@ void SpineManager::UpdateLoad()
 			LogError(fmt::format("Could not load skeleton data: {}", skeletonPaths[i]));
 		}
 
-		switch((SkeletonId)i)
+		switch(static_cast<SkeletonId>(i))
 		{
-		case CAT_NOARM:
-		case LUCHA_NOARM:
-		case OWL_NOARM:
-		case CAT_ARM:
-		case LUCHA_ARM:
-		case OWL_ARM:
+		case SkeletonId::CAT_NOARM:
+		case SkeletonId::LUCHA_NOARM:
+		case SkeletonId::OWL_NOARM:
+		case SkeletonId::CAT_ARM:
+		case SkeletonId::LUCHA_ARM:
+		case SkeletonId::OWL_ARM:
 			break;
 		default:
-			if(j < (int)AtlasId::LENGTH-1)
+			if(j < static_cast<int>(AtlasId::LENGTH)-1)
 			{
 				j++;
 			}
 			break;
 		}
 		current = SDL_GetPerformanceCounter();
-		delta =  (double)(current - GetCurrentFrameTime());
+		delta =  static_cast<double>(current - GetCurrentFrameTime());
 
-		if( (float)(delta/freq) > 0.01f)
+		if( static_cast<float>(delta/freq) > 0.01f)
 		{
 			break;
 		}
@@ -226,19 +226,19 @@ void SpineManager::End()
 }
 bool SpineManager::IsLoaded()
 {
-	return atlases_[(int)AtlasId::LENGTH-1] != nullptr && skeletonData_[(int)SkeletonId::LENGTH-1] != nullptr;
+	return atlases_[static_cast<int>(AtlasId::LENGTH)-1] != nullptr && skeletonData_[static_cast<int>(SkeletonId::LENGTH)-1] != nullptr;
 }
 std::unique_ptr<spine::SkeletonDrawable> SpineManager::CreateSkeletonDrawable(SpineManager::SkeletonId skeletonId)
 {
 #ifdef TRACY_ENABLE
 	ZoneScoped;
 #endif
-	if(skeletonData_[(int)skeletonId] == nullptr)
+	if(skeletonData_[static_cast<int>(skeletonId)] == nullptr)
 	{
-		LogError(fmt::format("Could not load spine skeleton drawable: {}", (int)skeletonId));
+		LogError(fmt::format("Could not load spine skeleton drawable: {}", static_cast<int>(skeletonId)));
 		return nullptr;
 	}
-	return std::make_unique<spine::SkeletonDrawable>(skeletonData_[(int)skeletonId]);
+	return std::make_unique<spine::SkeletonDrawable>(skeletonData_[static_cast<int>(skeletonId)]);
 }
 SpineManager::SpineManager()
 {

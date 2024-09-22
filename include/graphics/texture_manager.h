@@ -79,12 +79,12 @@ public:
 		LENGTH
 	};
 
-	[[nodiscard]] SDL_Texture* GetTexture(TextureId textureId) const noexcept{ return textures_[(int)textureId]; }
-	neko::Vec2i GetTextureSize(TextureId id) const;
+	[[nodiscard]] SDL_Texture* GetTexture(TextureId textureId) const noexcept{ return textures_[static_cast<std::size_t>(textureId)]; }
+	[[nodiscard]] neko::Vec2i GetTextureSize(TextureId id) const;
 private:
 	SDL_Renderer* renderer_ = nullptr;
-	std::array<SDL_Texture*, (int)TextureId::LENGTH> textures_{};
-	std::array<neko::Vec2i, (int)TextureId::LENGTH> texturesSizes_{};
+	std::array<SDL_Texture*, static_cast<int>(TextureId::LENGTH)> textures_{};
+	std::array<neko::Vec2i, static_cast<int>(TextureId::LENGTH)> texturesSizes_{};
 };
 
 [[nodiscard]] SDL_Texture* GetTexture(TextureManager::TextureId textureId);

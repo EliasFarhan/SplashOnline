@@ -70,7 +70,7 @@ void NetworkClient::customEventAction(int playerNr, nByte eventCode, const ExitG
 {
 	(void) playerNr;
 	(void) eventContent;
-	switch((PacketType)eventCode)
+	switch(static_cast<PacketType>(eventCode))
 	{
 
 	case PacketType::START_GAME:
@@ -240,7 +240,7 @@ void NetworkClient::OnGui()
 					auto& room = client.getCurrentlyJoinedRoom();
 					room.setIsOpen(false);
 					ExitGames::LoadBalancing::RaiseEventOptions options{};
-					client.opRaiseEvent(true, (nByte)0, (nByte)PacketType::START_GAME, options);
+					client.opRaiseEvent(true, static_cast<nByte>(0), static_cast<nByte>(PacketType::START_GAME), options);
 				});
 			}
 		}
@@ -329,7 +329,7 @@ void NetworkClient::SendInputPacket(const InputPacket& inputPacket)
 	{
 		auto& client = networkManager_.GetClient();
 		ExitGames::LoadBalancing::RaiseEventOptions options{};
-		client.opRaiseEvent(false, serializer, (nByte)PacketType::INPUT, options);
+		client.opRaiseEvent(false, serializer, static_cast<nByte>(PacketType::INPUT), options);
 	});
 }
 void NetworkClient::SendConfirmFramePacket(const ConfirmFramePacket& confirmPacket)
@@ -340,7 +340,7 @@ void NetworkClient::SendConfirmFramePacket(const ConfirmFramePacket& confirmPack
 	{
 		auto& client = networkManager_.GetClient();
 		ExitGames::LoadBalancing::RaiseEventOptions options{};
-		client.opRaiseEvent(true, serializer, (nByte)PacketType::CONFIRM_FRAME, options);
+		client.opRaiseEvent(true, serializer, static_cast<nByte>(PacketType::CONFIRM_FRAME), options);
 	});
 }
 void NetworkClient::onAvailableRegions(const ExitGames::Common::JVector<ExitGames::Common::JString>& regions,

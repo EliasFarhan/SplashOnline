@@ -37,7 +37,7 @@ enum class BulletChecksumIndex
 	LENGTH
 };
 
-class BulletManager : public RollbackInterface<BulletManager, (int)BulletChecksumIndex::LENGTH>
+class BulletManager : public RollbackInterface<BulletManager, static_cast<int>(BulletChecksumIndex::LENGTH)>
 {
 public:
 	explicit BulletManager(GameSystems* gameSystems);
@@ -50,7 +50,7 @@ public:
 	void OnTriggerEnter(neko::ColliderIndex bulletIndex, const neko::Collider& otherCollider);
 
 	[[nodiscard]] const auto& GetBullets() const { return bullets_;}
-	[[nodiscard]] Checksum<(int)BulletChecksumIndex::LENGTH> CalculateChecksum() const override;
+	[[nodiscard]] Checksum<static_cast<int>(BulletChecksumIndex::LENGTH)> CalculateChecksum() const override;
 
 	void RollbackFrom(const BulletManager& system) override;
 

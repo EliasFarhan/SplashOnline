@@ -49,7 +49,8 @@ void LevelView::Draw()
 	}
 	auto* renderer = GetRenderer();
 
-	neko::Vec2f size = {(neko::Scalar )((float)gameWindowSize.x/pixelPerMeter),(neko::Scalar )((float)gameWindowSize.y/pixelPerMeter)};
+	neko::Vec2f size = {static_cast<neko::Scalar>(static_cast<float>(gameWindowSize.x)/pixelPerMeter),
+						static_cast<neko::Scalar>(static_cast<float>(gameWindowSize.y)/pixelPerMeter)};
 	const auto bgRect = GetDrawingRect({}, size);
 	SDL_RenderCopy(renderer,
 		backgroundTexture_,
@@ -66,8 +67,8 @@ void LevelView::Draw()
 	SDL_RenderCopy(renderer, bgFogTexture, nullptr, &bgFogRect);
 
 	//Mid bg
-	const neko::Vec2f midBgSize {(neko::Vec2<float>)GetTextureSize(TextureManager::TextureId::MIDBG)/pixelPerMeter};
-	const neko::Vec2f midBgPos{{}, neko::Scalar {-(float)gameWindowSize.y/pixelPerMeter/2.0f+(float)midBgSize.y/2.0f}};
+	const neko::Vec2f midBgSize {static_cast<neko::Vec2<float>>(GetTextureSize(TextureManager::TextureId::MIDBG))/pixelPerMeter};
+	const neko::Vec2f midBgPos{{}, neko::Scalar {-static_cast<float>(gameWindowSize.y)/pixelPerMeter/2.0f+static_cast<float>(midBgSize.y)/2.0f}};
 	const auto midBgRect = GetDrawingRect(midBgPos, midBgSize);
 	SDL_RenderCopy(renderer, midBgTexture_, nullptr, &midBgRect);
 
@@ -75,7 +76,7 @@ void LevelView::Draw()
 	{
 		const auto& rock = rocks_[i];
 		neko::Vec2f rockPosition = rockPositions[i];
-		rockPosition.y += neko::Scalar{rock.amplitude* std::sin(2.0f * (float)neko::pi*rock.floatingTime/rock.floatingPeriod)};
+		rockPosition.y += neko::Scalar{rock.amplitude* std::sin(2.0f * neko::Pi<float>()*rock.floatingTime/rock.floatingPeriod)};
 		neko::Vec2f rockSize{neko::Vec2<float>(rock.textureSize)/pixelPerMeter};
 		const auto rockRect = GetDrawingRect(rockPosition, rockSize);
 		SDL_RenderCopy(renderer, rock.texture, nullptr, &rockRect);
@@ -87,8 +88,8 @@ void LevelView::Draw()
 		const auto& cloud = clouds_[i];
 		auto* texture = GetTexture(clouds[i].second);
 		auto cloudPos = clouds[i].first;
-		cloudPos.x = (neko::Scalar)cloud.currentPosX;
-		const neko::Vec2f cloudSize {(neko::Vec2<float>)GetTextureSize(clouds[i].second)/pixelPerMeter};
+		cloudPos.x = static_cast<neko::Scalar>(cloud.currentPosX);
+		const neko::Vec2f cloudSize {static_cast<neko::Vec2<float>>(GetTextureSize(clouds[i].second))/pixelPerMeter};
 		const auto cloudRect = GetDrawingRect(cloudPos, cloudSize);
 		SDL_RenderCopyEx(renderer, texture, nullptr, &cloudRect, 0.0, nullptr, SDL_FLIP_HORIZONTAL);
 	}
@@ -173,18 +174,18 @@ void LevelView::LoadTextures()
 {
 	for(std::size_t i = 0; i < platformTextures_.size(); i++)
 	{
-		platformTextures_[i] = GetTexture((TextureManager::TextureId)((int)TextureManager::TextureId::PLAT1+i));
+		platformTextures_[i] = GetTexture(static_cast<TextureManager::TextureId>(static_cast<int>(TextureManager::TextureId::PLAT1)+i));
 	}
 	std::random_device rd;  // Will be used to obtain a seed for the random number engine
 	std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
-	std::uniform_real_distribution<float> dis(0.0f, (float)gameWindowSize.x);
+	std::uniform_real_distribution<float> dis(0.0f, static_cast<float>(gameWindowSize.x));
 	for(float & fogOffset : fogOffsets_)
 	{
 		fogOffset = dis(gen);
 	}
 	for(std::size_t i = 0; i < fogTextures_.size(); i++)
 	{
-		fogTextures_[i] = GetTexture((TextureManager::TextureId)((int)TextureManager::TextureId::BACKFOG+i));
+		fogTextures_[i] = GetTexture(static_cast<TextureManager::TextureId>(static_cast<int>(TextureManager::TextureId::BACKFOG)+i));
 	}
 	backgroundTexture_ = GetTexture(TextureManager::TextureId::BG);
 	midBgTexture_ = GetTexture(TextureManager::TextureId::MIDBG);
@@ -195,7 +196,7 @@ void LevelView::LoadTextures()
 	for(std::size_t i = 0; i < rocks_.size(); i++)
 	{
 		auto& rock = rocks_[i];
-		const auto textureId = (TextureManager::TextureId)((std::size_t)TextureManager::TextureId::FLOATROCK1+i);
+		const auto textureId = static_cast<TextureManager::TextureId>(static_cast<std::size_t>(TextureManager::TextureId::FLOATROCK1)+i);
 		rock.texture = GetTexture(textureId);
 		rock.textureSize = GetTextureSize(textureId);
 
@@ -208,7 +209,7 @@ void LevelView::LoadTextures()
 	for(std::size_t i = 0; i < clouds_.size(); i++)
 	{
 		auto& cloud = clouds_[i];
-		cloud.currentPosX = (float)clouds[i].first.x;
+		cloud.currentPosX = static_cast<float>(clouds[i].first.x);
 		cloud.speedX = disCloud(gen);
 	}
 }

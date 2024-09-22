@@ -21,10 +21,10 @@ public:
 	template <typename Context>
 	constexpr auto format (splash::PlayerInput const& playerInput, Context& ctx) const {
 		return format_to(ctx.out(), "({}, {})({},{})",
-			(float)playerInput.moveDirX,
-			(float)playerInput.moveDirY,
-			(float)playerInput.targetDirX,
-			(float)playerInput.targetDirY);  // --== KEY LINE ==--
+			static_cast<float>(playerInput.moveDirX),
+			static_cast<float>(playerInput.moveDirY),
+			static_cast<float>(playerInput.targetDirX),
+			static_cast<float>(playerInput.targetDirY));  // --== KEY LINE ==--
 	}
 };
 
@@ -52,14 +52,14 @@ void GameManager::Update(float dt)
 
 	if(!introDelayTimer_.Over())
 	{
-		int previousTime = (int)introDelayTimer_.RemainingTime();
+		int previousTime = static_cast<int>(introDelayTimer_.RemainingTime());
 		introDelayTimer_.Update(dt);
-		int currentTime = (int)introDelayTimer_.RemainingTime();
-		if((int)previousTime != (int)currentTime)
+		int currentTime = static_cast<int>(introDelayTimer_.RemainingTime());
+		if(previousTime != currentTime)
 		{
 			if(previousTime != 0 && previousTime <= 5)
 			{
-				auto soundEvent = GetGameSoundEvent((GameSoundId)((int)GameSoundId::VOICE5+(5-previousTime)));
+				auto soundEvent = GetGameSoundEvent(static_cast<GameSoundId>(static_cast<int>(GameSoundId::VOICE5)+(5-previousTime)));
 				FmodPlaySound(soundEvent);
 			}
 			if(previousTime == 30)
@@ -84,7 +84,7 @@ void GameManager::Update(float dt)
 	if(introDelayTimer_.Over() && !gameTimer_.Over() && !isGameOver_)
 	{
 		currentTime_ += dt;
-		constexpr auto fixedDt = (float)fixedDeltaTime;
+		constexpr auto fixedDt = static_cast<float>(fixedDeltaTime);
 		while (currentTime_ > fixedDt)
 		{
 			Tick();
@@ -133,7 +133,7 @@ void GameManager::End()
 }
 void GameManager::Tick()
 {
-	const auto gameTime = (int)gameTimer_.RemainingTime();
+	const auto gameTime = static_cast<int>(gameTimer_.RemainingTime());
 	gameTimer_.Update(fixedDeltaTime);
 	if(gameTimer_.Over())
 	{
@@ -143,7 +143,7 @@ void GameManager::Tick()
 	}
 	else
 	{
-		const auto currentGameTime = (int)gameTimer_.RemainingTime();
+		const auto currentGameTime = static_cast<int>(gameTimer_.RemainingTime());
 		if(gameTime != currentGameTime)
 		{
 			if(gameTime == 30)
@@ -152,7 +152,7 @@ void GameManager::Tick()
 			}
 			if(gameTime <= 5)
 			{
-				FmodPlaySound(GetGameSoundEvent((GameSoundId)((int)GameSoundId::VOICE5+(5-gameTime))));
+				FmodPlaySound(GetGameSoundEvent(static_cast<GameSoundId>(static_cast<int>(GameSoundId::VOICE5)+(5-gameTime))));
 			}
 		}
 	}
@@ -297,7 +297,7 @@ void GameManager::RollbackUpdate()
 #ifdef ENABLE_DESYNC_DEBUG
 			AddConfirmFrame(localConfirmValue, lastConfirmFrame);
 #endif
-			if ((std::uint32_t )localConfirmValue != lastConfirmValue)
+			if (static_cast<std::uint32_t>(localConfirmValue) != lastConfirmValue)
 			{
 				LogError(fmt::format("Desync at f{} with local confirm value: player {} bullet {}", rollbackManager_
 					.GetLastConfirmFrame(), localConfirmValue[0], localConfirmValue[1]));
@@ -314,7 +314,7 @@ void GameManager::RollbackUpdate()
 
 				ConfirmFramePacket confirmPacket{};
 				confirmPacket.frame = lastConfirmFrame;
-				confirmPacket.checksum = (std::uint32_t)confirmValue;
+				confirmPacket.checksum = static_cast<std::uint32_t>(confirmValue);
 				confirmPacket.input = rollbackManager_.GetInputs(lastConfirmFrame);
 				//LogDebug(fmt::format("Sending confirm inputs f{} p1: {} p2: {}", lastConfirmFrame, confirmPacket.input[0], confirmPacket.input[1]));
 #ifdef ENABLE_DESYNC_DEBUG

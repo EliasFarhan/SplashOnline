@@ -46,12 +46,12 @@ SCENARIO("Rollback can receive an InputPacket")
 			splash::InputPacket inputPacket{};
 			for(std::size_t i = 0; i < inputs.size(); i++)
 			{
-				inputs[i] = neko::Fixed8{-0.8f+0.25f*(float)i};
+				inputs[i] = neko::Fixed8{-0.8f+0.25f*static_cast<float>(i)};
 				inputPacket.inputs[i] = {inputs[i]};
 			}
-			inputPacket.inputSize = (int)inputs.size();
+			inputPacket.inputSize = static_cast<int>(inputs.size());
 			inputPacket.playerNumber = 0;
-			inputPacket.frame = (int)inputs.size()-1;
+			inputPacket.frame = static_cast<int>(inputs.size())-1;
 
 			rollbackManager.SetInputs(inputPacket);
 
@@ -59,7 +59,7 @@ SCENARIO("Rollback can receive an InputPacket")
 			{
 				for(std::size_t i = 0; i < inputs.size(); i++)
 				{
-					REQUIRE(inputs[i] == rollbackManager.GetInput(0, (int)i).moveDirX);
+					REQUIRE(inputs[i] == rollbackManager.GetInput(0, static_cast<int>(i)).moveDirX);
 				}
 			}
 		}
@@ -75,8 +75,8 @@ SCENARIO("Rollback gives a confirm value when confirming")
 		static constexpr auto frameCount = 5;
 		for(int i = 0; i < frameCount; i++)
 		{
-			rollbackManager.SetInput(0, {neko::Fixed8{-0.8f+0.25f*(float)i}}, (int)i);
-			rollbackManager.SetInput(1, {neko::Fixed8{0.8f-0.25f*(float)i}}, (int)i);
+			rollbackManager.SetInput(0, {neko::Fixed8{-0.8f+0.25f*static_cast<float>(i)}}, i);
+			rollbackManager.SetInput(1, {neko::Fixed8{0.8f-0.25f*static_cast<float>(i)}}, i);
 		}
 		REQUIRE(rollbackManager.GetLastReceivedFrame() == frameCount-1);
 		REQUIRE(rollbackManager.GetLastConfirmFrame() == -1);
@@ -87,7 +87,7 @@ SCENARIO("Rollback gives a confirm value when confirming")
 			int confirmFrameCount = 0;
 			while(rollbackManager.GetLastReceivedFrame() > rollbackManager.GetLastConfirmFrame())
 			{
-				const auto checksum = rollbackManager.ConfirmLastFrame();
+				[[maybe_unused]] const auto checksum = rollbackManager.ConfirmLastFrame();
 				confirmFrameCount++;
 			}
 			REQUIRE(confirmFrameCount == frameCount);

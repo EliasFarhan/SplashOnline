@@ -91,7 +91,7 @@ GameView::GameView(const GameSystems* gameSystems):
 
 void GameView::Tick()
 {
-	timeSinceTick_ -= (float)fixedDeltaTime;
+	timeSinceTick_ -= static_cast<float>(fixedDeltaTime);
 }
 
 float GameView::GetTimeSinceTick() const

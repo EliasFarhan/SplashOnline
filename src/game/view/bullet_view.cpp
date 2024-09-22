@@ -37,7 +37,7 @@ void BulletView::Update(float dt)
 	const auto& bulletManager = gameSystems_->GetBulletManager();
 	const auto& physicsWorld = gameSystems_->GetPhysicsWorld();
 
-	const auto scale = (float)Bullet::Scale * GetGraphicsScale();
+	const auto scale = static_cast<float>(Bullet::Scale) * GetGraphicsScale();
 	for(int i = 0; i < BulletManager::MaxBulletNmb; i++)
 	{
 		const auto& bullet = bulletManager.GetBullets()[i];
@@ -103,7 +103,7 @@ void BulletView::Update(float dt)
 		bulletRenderData.drawable->skeleton->setScaleX(scale);
 		bulletRenderData.drawable->skeleton->setScaleY(scale);
 		const auto position = GetGraphicsPosition(body.position);
-		bulletRenderData.drawable->skeleton->setPosition((float)position.x, (float)position.y);
+		bulletRenderData.drawable->skeleton->setPosition(static_cast<float>(position.x), static_cast<float>(position.y));
 
 		bulletRenderData.drawable->update(dt, spine::Physics_Update);
 
@@ -128,7 +128,7 @@ void BulletView::Draw()
 
 		if(bullet.previousPositions.size() > 1 && bulletRenderData.state == BulletRenderData::BulletRenderState::WATA)
 		{
-			int positionsCount = (int)bullet.previousPositions.size();
+			int positionsCount = static_cast<int>(bullet.previousPositions.size());
 			std::array<neko::Vec2i, 10> bulletScreenPos{};
 			for (int j = 0; j < positionsCount; j++)
 			{
@@ -138,7 +138,7 @@ void BulletView::Draw()
 			for (int j = 0; j < positionsCount; j++)
 			{
 				neko::Vec2i delta;
-				if (j == bullet.previousPositions.size() - 1)
+				if (j == static_cast<int>(bullet.previousPositions.size()) - 1)
 				{
 					delta = bulletScreenPos[j] - bulletScreenPos[j - 1];
 				}
@@ -148,12 +148,12 @@ void BulletView::Draw()
 				}
 				auto dir = neko::Vec2<float>{ delta.Perpendicular() }.Normalized();
 				static constexpr float width = 8.0f;
-				auto p1 = neko::Vec2<float>{ bulletScreenPos[j] } + dir * (width/(float)(j+1));
-				auto p2 = neko::Vec2<float>{ bulletScreenPos[j] } - dir * (width/(float)(j+1));
+				auto p1 = neko::Vec2<float>{ bulletScreenPos[j] } + dir * (width/static_cast<float>(j+1));
+				auto p2 = neko::Vec2<float>{ bulletScreenPos[j] } - dir * (width/static_cast<float>(j+1));
 				SDL_Vertex v{};
 				v.position = { p1.x, p1.y };
 				v.color = playerColors[bullet.playerNumber];
-				v.color.a /= (Uint8)(j+1);
+				v.color.a /= static_cast<Uint8>(j+1);
 				bulletVertices.push_back(v);
 				v.position = { p2.x, p2.y };
 				bulletVertices.push_back(v);
@@ -175,9 +175,9 @@ void BulletView::Draw()
 			SDL_RenderGeometry(renderer,
 				nullptr,
 				bulletVertices.data(),
-				(int)bulletVertices.size(),
+				static_cast<int>(bulletVertices.size()),
 				indices.data(),
-				(int)indices.size());
+				static_cast<int>(indices.size()));
 			SDL_SetRenderDrawBlendMode(renderer, blendMode);
 		}
 		bulletRenderData.drawable->draw(renderer);
@@ -201,7 +201,7 @@ void BulletView::Load()
 #endif
 	for(int i = 0; i < BulletManager::MaxBulletNmb; i++)
 	{
-		bulletRenderDatas_[i].drawable = CreateSkeletonDrawable(SpineManager::WATA);
+		bulletRenderDatas_[i].drawable = CreateSkeletonDrawable(SpineManager::SkeletonId::WATA);
 		bulletRenderDatas_[i].drawable->animationState->setAnimation(0, "water_fly", true);
 	}
 

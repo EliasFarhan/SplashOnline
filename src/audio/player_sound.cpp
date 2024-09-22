@@ -10,7 +10,7 @@ namespace splash
 
 std::string_view GetPlayerSoundEvent(PlayerSoundId soundId)
 {
-	static constexpr std::array<std::string_view, (int)PlayerSoundId::LENGTH> soundEvents
+	static constexpr std::array<std::string_view, static_cast<int>(PlayerSoundId::LENGTH)> soundEvents
 		{{
 			"event:/Jetpack/JetpackON",
 			"event:/Jetpack/Jetpack",
@@ -35,17 +35,17 @@ std::string_view GetPlayerSoundEvent(PlayerSoundId soundId)
 			"event:/Stomps/Stomp_On",
 			"event:/Stomps/Stomp_Impact"
 		}};
-	return soundEvents[(int)soundId];
+	return soundEvents[static_cast<std::size_t>(soundId)];
 }
 std::string_view GetPlayerDeathSoundEvent(Character character)
 {
-	static constexpr std::array<std::string_view, (int)Character::LENGTH> soundEvents
+	static constexpr std::array<std::string_view, static_cast<std::size_t>(Character::LENGTH)> soundEvents
 		{{
 			"event:/Death/DeathCat",
 			"event:/Death/DeathLucha",
 			"event:/Death/DeathOwl",
 			"event:/Death/DeathRobo"
 		}};
-	return soundEvents[(int)character];
+	return soundEvents[static_cast<std::size_t>(character)];
 }
 }

@@ -20,10 +20,10 @@ void EndScreenView::SetPlayerScore(const std::array<int, MaxPlayerNmb>& playerSc
 	{
 		if(IsValid(i))
 		{
-			playerRanks_[i] = (int)std::distance(sortedPlayerScores.begin(), std::find(sortedPlayerScores.begin(), sortedPlayerScores.end(), playerScores[i]))+1;
+			playerRanks_[i] = static_cast<int>(std::distance(sortedPlayerScores.begin(), std::find(sortedPlayerScores.begin(), sortedPlayerScores.end(), playerScores[i])))+1;
 			const auto textureId = playerRanks_[i] == 1 ?
-								   (TextureManager::TextureId)((int)TextureManager::TextureId::WIN_P1_CAT+i) :
-								   (TextureManager::TextureId)((int)TextureManager::TextureId::LOSE_P1_CAT+i);
+								   static_cast<TextureManager::TextureId>(static_cast<int>(TextureManager::TextureId::WIN_P1_CAT)+i) :
+								   static_cast<TextureManager::TextureId>(static_cast<int>(TextureManager::TextureId::LOSE_P1_CAT)+i);
 			playerHeads_[i] = GetTexture(textureId);
 			playerCount_++;
 		}
@@ -47,13 +47,13 @@ void EndScreenView::Draw()
 			continue;
 		}
 		const auto textureId = playerRanks_[i] == 1 ?
-							   (TextureManager::TextureId)((int)TextureManager::TextureId::WIN_P1_CAT+i) :
-							   (TextureManager::TextureId)((int)TextureManager::TextureId::LOSE_P1_CAT+i);
-		const auto textureSize = (neko::Vec2<float>)GetTextureSize(textureId)/pixelPerMeter;
+							   static_cast<TextureManager::TextureId>(static_cast<int>(TextureManager::TextureId::WIN_P1_CAT)+i) :
+							   static_cast<TextureManager::TextureId>(static_cast<int>(TextureManager::TextureId::LOSE_P1_CAT)+i);
+		const auto textureSize = static_cast<neko::Vec2<float>>(GetTextureSize(textureId))/pixelPerMeter;
 		neko::Vec2f size = neko::Vec2f{gameWindowSize}/neko::Scalar {pixelPerMeter};
 		neko::Scalar x = neko::Scalar{i+1}*size.x/neko::Scalar(playerCount_+1)-size.x/neko::Scalar{2};
 		neko::Scalar y = neko::Scalar{(playerCount_+1)-playerRanks_[i]}*size.y/neko::Scalar(playerCount_+1)-size.y/neko::Scalar{2};
-		y = neko::Lerp(neko::Scalar{}, y, (neko::Scalar )transitionTimer_.CurrentRatio());
+		y = neko::Lerp(neko::Scalar{}, y, static_cast<neko::Scalar>(transitionTimer_.CurrentRatio()));
 
 		const auto rect = GetDrawingRect({x, y}, neko::Vec2f(textureSize));
 		SDL_RenderCopy(renderer, playerHeads_[i], nullptr, &rect);

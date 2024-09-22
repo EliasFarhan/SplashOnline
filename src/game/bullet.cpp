@@ -157,7 +157,7 @@ void BulletManager::SpawnWata(
 	newBullet->previousPositions.insert(newBullet->previousPositions.cbegin(), bulletBody.position);
 }
 
-Checksum<(int)BulletChecksumIndex::LENGTH> BulletManager::CalculateChecksum() const
+Checksum<static_cast<int>(BulletChecksumIndex::LENGTH)> BulletManager::CalculateChecksum() const
 {
 	std::uint32_t bulletResult = 0;
 	std::uint32_t bulletBodyResult = 0;
@@ -175,11 +175,11 @@ Checksum<(int)BulletChecksumIndex::LENGTH> BulletManager::CalculateChecksum() co
 		{
 			if(i*sizeof(std::uint32_t)== offsetof(neko::Body, type))
 			{
-				bulletBodyResult += (std::uint32_t)body.type;
+				bulletBodyResult += static_cast<std::uint32_t>(body.type);
 				bulletBodyResult += body.isActive;
 				break;
 			}
-			bulletBodyResult += (std::uint32_t )bodyPtr[i];
+			bulletBodyResult += static_cast<std::uint32_t>(bodyPtr[i]);
 
 		}
 

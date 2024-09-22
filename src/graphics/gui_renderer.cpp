@@ -67,12 +67,12 @@ void GuiRenderer::AddGuiInterface(OnGuiInterface* guiInterface)
 	auto it = std::find(guiInterfaces_.begin(), guiInterfaces_.end(), nullptr);
 	if(it != guiInterfaces_.end())
 	{
-		guiInterface->SetGuiIndex((int)std::distance(guiInterfaces_.begin(), it));
+		guiInterface->SetGuiIndex(static_cast<int>(std::distance(guiInterfaces_.begin(), it)));
 		*it = guiInterface;
 	}
 	else
 	{
-		guiInterface->SetGuiIndex((int)guiInterfaces_.size());
+		guiInterface->SetGuiIndex(static_cast<int>(guiInterfaces_.size()));
 		guiInterfaces_.push_back(guiInterface);
 	}
 }
@@ -99,15 +99,15 @@ void GuiRenderer::Update()
 		deltaTimes_.erase(deltaTimes_.begin());
 	}
 	deltaTimes_.push_back(GetDeltaTime());
-	ImGui::Text("Avg FPS %f", 1.0f/(std::accumulate(deltaTimes_.begin(), deltaTimes_.end(), 0.0f)/(float)deltaTimes_.size()));
+	ImGui::Text("Avg FPS %f", 1.0f/(std::accumulate(deltaTimes_.begin(), deltaTimes_.end(), 0.0f)/static_cast<float>(deltaTimes_.size())));
 
-	ImGui::PlotLines("FPS", deltaTimes_.data(), (int)deltaTimes_.size());
+	ImGui::PlotLines("FPS", deltaTimes_.data(), static_cast<int>(deltaTimes_.size()));
 	const auto playerInput = GetPlayerInput();
 	ImGui::Text("Input: Move(%1.2f, %1.2f), Target(%1.2f, %1.2f)",
-		(float)playerInput.moveDirX,
-		(float)playerInput.moveDirY,
-		(float)playerInput.targetDirX,
-		(float)playerInput.targetDirY);
+		 static_cast<float>(playerInput.moveDirX),
+		 static_cast<float>(playerInput.moveDirY),
+		 static_cast<float>(playerInput.targetDirX),
+		 static_cast<float>(playerInput.targetDirY));
 	float musicVolume = GetMusicVolume();
 	if(ImGui::SliderFloat("Music Volume", &musicVolume, 0.0f, 1.0f))
 	{

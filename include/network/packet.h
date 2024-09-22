@@ -6,7 +6,12 @@
 #define SPLASHONLINE_NETWORK_PACKET_H_
 
 #include "engine/input_manager.h"
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpedantic"
 #include "Common-cpp/inc/CustomType.h"
+#pragma clang diagnostic pop
+
 #include "game/const.h"
 
 namespace splash
@@ -31,7 +36,7 @@ struct ConfirmFramePacket
 	}
 };
 
-class ConfirmFrameSerializer : public ExitGames::Common::CustomType<ConfirmFrameSerializer, (nByte)PacketType::CONFIRM_FRAME>
+class ConfirmFrameSerializer : public ExitGames::Common::CustomType<ConfirmFrameSerializer, static_cast<nByte>(PacketType::CONFIRM_FRAME)>
 {
 public:
 	ConfirmFrameSerializer() = default;
@@ -67,7 +72,7 @@ struct InputPacket
 	}
 };
 
-class InputSerializer : public ExitGames::Common::CustomType<InputSerializer, (nByte)PacketType::INPUT>
+class InputSerializer : public ExitGames::Common::CustomType<InputSerializer, static_cast<nByte>(PacketType::INPUT)>
 {
 public:
 	InputSerializer() = default;

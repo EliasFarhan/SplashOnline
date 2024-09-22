@@ -19,6 +19,7 @@ namespace splash
 class DrawInterface
 {
 public:
+	virtual ~DrawInterface() = default;
 	virtual void Draw() = 0;
 	virtual void SetGraphicsIndex(int index) = 0;
 	[[nodiscard]] virtual int GetGraphicsIndex() const = 0;

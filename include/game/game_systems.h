@@ -15,7 +15,8 @@ namespace splash
 /**
  * \brief GameSystems is the internal game state that needs to run a deterministic simulation
  */
-class GameSystems : public neko::ContactListener, public RollbackInterface<GameSystems, (int)BulletChecksumIndex::LENGTH+(int)PlayerChecksumIndex::LENGTH>
+class GameSystems : public neko::ContactListener, public RollbackInterface<GameSystems,
+		static_cast<int>(BulletChecksumIndex::LENGTH)+static_cast<int>(PlayerChecksumIndex::LENGTH)>
 {
 public:
 	GameSystems();
@@ -39,7 +40,7 @@ public:
 	void OnCollisionEnter(const neko::ColliderPair& p) override;
 	void OnCollisionExit(const neko::ColliderPair& p) override;
 
-	[[nodiscard]] Checksum<(int)BulletChecksumIndex::LENGTH+(int)PlayerChecksumIndex::LENGTH> CalculateChecksum() const override;
+	[[nodiscard]] Checksum<static_cast<int>(BulletChecksumIndex::LENGTH)+static_cast<int>(PlayerChecksumIndex::LENGTH)> CalculateChecksum() const override;
 
 	void RollbackFrom(const GameSystems& system) override;
 

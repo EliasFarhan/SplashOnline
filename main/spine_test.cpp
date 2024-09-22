@@ -46,7 +46,7 @@ public:
 		}
 		else
 		{
-			skeletonDrawable_ = CreateSkeletonDrawable(SpineManager::CAT_NOARM);
+			skeletonDrawable_ = CreateSkeletonDrawable(SpineManager::SkeletonId::CAT_NOARM);
 			skeletonDrawable_->animationState->setAnimation(0, "idle", true);
 		}
 	}
@@ -67,7 +67,7 @@ public:
 		{
 			auto* renderer = GetRenderer();
 			auto windowSize = GetWindowSize();
-			skeletonDrawable_->skeleton->setPosition((float)windowSize.first/2,(float)windowSize.second/2);
+			skeletonDrawable_->skeleton->setPosition(static_cast<float>(windowSize.first)/2,static_cast<float>(windowSize.second)/2);
 			skeletonDrawable_->skeleton->setScaleX(0.1f);
 			skeletonDrawable_->skeleton->setScaleY(0.1f);
 			skeletonDrawable_->draw(renderer);

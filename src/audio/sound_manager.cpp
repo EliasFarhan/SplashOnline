@@ -9,7 +9,7 @@
 namespace splash
 {
 
-static constexpr std::array<std::string_view, (int)GameSoundId::LENGTH> soundEventNames
+static constexpr std::array<std::string_view, static_cast<int>(GameSoundId::LENGTH)> soundEventNames
 {{
 	"event:/GUI/MenuValidation",
 	"event:/GUI/MenuCancel",
@@ -26,7 +26,7 @@ static constexpr std::array<std::string_view, (int)GameSoundId::LENGTH> soundEve
 
 std::string_view GetGameSoundEvent(GameSoundId gameSoundId)
 {
-	return soundEventNames[(int)gameSoundId];
+	return soundEventNames[static_cast<std::size_t>(gameSoundId)];
 }
 
 }

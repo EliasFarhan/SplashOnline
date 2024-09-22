@@ -8,7 +8,12 @@
 #include "game/bullet.h"
 
 #include <container/vector.h>
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#pragma clang diagnostic ignored "-Wsign-conversion"
 #include <spine-sdl-cpp.h>
+#pragma clang diagnostic pop
 
 #include <memory>
 

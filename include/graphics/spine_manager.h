@@ -5,9 +5,13 @@
 #ifndef SPLASHONLINE_SPINE_MANAGER_H_
 #define SPLASHONLINE_SPINE_MANAGER_H_
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#pragma clang diagnostic ignored "-Wsign-conversion"
 #include <spine/TextureLoader.h>
 #include <spine/Atlas.h>
 #include <spine-sdl-cpp.h>
+#pragma clang diagnostic pop
 
 #include <memory>
 #include <array>
@@ -31,7 +35,7 @@ public:
 		LENGTH,
 	};
 
-	enum SkeletonId
+	enum class SkeletonId
 	{
 		KWAKWA_LOGO,
 		ANNOUNCERS,
@@ -64,8 +68,6 @@ public:
 		LANDING,
 		RELOAD,
 		STAR,
-
-
 		LENGTH
 
 	};
@@ -85,10 +87,10 @@ public:
 
 	std::unique_ptr<spine::SkeletonDrawable> CreateSkeletonDrawable(SkeletonId skeletonId);
 private:
-	std::array<std::unique_ptr<spine::Atlas>, (int)AtlasId::LENGTH> atlases_{};
-	std::array<std::unique_ptr<spine::AtlasAttachmentLoader>, (int)AtlasId::LENGTH> attachmentLoaders_;
-	std::array<std::unique_ptr<spine::SkeletonJson>, (int)SkeletonId::LENGTH> skeletonJsons_;
-	std::array<spine::SkeletonData*, (int)SkeletonId::LENGTH> skeletonData_{};
+	std::array<std::unique_ptr<spine::Atlas>, static_cast<int>(AtlasId::LENGTH)> atlases_{};
+	std::array<std::unique_ptr<spine::AtlasAttachmentLoader>, static_cast<int>(AtlasId::LENGTH)> attachmentLoaders_;
+	std::array<std::unique_ptr<spine::SkeletonJson>, static_cast<int>(SkeletonId::LENGTH)> skeletonJsons_;
+	std::array<spine::SkeletonData*, static_cast<int>(SkeletonId::LENGTH)> skeletonData_{};
 
 };
 bool IsSpineLoaded();

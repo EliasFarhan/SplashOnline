@@ -6,7 +6,10 @@
 
 #include <container/vector.h>
 #include <spine-sdl-cpp.h>
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
 #include <fmod_studio.hpp>
+#pragma clang diagnostic pop
 
 #include <array>
 #include <memory>

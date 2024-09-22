@@ -46,7 +46,7 @@ void SplashManager::Update(float dt)
 	}
 	if(!logo_ && state_ == State::LOGO)
 	{
-		logo_ = CreateSkeletonDrawable(SpineManager::KWAKWA_LOGO);
+		logo_ = CreateSkeletonDrawable(SpineManager::SkeletonId::KWAKWA_LOGO);
 		logo_->animationState->setAnimation(0,"kwakwa",false);
 		PlayMusic();
 		logoTimer_.Reset();
@@ -65,7 +65,7 @@ void SplashManager::Update(float dt)
 		logo_->skeleton->setScaleY(scale);
 
 		const auto position = GetGraphicsPosition({});
-		logo_->skeleton->setPosition((float)position.x, (float)position.y);
+		logo_->skeleton->setPosition(static_cast<float>(position.x), static_cast<float>(position.y));
 		logo_->update(dt, spine::Physics_Update);
 		static bool switchToTitle = false;
 		if(logoTimer_.Over())
@@ -148,7 +148,7 @@ void SplashManager::Draw()
 		constexpr neko::Vec2f size{neko::Scalar{19.2f}, neko::Scalar{10.8f}};
 		auto rect = GetDrawingRect({}, size);
 		SDL_RenderCopy(renderer, bg_, nullptr, &rect);
-		const neko::Vec2f controlSize{ (neko::Vec2<float>)GetTextureSize(TextureManager::TextureId::CONTROLS)/pixelPerMeter};
+		const neko::Vec2f controlSize{ static_cast<neko::Vec2<float>>(GetTextureSize(TextureManager::TextureId::CONTROLS))/pixelPerMeter};
 		rect = GetDrawingRect({}, controlSize);
 		SDL_RenderCopy(renderer, controls_, nullptr, &rect);
 		break;

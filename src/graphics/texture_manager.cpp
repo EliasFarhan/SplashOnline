@@ -27,7 +27,7 @@ namespace splash
 
 static TextureManager* instance = nullptr;
 
-static constexpr std::array<std::string_view, (int)TextureManager::TextureId::LENGTH> texturePaths =
+static constexpr std::array<std::string_view, static_cast<int>(TextureManager::TextureId::LENGTH)> texturePaths =
 	{{
 		"data/sprites/kittymanjaro/bg.png",
 		"data/sprites/kittymanjaro/cloud1.png",
@@ -131,15 +131,15 @@ SDL_Texture* CreateTextureFromSurface(SDL_Renderer* renderer, SDL_Surface* surfa
 }
 
 static std::atomic<int> loadingIndex{-1};
-static std::array<Image, (int)TextureManager::TextureId::LENGTH> images;
-static std::array<SDL_Surface*, (int)TextureManager::TextureId::LENGTH> surfaces;
+static std::array<Image, static_cast<int>(TextureManager::TextureId::LENGTH)> images;
+static std::array<SDL_Surface*, static_cast<int>(TextureManager::TextureId::LENGTH)> surfaces;
 static std::unique_ptr<neko::FuncJob> loadingJob;
 
 void TextureManager::Begin()
 {
 	renderer_ = GetRenderer();
 	loadingJob = std::make_unique<neko::FuncJob>([](){
-		for(int i = 0; i < (int)texturePaths.size(); i++)
+		for(int i = 0; i < static_cast<int>(texturePaths.size()); i++)
 		{
 #ifdef TRACY_ENABLE
 			ZoneNamedN(loadingTexture, "Loading Image File", true);
@@ -176,7 +176,7 @@ void TextureManager::End()
 
 bool TextureManager::IsLoaded() const
 {
-	return textures_[(int)TextureManager::TextureId::LENGTH-1] != nullptr;
+	return textures_[static_cast<int>(TextureManager::TextureId::LENGTH)-1] != nullptr;
 }
 
 void TextureManager::UpdateLoad()
@@ -188,10 +188,10 @@ void TextureManager::UpdateLoad()
 	{
 		return;
 	}
-	auto freq = (double)SDL_GetPerformanceFrequency();
+	auto freq = static_cast<double>(SDL_GetPerformanceFrequency());
 	auto current = SDL_GetPerformanceCounter();
-	auto delta =  (double)(current - GetCurrentFrameTime());
-	if( (float)(delta/freq) > 0.01f)
+	auto delta =  static_cast<double>(current - GetCurrentFrameTime());
+	if( static_cast<float>(delta/freq) > 0.01f)
 	{
 		return;
 	}
@@ -208,9 +208,9 @@ void TextureManager::UpdateLoad()
 		stbi_image_free(images[i].pixels);
 
 		current = SDL_GetPerformanceCounter();
-		delta =  (double)(current - GetCurrentFrameTime());
+		delta =  static_cast<double>(current - GetCurrentFrameTime());
 
-		if( (float)(delta/freq) > 0.01f)
+		if( static_cast<float>(delta/freq) > 0.01f)
 		{
 			break;
 		}
@@ -222,7 +222,7 @@ TextureManager::TextureManager()
 }
 neko::Vec2i TextureManager::GetTextureSize(TextureManager::TextureId id) const
 {
-	return texturesSizes_[(int)id];
+	return texturesSizes_[static_cast<int>(id)];
 }
 SDL_Texture* GetTexture(TextureManager::TextureId textureId)
 {

@@ -5,7 +5,6 @@ set (CMAKE_CXX_STANDARD 20)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-#set(CMAKE_CXX_CLANG_TIDY clang-tidy --checks=-*,cppcoreguidelines-*)
 
 option(ENABLE_PROFILER "Enable Tracy Profiling" OFF)
 option(BUILD_SHARED_LIBS "Build the library as a shared library" OFF)
@@ -93,7 +92,8 @@ elseif(APPLE)
     file(COPY ${FMOD_DIR}/lowlevel/lib/libfmod.dylib DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 elseif (UNIX)
     link_directories(${CMAKE_CURRENT_BINARY_DIR}/)
-    target_compile_options(SplashLib PUBLIC "-Wall" "-Wextra" "-Wpedantic")
+    target_compile_options(SplashLib PUBLIC "-Wall" "-Wextra" "-Wpedantic" "-Wshadow" "-Wnon-virtual-dtor"
+            "-Wold-style-cast" "-Wunused" "-Werror")
     target_link_libraries(SplashLib PUBLIC libfmodstudio.so libfmod.so)
     file(COPY ${FMOD_DIR}/lowlevel/lib/libfmod.so DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
     file(COPY ${FMOD_DIR}/lowlevel/lib/libfmod.so.9 DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)

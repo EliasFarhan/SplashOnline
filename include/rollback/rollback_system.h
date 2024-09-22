@@ -58,6 +58,7 @@ private:
     class RollbackInterface
     {
     public:
+		virtual ~RollbackInterface() = default;
         [[nodiscard]] virtual Checksum<argCount> CalculateChecksum() const = 0;
         virtual void RollbackFrom(const T& system) = 0;
     };

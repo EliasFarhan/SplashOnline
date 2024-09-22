@@ -60,10 +60,10 @@ public:
 	{
 		ImGui::Begin("Input Test");
 		ImGui::LabelText("Input", "(%f,%f), (%f, %f) ",
-			(float)playerInput_.moveDirX,
-			(float)playerInput_.moveDirY,
-			(float)playerInput_.targetDirX,
-			(float)playerInput_.targetDirY
+			static_cast<float>(playerInput_.moveDirX),
+			static_cast<float>(playerInput_.moveDirY),
+			static_cast<float>(playerInput_.targetDirX),
+			static_cast<float>(playerInput_.targetDirY)
 			);
 		ImGui::End();
 	}

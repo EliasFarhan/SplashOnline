@@ -78,12 +78,12 @@ void Window::AddEventListener(OnEventInterface *eventInterface)
 	auto it = std::find(eventInterfaces_.begin(), eventInterfaces_.end(), nullptr);
 	if(it != eventInterfaces_.end())
 	{
-		eventInterface->SetEventListenerIndex((int)std::distance(eventInterfaces_.begin(), it));
+		eventInterface->SetEventListenerIndex(static_cast<int>(std::distance(eventInterfaces_.begin(), it)));
 		*it = eventInterface;
 	}
 	else
 	{
-		eventInterface->SetEventListenerIndex((int)eventInterfaces_.size());
+		eventInterface->SetEventListenerIndex(static_cast<int>(eventInterfaces_.size()));
 		eventInterfaces_.push_back(eventInterface);
 	}
 }

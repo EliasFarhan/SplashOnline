@@ -15,7 +15,7 @@
 namespace splash
 {
 
-static constexpr std::array<std::string_view, (int)PlayerRenderState::LENGTH> playerAnimNames
+static constexpr std::array<std::string_view, static_cast<int>(PlayerRenderState::LENGTH)> playerAnimNames
 	{{
 		"idle",
 		"walk",
@@ -77,8 +77,10 @@ void PlayerView::Update([[maybe_unused]]float dt)
 
 		if(!playerRenderData.isRespawning)
 		{
-			const auto targetDir = neko::Vec2f((neko::Scalar)playerInput.targetDirX, (neko::Scalar)playerInput.targetDirY);
-			const bool isShooting = targetDir.Length() > (neko::Scalar)PlayerCharacter::deadZone && !playerCharacter.IsReloading();
+			const auto targetDir = neko::Vec2f(
+					static_cast<neko::Scalar>(playerInput.targetDirX),
+					static_cast<neko::Scalar>(playerInput.targetDirY));
+			const bool isShooting = targetDir.Length() > static_cast<neko::Scalar>(PlayerCharacter::deadZone) && !playerCharacter.IsReloading();
 			if(isShooting)
 			{
 				if ((playerInput.targetDirX > PlayerCharacter::deadZone && !playerRenderData.faceRight) ||
@@ -106,7 +108,7 @@ void PlayerView::Update([[maybe_unused]]float dt)
 			{
 				auto ejectPosition = body.position;
 				auto angle = 0.0f;
-				neko::Vec2f bounds{(neko::Vec2<float>)gameWindowSize/pixelPerMeter/2.0f};
+				neko::Vec2f bounds{static_cast<neko::Vec2<float>>(gameWindowSize)/pixelPerMeter/2.0f};
 
 				if(ejectPosition.x < -bounds.x)
 				{
@@ -153,7 +155,7 @@ void PlayerView::Update([[maybe_unused]]float dt)
 				}
 
 				playerRenderData.ejectFx.Start(ejectPosition, GetGraphicsScale(), angle);
-				FmodPlaySound(GetPlayerDeathSoundEvent((Character)((int)Character::CAT+playerNumber)));
+				FmodPlaySound(GetPlayerDeathSoundEvent(static_cast<Character>(static_cast<int>(Character::CAT)+playerNumber)));
 				FmodPlaySound(GetPlayerSoundEvent(PlayerSoundId::EJECT));
 				playerRenderData.isRespawning = true;
 				playerRenderData.cloudDrawable->animationState->setAnimation(0, "respawn", true);
@@ -282,8 +284,8 @@ void PlayerView::Update([[maybe_unused]]float dt)
 					}
 					else
 					{
-						if ((targetDir.x > (neko::Scalar)PlayerCharacter::deadZone && !playerRenderData.faceRight) ||
-							(targetDir.x < (neko::Scalar)-PlayerCharacter::deadZone && playerRenderData.faceRight))
+						if ((targetDir.x > static_cast<neko::Scalar>(PlayerCharacter::deadZone) && !playerRenderData.faceRight) ||
+							(targetDir.x < static_cast<neko::Scalar>(-PlayerCharacter::deadZone) && playerRenderData.faceRight))
 						{
 							playerRenderData.faceRight = !playerRenderData.faceRight;
 						}
@@ -448,7 +450,7 @@ void PlayerView::Draw()
 			const auto& playerCharacter = playerManager.GetPlayerCharacter()[i];
 			if(playerCharacter.dashPositions.size() > 1)
 			{
-				int positionsCount = (int)playerCharacter.dashPositions.size();
+				int positionsCount = static_cast<int>(playerCharacter.dashPositions.size());
 				std::array<neko::Vec2i, 10> dashScreenPos{};
 				for (int j = 0; j < positionsCount; j++)
 				{
@@ -458,7 +460,7 @@ void PlayerView::Draw()
 				for (int j = 0; j < positionsCount; j++)
 				{
 					neko::Vec2i delta;
-					if (j == (int)playerCharacter.dashPositions.size() - 1)
+					if (j == static_cast<int>(playerCharacter.dashPositions.size()) - 1)
 					{
 						delta = dashScreenPos[j] - dashScreenPos[j - 1];
 					}
@@ -468,8 +470,8 @@ void PlayerView::Draw()
 					}
 					auto dir = neko::Vec2<float>{ delta.Perpendicular() }.Normalized();
 					static constexpr float width = 25.0f;
-					auto p1 = neko::Vec2<float>{ dashScreenPos[j] } + dir * (width/(float)(j+1));
-					auto p2 = neko::Vec2<float>{ dashScreenPos[j] } - dir * (width/(float)(j+1));
+					auto p1 = neko::Vec2<float>{ dashScreenPos[j] } + dir * (width/static_cast<float>(j+1));
+					auto p2 = neko::Vec2<float>{ dashScreenPos[j] } - dir * (width/static_cast<float>(j+1));
 					SDL_Vertex v{};
 					v.position = { p1.x, p1.y };
 					v.color = playerColors[i];
@@ -495,9 +497,9 @@ void PlayerView::Draw()
 				SDL_RenderGeometry(renderer,
 					nullptr,
 					dashVertexPos.data(),
-					(int)dashVertexPos.size(),
+					static_cast<int>(dashVertexPos.size()),
 					indices.data(),
-					(int)indices.size());
+					static_cast<int>(indices.size()));
 				SDL_SetRenderDrawBlendMode(renderer, blendMode);
 			}
 		}
@@ -546,14 +548,14 @@ void PlayerView::Draw()
 			auto rect = GetDrawingRect(position, bgSize);
 			SDL_RenderCopy(renderer, playerRenderDatas_[i].outIconBg, nullptr, &rect);
 
-			rect = GetDrawingRect(position, (neko::Vec2f )
-				(neko::Vec2<float>(GetTextureSize((TextureManager::TextureId)((int)TextureManager::TextureId::HEAD_P1_CAT+i)))/pixelPerMeter*0.5f));
+			rect = GetDrawingRect(position, static_cast<neko::Vec2f>
+				(neko::Vec2<float>(GetTextureSize(static_cast<TextureManager::TextureId>(static_cast<int>(TextureManager::TextureId::HEAD_P1_CAT)+i)))/pixelPerMeter*0.5f));
 			SDL_RenderCopy(renderer, playerRenderDatas_[i].outIconCharFace, nullptr, &rect);
 
 			static constexpr neko::Vec2f arrowSize(neko::Scalar {34.0f/pixelPerMeter}, neko::Scalar{38.0f/pixelPerMeter});
 
 			const auto delta = neko::Vec2<float>(body.position - position).Normalized();
-			const auto angle = std::atan2(-delta.y,neko::Vec2<float>::Dot(delta, neko::Vec2<float>::right() ))/M_PI*180.0f;
+			const auto angle = std::atan2(-delta.y,neko::Vec2<float>::Dot(delta, neko::Vec2<float>::right() ))/neko::Pi<float>()*180.0f;
 			const auto arrowPosition = position+neko::Vec2f{delta} *neko::Scalar{0.62f};
 			rect = GetDrawingRect(arrowPosition, arrowSize);
 			SDL_RenderCopyEx(renderer, playerRenderDatas_[i].outIconArrow, nullptr, &rect, angle, nullptr, SDL_FLIP_NONE );
@@ -601,7 +603,7 @@ void PlayerView::SwitchToState(PlayerRenderState state, int playerNumber)
 	auto& playerRenderData = playerRenderDatas_[playerNumber];
 	const auto previousState = playerRenderData.state;
 		playerRenderDatas_[playerNumber].bodyDrawable->animationState->setAnimation(0,
-		playerAnimNames[(int)state].data(), true);
+		playerAnimNames[static_cast<int>(state)].data(), true);
 	playerRenderDatas_[playerNumber].state = state;
 	const auto& body = gameSystems_->GetPhysicsWorld().body(gameSystems_->GetPlayerManager().GetPlayerPhysics()[playerNumber].bodyIndex);
 	const auto& playerCharacter = gameSystems_->GetPlayerManager().GetPlayerCharacter()[playerNumber];
@@ -650,51 +652,51 @@ void PlayerView::Load()
 		{
 			continue;
 		}
-		playerRenderDatas_[i].bodyDrawable = CreateSkeletonDrawable((SpineManager::SkeletonId)((int)SpineManager::CAT_NOARM+i));
+		playerRenderDatas_[i].bodyDrawable = CreateSkeletonDrawable(static_cast<SpineManager::SkeletonId>(static_cast<int>(SpineManager::SkeletonId::CAT_NOARM)+i));
 		playerRenderDatas_[i].bodyDrawable->animationState->setAnimation(0, "idle", true);
 
 		playerRenderDatas_[i].shoulderBone = playerRenderDatas_[i].bodyDrawable->skeleton->findBone("BN_armright");
 
 
-		playerRenderDatas_[i].armDrawable = CreateSkeletonDrawable((SpineManager::SkeletonId)((int)SpineManager::CAT_ARM+i));
+		playerRenderDatas_[i].armDrawable = CreateSkeletonDrawable(static_cast<SpineManager::SkeletonId>(static_cast<int>(SpineManager::SkeletonId::CAT_ARM)+i));
 		playerRenderDatas_[i].armDrawable->animationState->setAnimation(0, "idle", true);
 		playerRenderDatas_[i].handBone = playerRenderDatas_[i].armDrawable->skeleton->findBone("pistolgrip");
 
-		playerRenderDatas_[i].gunDrawable = CreateSkeletonDrawable(SpineManager::BASEGUN);
+		playerRenderDatas_[i].gunDrawable = CreateSkeletonDrawable(SpineManager::SkeletonId::BASEGUN);
 		playerRenderDatas_[i].gunDrawable->animationState->setAnimation(0, "idle", true);
 
-		playerRenderDatas_[i].cloudDrawable = CreateSkeletonDrawable(SpineManager::CLOUD);
+		playerRenderDatas_[i].cloudDrawable = CreateSkeletonDrawable(SpineManager::SkeletonId::CLOUD);
 		playerRenderDatas_[i].cloudDrawable->skeleton->setSkin(cloudSkinNames[i].data());
 		playerRenderDatas_[i].cloudDrawable->animationState->setAnimation(0, "respawn", true);
 
-		playerRenderDatas_[i].outIconBg = GetTexture((TextureManager::TextureId)((int)TextureManager::TextureId::OOB_P1_CYAN+i));
-		playerRenderDatas_[i].outIconCharFace = GetTexture((TextureManager::TextureId)((int)TextureManager::TextureId::HEAD_P1_CAT+i));
+		playerRenderDatas_[i].outIconBg = GetTexture(static_cast<TextureManager::TextureId>(static_cast<int>(TextureManager::TextureId::OOB_P1_CYAN)+i));
+		playerRenderDatas_[i].outIconCharFace = GetTexture(static_cast<TextureManager::TextureId>(static_cast<int>(TextureManager::TextureId::HEAD_P1_CAT)+i));
 		playerRenderDatas_[i].outIconArrow = GetTexture(TextureManager::TextureId::RIGHT_ARROW);
 
 		playerSoundDatas_[i].jetpackSoundInstance = FmodPlaySound(GetPlayerSoundEvent(PlayerSoundId::JETPACK));
 		playerSoundDatas_[i].jetpackSoundInstance->setParameterValue("Transition Jetpack", 0.75f);
 
-		playerRenderDatas_[i].dashFxDrawable = CreateSkeletonDrawable(SpineManager::DASH);
+		playerRenderDatas_[i].dashFxDrawable = CreateSkeletonDrawable(SpineManager::SkeletonId::DASH);
 		playerRenderDatas_[i].dashFxDrawable->animationState->setAnimation(0, "animation", true);
 
 		const auto animName = fmt::format("jetfuse_{}", legacyPlayerColorNames[i]);
-		playerRenderDatas_[i].jetBurstFx.Create(SpineManager::JETBOOM, animName);
-		playerRenderDatas_[i].dashPrepFx.Create(SpineManager::DASH_PREP, "dashprep");
-		playerRenderDatas_[i].ejectFx.Create(SpineManager::EJECT, "eject");
-		playerRenderDatas_[i].landingFx.Create(SpineManager::LANDING, "land");
-		playerRenderDatas_[i].dashEndFx.Create(SpineManager::DASH, "dashend");
-		playerRenderDatas_[i].stompStarFx.Create(SpineManager::IMPACT2, "impact2");
+		playerRenderDatas_[i].jetBurstFx.Create(SpineManager::SkeletonId::JETBOOM, animName);
+		playerRenderDatas_[i].dashPrepFx.Create(SpineManager::SkeletonId::DASH_PREP, "dashprep");
+		playerRenderDatas_[i].ejectFx.Create(SpineManager::SkeletonId::EJECT, "eject");
+		playerRenderDatas_[i].landingFx.Create(SpineManager::SkeletonId::LANDING, "land");
+		playerRenderDatas_[i].dashEndFx.Create(SpineManager::SkeletonId::DASH, "dashend");
+		playerRenderDatas_[i].stompStarFx.Create(SpineManager::SkeletonId::IMPACT2, "impact2");
 		for(std::size_t j = 0; j < playerRenderDatas_[i].jetpackFx.size(); j++)
 		{
 			bool value = j%2==0;
 			if(value)
 			{
-				playerRenderDatas_[i].jetpackFx[j].Create(SpineManager::JETPACK1, animName);
+				playerRenderDatas_[i].jetpackFx[j].Create(SpineManager::SkeletonId::JETPACK1, animName);
 			}
 			else
 			{
 				const auto otherAnimName = fmt::format("jetfuse2_{}", legacyPlayerColorNames[i]);
-				playerRenderDatas_[i].jetpackFx[j].Create(SpineManager::JETPACK2, otherAnimName);
+				playerRenderDatas_[i].jetpackFx[j].Create(SpineManager::SkeletonId::JETPACK2, otherAnimName);
 			}
 
 		}
@@ -744,20 +746,20 @@ void PlayerView::UpdateTransforms(float dt)
 
 			if(playerCharacter.IsJetBursting())
 			{
-				float deltaX = 0.2f * playerScale * std::sin(2.0f*(float)neko::pi/0.25f*(float)playerCharacter.preJetBurstTimer.CurrentRatio());
+				float deltaX = 0.2f * playerScale * std::sin(2.0f*neko::Pi<float>()/0.25f*static_cast<float>(playerCharacter.preJetBurstTimer.CurrentRatio()));
 				const auto jetburstPosition = GetGraphicsPosition(body.position+neko::Vec2f{neko::Scalar{deltaX}, {}});
-				bodyDrawable->skeleton->setPosition((float)jetburstPosition.x, (float)jetburstPosition.y);
+				bodyDrawable->skeleton->setPosition(static_cast<float>(jetburstPosition.x), static_cast<float>(jetburstPosition.y));
 			}
 			else
 			{
-				bodyDrawable->skeleton->setPosition((float)position.x, (float)position.y);
+				bodyDrawable->skeleton->setPosition(static_cast<float>(position.x), static_cast<float>(position.y));
 			}
 		}
 		else
 		{
 			if (!playerCharacter.respawnPauseTimer.Over())
 			{
-				bodyDrawable->skeleton->setPosition((float)position.x, (float)position.y);
+				bodyDrawable->skeleton->setPosition(static_cast<float>(position.x), static_cast<float>(position.y));
 			}
 			else if (!playerCharacter.respawnMoveTimer.Over())
 			{
@@ -765,7 +767,7 @@ void PlayerView::UpdateTransforms(float dt)
 				const auto spawnPosition = neko::Vec2<float>(GetGraphicsPosition(PlayerManager::spawnPositions[playerNumber]));
 				const auto physicsPosition = neko::Vec2<float>(position);
 				const auto midPosition = physicsPosition + (spawnPosition - physicsPosition)
-														   * (float)playerCharacter.respawnMoveTimer.CurrentRatio();
+														   * static_cast<float>(playerCharacter.respawnMoveTimer.CurrentRatio());
 				bodyDrawable->skeleton->setPosition(midPosition.x, midPosition.y);
 			}
 			else if (!playerCharacter.respawnStaticTime.Over())
@@ -778,7 +780,7 @@ void PlayerView::UpdateTransforms(float dt)
 		float animRatio = 1.0f;
 		if (playerRenderData.state == PlayerRenderState::WALK || playerRenderData.state == PlayerRenderState::WALK_BACK)
 		{
-			animRatio = (float)neko::Abs(playerInputs[playerNumber].moveDirX);
+			animRatio = static_cast<float>(neko::Abs(playerInputs[playerNumber].moveDirX));
 		}
 
 		bodyDrawable->animationState->update(animRatio * dt);
@@ -788,7 +790,7 @@ void PlayerView::UpdateTransforms(float dt)
 		{
 			playerRenderData.dashFxDrawable->skeleton->setScaleX(2.0f * 0.3f * GetGraphicsScale());
 			playerRenderData.dashFxDrawable->skeleton->setScaleY(2.0f * 0.3f * GetGraphicsScale());
-			playerRenderData.dashFxDrawable->skeleton->setPosition((float)position.x, (float)position.y);
+			playerRenderData.dashFxDrawable->skeleton->setPosition(static_cast<float>(position.x), static_cast<float>(position.y));
 			playerRenderData.dashFxDrawable->update(dt, spine::Physics_Update);
 		}
 
@@ -811,7 +813,7 @@ void PlayerView::UpdateTransforms(float dt)
 		case PlayerRenderState::DASH:
 		case PlayerRenderState::BOUNCE:
 		{
-			moveAngle = -(float)playerInputs[playerNumber].moveDirX*30.0f*(playerRenderData.faceRight?1.0f:-1.0f);
+			moveAngle = -static_cast<float>(playerInputs[playerNumber].moveDirX)*30.0f*(playerRenderData.faceRight?1.0f:-1.0f);
 			break;
 		}
 		default:
@@ -823,17 +825,17 @@ void PlayerView::UpdateTransforms(float dt)
 			{
 			case 3:
 			{
-				moveAngle = 7.5f*std::cos(2.0f*(float)neko::Pi<neko::Scalar>()/0.1f*(float)playerCharacter.hitTimer.RemainingTime());
+				moveAngle = 7.5f*std::cos(2.0f*neko::Pi<float>()/0.1f*static_cast<float>(playerCharacter.hitTimer.RemainingTime()));
 				break;
 			}
 			case 2:
 			{
-				moveAngle += 3.5f*std::cos(2.0f*(float)neko::Pi<neko::Scalar>()/0.1f*(float)playerCharacter.hitTimer.RemainingTime());
+				moveAngle += 3.5f*std::cos(2.0f*neko::Pi<float>()/0.1f*static_cast<float>(playerCharacter.hitTimer.RemainingTime()));
 				break;
 			}
 			case 1:
 			{
-				moveAngle += std::cos(2.0f*(float)neko::Pi<neko::Scalar>()/0.1f*(float)playerCharacter.hitTimer.RemainingTime());
+				moveAngle += std::cos(2.0f*neko::Pi<float>()/0.1f*static_cast<float>(playerCharacter.hitTimer.RemainingTime()));
 				break;
 			}
 			default:
@@ -849,9 +851,10 @@ void PlayerView::UpdateTransforms(float dt)
 		auto& armDrawable = playerRenderData.armDrawable;
 		armDrawable->skeleton->setScaleX((playerRenderData.faceRight ? 1.0f : -1.0f) * scale);
 		armDrawable->skeleton->setScaleY(scale);
-		const auto targetDir = neko::Vec2<float>((float)playerInputs[playerNumber]
-			.targetDirX, (float)playerInputs[playerNumber].targetDirY);
-		const bool isShooting = targetDir.Length() > (float)PlayerCharacter::deadZone && !playerCharacter.IsReloading();
+		const auto targetDir = neko::Vec2<float>(
+				static_cast<float>(playerInputs[playerNumber].targetDirX),
+				static_cast<float>(playerInputs[playerNumber].targetDirY));
+		const bool isShooting = targetDir.Length() > static_cast<float>(PlayerCharacter::deadZone) && !playerCharacter.IsReloading();
 
 
 		auto* shoulderBone = playerRenderData.shoulderBone;
@@ -862,7 +865,7 @@ void PlayerView::UpdateTransforms(float dt)
 		{
 			playerRenderData.targetDir = neko::Vec2<float>(targetDir).Normalized();
 		}
-		float degree = std::acos(neko::Vec2<float>::Dot(playerRenderData.targetDir, { 0.0f, -1.0f })) / (float)M_PI * 180.0f;
+		float degree = std::acos(neko::Vec2<float>::Dot(playerRenderData.targetDir, { 0.0f, -1.0f })) / neko::Pi<float>() * 180.0f;
 
 		rootBone = playerRenderData.armDrawable->skeleton->getRootBone();
 		rootBone->setRotation(degree);
@@ -893,14 +896,14 @@ void PlayerView::UpdateTransforms(float dt)
 			cloudDrawable->skeleton->setScaleY(scale);
 			if (!playerCharacter.respawnPauseTimer.Over())
 			{
-				cloudDrawable->skeleton->setPosition((float)position.x, (float)position.y);
+				cloudDrawable->skeleton->setPosition(static_cast<float>(position.x), static_cast<float>(position.y));
 			}
 			else if (!playerCharacter.respawnMoveTimer.Over())
 			{
 				const auto spawnPosition = neko::Vec2<float>(GetGraphicsPosition(PlayerManager::spawnPositions[playerNumber]));
 				const auto physicsPosition = neko::Vec2<float>(position);
 				const auto midPosition = physicsPosition + (spawnPosition - physicsPosition)
-					* (float)playerCharacter.respawnMoveTimer.CurrentRatio();
+					* static_cast<float>(playerCharacter.respawnMoveTimer.CurrentRatio());
 				cloudDrawable->skeleton->setPosition(midPosition.x, midPosition.y);
 			}
 			else if (!playerCharacter.respawnStaticTime.Over())
@@ -926,7 +929,7 @@ void PlayerRenderData::VisualFx::Start(neko::Vec2f position, neko::Vec2<float> s
 	drawable->skeleton->setToSetupPose();
 	drawable->animationState->setAnimation(0, animName_.data(), false);
 	const auto screenPos = GetGraphicsPosition(position);
-	drawable->skeleton->setPosition((float)screenPos.x, (float)screenPos.y);
+	drawable->skeleton->setPosition(static_cast<float>(screenPos.x), static_cast<float>(screenPos.y));
 	drawable->skeleton->setScaleX(scale.x);
 	drawable->skeleton->setScaleY(scale.y);
 	angle_ = angle;

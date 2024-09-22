@@ -158,13 +158,13 @@ void GraphicsManager::AddDrawInterface(DrawInterface* drawInterface)
 	auto it = std::find(drawInterfaces_.begin(), drawInterfaces_.end(), nullptr);
 	if(it == drawInterfaces_.end())
 	{
-		index = (int)drawInterfaces_.size();
+		index = static_cast<int>(drawInterfaces_.size());
 		drawInterfaces_.push_back(drawInterface);
 	}
 	else
 	{
 		*it = drawInterface;
-		index = (int)std::distance(drawInterfaces_.begin(), it);
+		index = static_cast<int>(std::distance(drawInterfaces_.begin(), it));
 	}
 
 	drawInterface->SetGraphicsIndex(index);
@@ -175,8 +175,8 @@ void GraphicsManager::RemoveDrawInterface(DrawInterface* drawInterface)
 }
 SDL_Rect GraphicsManager::GetDrawingRect(neko::Vec2f position, neko::Vec2f size) const
 {
-	const auto newPosition = neko::Vec2<float>((float)position.x, (float)-position.y)*pixelPerMeter*scale_;
-	const auto newSize = neko::Vec2<float>((float)size.x, (float) size.y)*pixelPerMeter*scale_;
+	const auto newPosition = neko::Vec2<float>( static_cast<float>(position.x),  static_cast<float>(-position.y))*pixelPerMeter*scale_;
+	const auto newSize = neko::Vec2<float>( static_cast<float>(size.x),  static_cast<float>(size.y))*pixelPerMeter*scale_;
 
 	const auto pixelSize = neko::Vec2i(newSize);
 	const auto pixelPosition = neko::Vec2i(newPosition)+offset_+actualSize_/2-pixelSize/2;
@@ -204,8 +204,8 @@ void GraphicsManager::OnEvent(const SDL_Event& event)
 }
 void GraphicsManager::ReloadDrawingSize()
 {
-	constexpr float aspectRatio = (float)gameWindowSize.x/(float)gameWindowSize.y;
-	const float newAspectRatio = (float)windowSize_.x/(float)windowSize_.y;
+	constexpr auto aspectRatio = static_cast<float>(gameWindowSize.x)/static_cast<float>(gameWindowSize.y);
+	const auto newAspectRatio =  static_cast<float>(windowSize_.x)/ static_cast<float>(windowSize_.y);
 	if(neko::Abs(newAspectRatio-aspectRatio) < 0.001f)
 	{
 		//Same aspect ratio
@@ -218,17 +218,17 @@ void GraphicsManager::ReloadDrawingSize()
 		if(newAspectRatio > aspectRatio)
 		{
 			//vertical black bars
-			offset_ = {(windowSize_.x-(int)((float)windowSize_.y*aspectRatio))/2, 0};
+			offset_ = {(windowSize_.x-static_cast<int>( static_cast<float>(windowSize_.y)*aspectRatio))/2, 0};
 			actualSize_ = {windowSize_.x-offset_.x*2, windowSize_.y};
 		}
 		else
 		{
 			//horizontal black bars
-			offset_ = {0,(windowSize_.y-(int)((float)windowSize_.x/aspectRatio))/2};
+			offset_ = {0,(windowSize_.y-static_cast<int>( static_cast<float>(windowSize_.x)/aspectRatio))/2};
 			actualSize_ = {windowSize_.x, windowSize_.y-offset_.y*2};
 		}
 	}
-	scale_ = (float)actualSize_.y/gameWindowSize.y;
+	scale_ =  static_cast<float>(actualSize_.y)/static_cast<float>(gameWindowSize.y);
 
 }
 
@@ -239,7 +239,7 @@ float GraphicsManager::GetScale() const
 
 neko::Vec2i GraphicsManager::GetGraphicsPosition(neko::Vec2f position) const
 {
-	const auto newPosition = neko::Vec2<float>((float)position.x, (float)-position.y)*pixelPerMeter*scale_;
+	const auto newPosition = neko::Vec2<float>( static_cast<float>(position.x),  static_cast<float>(-position.y))*pixelPerMeter*scale_;
 	return neko::Vec2i(newPosition)+offset_+actualSize_/2;
 }
 

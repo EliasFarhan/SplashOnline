@@ -483,7 +483,7 @@ void PlayerManager::Tick()
 
 				neko::Scalar waterForce = PlayerCharacter::WaterForce;
 				const auto forceCoefficient = PlayerCharacter::decreaseFactor*playerCharacter.hitTimer.CurrentTime()/PlayerCharacter::HitEffectPeriod+neko::Scalar{1};
-				neko::Vec2f newForce = playerCharacter.hitDirection * waterForce * (neko::Scalar)playerCharacter.resistancePhase * forceCoefficient;
+				neko::Vec2f newForce = playerCharacter.hitDirection * waterForce * static_cast<neko::Scalar>(playerCharacter.resistancePhase) * forceCoefficient;
 				playerPhysic.AddForce(newForce, PlayerCharacter::HitPriority);
 			}
 			playerCharacter.hitTimer.Update(fixedDeltaTime);
@@ -712,7 +712,7 @@ void PlayerManager::Respawn(int playerNumber)
 	playerCharacter.respawnPauseTimer.Reset();
 }
 
-Checksum<(int)PlayerChecksumIndex::LENGTH> PlayerManager::CalculateChecksum() const
+Checksum<static_cast<int>(PlayerChecksumIndex::LENGTH)> PlayerManager::CalculateChecksum() const
 {
 	std::uint32_t playerCharacterResult = 0;
 	std::uint32_t playerPhysicsResult = 0;
@@ -739,14 +739,14 @@ Checksum<(int)PlayerChecksumIndex::LENGTH> PlayerManager::CalculateChecksum() co
 	const auto* playerInputPtr = reinterpret_cast<const std::uint8_t*>(playerInputs_.data());
 	for(std::size_t i = 0; i < sizeof(playerInputs_); i++)
 	{
-		playerInputResult += (std::uint32_t )playerInputPtr[i];
+		playerInputResult += static_cast<std::uint32_t>(playerInputPtr[i]);
 	}
 
 	std::uint32_t previousPlayerInputResult = 0;
 	playerInputPtr = reinterpret_cast<const std::uint8_t*>(previousPlayerInputs_.data());
 	for(std::size_t i = 0; i < sizeof(previousPlayerInputs_); i++)
 	{
-		previousPlayerInputResult += (std::uint32_t )playerInputPtr[i];
+		previousPlayerInputResult += static_cast<std::uint32_t>(playerInputPtr[i]);
 	}
 
 	std::uint32_t playerBodyResult = 0;
@@ -763,8 +763,8 @@ Checksum<(int)PlayerChecksumIndex::LENGTH> PlayerManager::CalculateChecksum() co
 		{
 			if(i*sizeof(std::uint32_t) == offsetof(neko::Body, type))
 			{
-				playerBodyResult += (std::uint32_t)body.type;
-				playerBodyResult += (std::uint32_t)body.isActive;
+				playerBodyResult += static_cast<std::uint32_t>(body.type);
+				playerBodyResult += static_cast<std::uint32_t>(body.isActive);
 				break;
 			}
 			playerBodyResult += bodyPtr[i];

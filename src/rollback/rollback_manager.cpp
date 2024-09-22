@@ -10,7 +10,7 @@
 namespace splash
 {
 static RollbackManager* instance = nullptr;
-Checksum<(int)BulletChecksumIndex::LENGTH+(int)PlayerChecksumIndex::LENGTH> RollbackManager::ConfirmLastFrame()
+Checksum<static_cast<int>(BulletChecksumIndex::LENGTH)+static_cast<int>(PlayerChecksumIndex::LENGTH)> RollbackManager::ConfirmLastFrame()
 {
 	const auto inputs = GetInputs(neko::Max(lastConfirmFrame_, 0));
 	confirmFrameGameSystems_.SetPlayerInput(inputs);
@@ -50,9 +50,9 @@ void RollbackManager::SetInput(int playerNumber, PlayerInput input, int currentF
 		return;
 	}
 	int index = currentFrame;
-	if(index >= (int)inputs_.size())
+	if(index >= static_cast<int>(inputs_.size()))
 	{
-		const auto delta = (int)inputs_.size()-index+1;
+		const auto delta = static_cast<int>(inputs_.size())-index+1;
 		std::array<PlayerInput, MaxPlayerNmb> last{};
 		if(!inputs_.empty())
 		{
@@ -76,9 +76,9 @@ void RollbackManager::SetInput(int playerNumber, PlayerInput input, int currentF
 PlayerInput RollbackManager::GetInput(int playerNumber, int currentFrame) const
 {
 	int index = currentFrame;
-	if(index >= (int)inputs_.size())
+	if(index >= static_cast<int>(inputs_.size()))
 	{
-		index = (int)inputs_.size()-1;
+		index = static_cast<int>(inputs_.size())-1;
 	}
 	return inputs_[index][playerNumber];
 }
@@ -102,9 +102,9 @@ std::pair<std::array<PlayerInput, MaxPlayerInputNmb>, int> RollbackManager::GetI
 std::array<PlayerInput, MaxPlayerNmb> RollbackManager::GetInputs(int currentFrame) const
 {
 	auto index = currentFrame;
-	if(index > (int)inputs_.size())
+	if(index > static_cast<int>(inputs_.size()))
 	{
-		index = (int)inputs_.size()-1;
+		index = static_cast<int>(inputs_.size())-1;
 	}
 	return inputs_[index];
 }

@@ -11,6 +11,7 @@ namespace splash
 class SystemInterface
 {
 public:
+	virtual ~SystemInterface() = default;
 	virtual void Begin() = 0;
 	virtual void End() = 0;
 	virtual void Update(float dt) = 0;

@@ -96,7 +96,7 @@ FMOD::Studio::EventDescription* AudioManager::GetEventDescription(std::string_vi
 	const auto errorCode = system_->getEvent(eventName.data(), &eventDescription );
 	if(errorCode != FMOD_OK)
 	{
-		LogError(fmt::format("Fmod getting event description error: {}", (int)errorCode));
+		LogError(fmt::format("Fmod getting event description error: {}", static_cast<int>(errorCode)));
 		return nullptr;
 	}
 	return eventDescription;

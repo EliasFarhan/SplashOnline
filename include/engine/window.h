@@ -5,7 +5,10 @@
 #ifndef SPLASHONLINE_WINDOW_H_
 #define SPLASHONLINE_WINDOW_H_
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
 #include <SDL.h>
+#pragma clang diagnostic pop
 #include <vector>
 
 namespace splash
@@ -13,6 +16,7 @@ namespace splash
 class OnEventInterface
 {
 public:
+	virtual ~OnEventInterface() = default;
 	virtual void OnEvent(const SDL_Event& event) = 0;
 	[[nodiscard]]virtual int GetEventListenerIndex() const = 0;
 	virtual void SetEventListenerIndex(int index) = 0;

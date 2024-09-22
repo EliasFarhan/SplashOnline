@@ -18,6 +18,7 @@ namespace splash
 class OnGuiInterface
 {
 public:
+	virtual ~OnGuiInterface() = default;
 	virtual void OnGui() = 0;
 	virtual void SetGuiIndex(int index) = 0;
 	[[nodiscard]] virtual int GetGuiIndex() const = 0;

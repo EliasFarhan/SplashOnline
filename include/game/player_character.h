@@ -227,7 +227,7 @@ enum PlayerChecksumIndex
 	LENGTH
 };
 
-class PlayerManager : public RollbackInterface<PlayerManager, (int)PlayerChecksumIndex::LENGTH>
+class PlayerManager : public RollbackInterface<PlayerManager, static_cast<int>(PlayerChecksumIndex::LENGTH)>
 {
 public:
 	explicit PlayerManager(GameSystems* gameSystems);
@@ -254,7 +254,7 @@ public:
 	void SetPlayerInput(neko::Span<PlayerInput> playerInputs);
 	void SetPreviousPlayerInput(neko::Span<PlayerInput> playerInputs);
 
-	[[nodiscard]] Checksum<(int)PlayerChecksumIndex::LENGTH> CalculateChecksum() const override;
+	[[nodiscard]] Checksum<static_cast<int>(PlayerChecksumIndex::LENGTH)> CalculateChecksum() const override;
 
 	void RollbackFrom(const PlayerManager& system) override;
 
