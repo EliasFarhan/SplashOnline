@@ -6,10 +6,14 @@
 
 #include <container/vector.h>
 #include <spine-sdl-cpp.h>
+#if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
 #include <fmod_studio.hpp>
+#if defined(__clang__)
 #pragma clang diagnostic pop
+#endif
 
 #include <array>
 #include <memory>

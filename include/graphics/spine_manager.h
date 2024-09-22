@@ -5,13 +5,17 @@
 #ifndef SPLASHONLINE_SPINE_MANAGER_H_
 #define SPLASHONLINE_SPINE_MANAGER_H_
 
+#if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wold-style-cast"
 #pragma clang diagnostic ignored "-Wsign-conversion"
+#endif
 #include <spine/TextureLoader.h>
 #include <spine/Atlas.h>
 #include <spine-sdl-cpp.h>
+#if defined(__clang__)
 #pragma clang diagnostic pop
+#endif
 
 #include <memory>
 #include <array>

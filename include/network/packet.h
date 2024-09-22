@@ -7,10 +7,14 @@
 
 #include "engine/input_manager.h"
 
+#if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpedantic"
+#endif
 #include "Common-cpp/inc/CustomType.h"
+#if defined(__clang__)
 #pragma clang diagnostic pop
+#endif
 
 #include "game/const.h"
 
