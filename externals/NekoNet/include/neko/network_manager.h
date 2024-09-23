@@ -3,12 +3,15 @@
 #ifndef NEKO_NETWORK_MANAGER_H
 #define NEKO_NETWORK_MANAGER_H
 
-
+#if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpedantic"
 #pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
 #include <LoadBalancing-cpp/inc/Client.h>
+#if defined(__clang__)
 #pragma clang diagnostic pop
+#endif
 
 namespace neko
 {
