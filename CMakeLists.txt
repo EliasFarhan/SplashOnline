@@ -5,10 +5,12 @@ set (CMAKE_CXX_STANDARD 20)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 option(ENABLE_PROFILER "Enable Tracy Profiling" OFF)
 option(BUILD_SHARED_LIBS "Build the library as a shared library" OFF)
 option(ENABLE_DESYNC_DEBUG "Register states in sqlite3 for debug" OFF)
+option(ENABLE_ASAN "Enable Adress Sanitizer" OFF)
 
 #tracy profiler
 if(ENABLE_PROFILER)
@@ -85,6 +87,9 @@ if(MSVC)
     target_compile_options(SplashLib PUBLIC "/utf-8" "/W4" "/permissive-")
     file(COPY ${FMOD_DIR}/studio/lib/fmodstudio64.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
     file(COPY ${FMOD_DIR}/lowlevel/lib/fmod64.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+    if(ENABLE_ASAN)
+        target_compile_options(SplashLib PUBLIC "/fsanitize=address")
+    endif (ENABLE_ASAN)
 elseif(APPLE)
     target_link_libraries(SplashLib PUBLIC libfmodstudio.dylib)
     target_compile_options(SplashLib PUBLIC "-Wall" "-Wextra" "-Wpedantic")

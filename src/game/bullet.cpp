@@ -169,19 +169,7 @@ Checksum<static_cast<int>(BulletChecksumIndex::LENGTH)> BulletManager::Calculate
 			bulletResult += bulletPtr[j];
 		}
 		const auto& body = gameSystems_->GetPhysicsWorld().body(bullet.bodyIndex);
-		auto* bodyPtr = reinterpret_cast<const std::uint32_t *>(&body);
-
-		for(std::size_t i = 0; i < sizeof(neko::Body)/sizeof(std::uint32_t); i++)
-		{
-			if(i*sizeof(std::uint32_t)== offsetof(neko::Body, type))
-			{
-				bulletBodyResult += static_cast<std::uint32_t>(body.type);
-				bulletBodyResult += body.isActive;
-				break;
-			}
-			bulletBodyResult += static_cast<std::uint32_t>(bodyPtr[i]);
-
-		}
+		bulletBodyResult += neko::GenerateChecksum(body);
 
 	}
 	return {bulletResult, bulletBodyResult};

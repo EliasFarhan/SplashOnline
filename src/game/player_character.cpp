@@ -757,18 +757,7 @@ Checksum<static_cast<int>(PlayerChecksumIndex::LENGTH)> PlayerManager::Calculate
 			continue;
 		}
 		const auto& body = gameSystems_->GetPhysicsWorld().body(playerPhysics_[playerNumber].bodyIndex);
-		auto* bodyPtr = reinterpret_cast<const std::uint32_t *>(&body);
-
-		for(std::size_t i = 0; i < sizeof(neko::Body)/sizeof(std::uint32_t); i++)
-		{
-			if(i*sizeof(std::uint32_t) == offsetof(neko::Body, type))
-			{
-				playerBodyResult += static_cast<std::uint32_t>(body.type);
-				playerBodyResult += static_cast<std::uint32_t>(body.isActive);
-				break;
-			}
-			playerBodyResult += bodyPtr[i];
-		}
+		playerBodyResult+= neko::GenerateChecksum(body);
 	}
 	return {playerCharacterResult, playerPhysicsResult, playerInputResult, previousPlayerInputResult, playerBodyResult};
 }
