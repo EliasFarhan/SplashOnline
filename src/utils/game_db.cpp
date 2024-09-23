@@ -24,9 +24,10 @@ namespace splash
 {
 
 static sqlite3* db_ = nullptr;
-static neko::FuncJob openJob_{};
-static neko::FuncJob confirmFrameJob_{};
-static neko::FuncJob localInputJob_{};
+static std::unique_ptr<neko::FuncJob> openJob_{};
+static std::unique_ptr<neko::FuncJob> confirmFrameJob_{};
+static std::unique_ptr<neko::FuncJob> localInputJob_{};
+static std::unique_ptr<neko::FuncJob> remoteInputJob_{};
 
 void OpenDatabase(int playerNumber)
 {
@@ -34,16 +35,18 @@ void OpenDatabase(int playerNumber)
 	ZoneScoped;
 #endif
 
-	openJob_ = neko::FuncJob([playerNumber](){
+	openJob_ = std::make_unique<neko::FuncJob>([playerNumber](){
 #ifdef TRACY_ENABLE
 		ZoneNamedN(dbOpen, "Create Database", true);
 #endif
 
-		const auto dbName = fmt::format("splash_p{}.db", playerNumber);
-		if(fs::exists(dbName))
+		int i = 0;
+		std::string dbName;
+		do
 		{
-			fs::remove(dbName);
-		}
+			dbName = fmt::format("splash{}_p{}.db", i, playerNumber);
+			i++;
+		} while(fs::exists(dbName));
 		auto result = sqlite3_open(dbName.data(), &db_);
 		if(result != SQLITE_OK)
 		{
@@ -105,23 +108,15 @@ void OpenDatabase(int playerNumber)
 			sqlite3_free(errorMsg);
 			return;
 		}
-
-		result = sqlite3_exec(db_, createConfirmFrameTable, nullptr, nullptr, &errorMsg);
-		if(result != SQLITE_OK)
-		{
-			LogError(fmt::format("Could not create table confirm_frame: {}", errorMsg));
-			sqlite3_free(errorMsg);
-			return;
-		}
 	});
-	ScheduleAsyncJob(&openJob_);
+	ScheduleAsyncJob(openJob_.get());
 }
 
 void CloseDatabase()
 {
 	if(db_ == nullptr)
 		return;
-	if(openJob_.HasStarted() && openJob_.IsDone())
+	if(openJob_->HasStarted() && openJob_->IsDone())
 	{
 		sqlite3_close(db_);
 		db_ = nullptr;
@@ -137,13 +132,13 @@ void AddConfirmFrame(const Checksum<7>& checksum, int confirmFrame)
 	{
 		return;
 	}
-	if(confirmFrameJob_.HasStarted() && !confirmFrameJob_.IsDone())
+	if(confirmFrame &&  !confirmFrameJob_->IsDone())
 	{
-		confirmFrameJob_.Join();
+		confirmFrameJob_->Join();
 	}
 
 
-	confirmFrameJob_ = neko::FuncJob{[checksum, confirmFrame](){
+	confirmFrameJob_ = std::make_unique<neko::FuncJob>([checksum, confirmFrame](){
 #ifdef TRACY_ENABLE
 		ZoneNamedN(dbInsert, "Insert Confirm Db", true);
 #endif
@@ -176,8 +171,8 @@ void AddConfirmFrame(const Checksum<7>& checksum, int confirmFrame)
 			sqlite3_free(errorMsg);
 			return;
 		}
-	}};
-	ScheduleAsyncJob(&confirmFrameJob_);
+	});
+	ScheduleAsyncJob(confirmFrameJob_.get());
 }
 
 void AddLocalInput(int currentFrame, PlayerInput playerInput)
@@ -189,12 +184,12 @@ void AddLocalInput(int currentFrame, PlayerInput playerInput)
 	{
 		return;
 	}
-	if(localInputJob_.HasStarted() && !localInputJob_.IsDone())
+	if(localInputJob_ &&  !localInputJob_->IsDone())
 	{
-		localInputJob_.Join();
+		localInputJob_->Join();
 	}
 
-	localInputJob_ = neko::FuncJob([currentFrame, playerInput](){
+	localInputJob_ = std::make_unique<neko::FuncJob>([currentFrame, playerInput](){
 #ifdef TRACY_ENABLE
 		ZoneNamedN(dbInsert, "Insert Input Db", true);
 #endif
@@ -221,7 +216,56 @@ void AddLocalInput(int currentFrame, PlayerInput playerInput)
 		}
 
 	});
-	ScheduleAsyncJob(&localInputJob_);
+	ScheduleAsyncJob(localInputJob_.get());
+
+}
+
+void AddRemoteInput(int currentFrame, int remoteFrame, int playerNumber, PlayerInput playerInput)
+{
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
+	if(db_ == nullptr)
+	{
+		return;
+	}
+	if(remoteInputJob_ && !remoteInputJob_->IsDone())
+	{
+		remoteInputJob_->Join();
+	}
+
+	remoteInputJob_ = std::make_unique<neko::FuncJob>([currentFrame, remoteFrame, playerNumber, playerInput](){
+#ifdef TRACY_ENABLE
+		ZoneNamedN(dbInsert, "Insert Remote Db", true);
+#endif
+
+		const auto inputStatment = fmt::format("INSERT INTO remote_inputs ("
+											   "remote_frame,"
+											   "local_frame,"
+											   "player_number,"
+											   "move_x,"
+											   "move_y,"
+											   "target_x,"
+											   "target_y,"
+											   "button) VALUES ({},{},{},{},{},{},{},{});",
+				remoteFrame,
+				currentFrame,
+				playerNumber,
+				playerInput.moveDirX.underlyingValue(),
+				playerInput.moveDirY.underlyingValue(),
+				playerInput.targetDirX.underlyingValue(),
+				playerInput.targetDirY.underlyingValue(),
+				playerInput.buttons);
+		char* errorMsg = nullptr;
+		const auto result = sqlite3_exec(db_, inputStatment.data(), nullptr, nullptr, &errorMsg);
+		if(result != SQLITE_OK)
+		{
+			LogError(fmt::format("Could not insert remote input: {}", errorMsg));
+			sqlite3_free(errorMsg);
+			return;
+		}
+	});
+	ScheduleAsyncJob(remoteInputJob_.get());
 
 }
 

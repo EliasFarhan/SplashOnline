@@ -18,6 +18,7 @@ void CloseDatabase();
 
 void AddConfirmFrame(const Checksum<7>& checksum, int confirmFrame);
 void AddLocalInput(int currentFrame, PlayerInput playerInput);
+void AddRemoteInput(int currentFrame, int remoteFrame, int playerNumber, PlayerInput playerInput);
 
 };
 #endif

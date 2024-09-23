@@ -3,8 +3,10 @@
 //
 #include "engine/engine.h"
 #include "game/game_manager.h"
+#include "utils/game_db.h"
 
 #include <SDL_main.h>
+
 
 
 
@@ -19,6 +21,9 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
 	gameData.connectedPlayers[1] = true;
 	gameData.connectedPlayers[2] = true;
 	gameData.connectedPlayers[3] = true;
+
+
+
 	splash::GameManager gameManager{gameData};
 	engine.Run();
 	return 0;

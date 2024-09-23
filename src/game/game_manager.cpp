@@ -35,6 +35,10 @@ static GameManager* instance = nullptr;
 void GameManager::Begin()
 {
 	instance = this;
+#ifdef ENABLE_DESYNC_DEBUG
+	auto* netClient = GetNetworkClient();
+	OpenDatabase(netClient ? netClient->GetPlayerIndex()-1 : 0);
+#endif
 	gameSystems_.Begin();
 	gameRenderer_.Begin();
 	rollbackManager_.Begin();
@@ -250,6 +254,9 @@ void GameManager::RollbackUpdate()
 			currentFrame_));
 		 */
 		rollbackManager_.SetInputs(inputPacket);
+#ifdef ENABLE_DESYNC_DEBUG
+		AddRemoteInput(currentFrame_, inputPacket.frame, inputPacket.playerNumber, inputPacket.inputs[inputPacket.inputSize-1]);
+#endif
 	}
 
 	{

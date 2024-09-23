@@ -23,9 +23,7 @@ class ClientInterface : public ExitGames::LoadBalancing::Listener
 class NetworkManager
 {
 public:
-
     explicit NetworkManager(ClientInterface* client, const ExitGames::LoadBalancing::ClientConstructOptions& clientConstructOptions={});
-	virtual ~NetworkManager() = default;
 	virtual void Begin();
 	virtual void Tick();
 	virtual void End();

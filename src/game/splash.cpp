@@ -210,9 +210,6 @@ void SplashManager::SwitchToState(SplashManager::State state)
 		SetMusicParameter("Transition Title", 0.0f);
 		SetMusicParameter("Transition Kittymanjaro", 0.5f);
 		SetMusicParameter("Transition Start", 0.5f);
-#ifdef ENABLE_DESYNC_DEBUG
-		OpenDatabase(client_->GetPlayerIndex()-1);
-#endif
 		break;
 	}
 	case State::VICTORY_SCREEN:
