@@ -24,7 +24,7 @@ class NetworkManager
 {
 public:
     explicit NetworkManager(ClientInterface* client, const ExitGames::LoadBalancing::ClientConstructOptions& clientConstructOptions={});
-	virtual void Begin();
+    virtual void Begin();
 	virtual void Tick();
 	virtual void End();
 
