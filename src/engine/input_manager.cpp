@@ -6,7 +6,9 @@
 #include "graphics/graphics_manager.h"
 #include "utils/log.h"
 #include "game/game_manager.h"
-
+#ifdef TRACY_ENABLE
+#include <tracy/Tracy.hpp>
+#endif
 
 namespace splash
 {
