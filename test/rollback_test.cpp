@@ -24,7 +24,7 @@ SCENARIO("Rollback predicts inputs by replicating them", "[rollback]")
 				rollbackManager.SetInput(1, { neko::Fixed8{ 0.5f }}, i);
 			}
 			REQUIRE(rollbackManager.GetLastReceivedFrame() == 0);
-			THEN("The other player as its same input")
+			THEN("The other player as its same input replicated")
 			{
 				const auto input = rollbackManager.GetInput(0, currentFrame);
 				REQUIRE(input.moveDirX == player1Input);
