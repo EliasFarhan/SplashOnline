@@ -132,6 +132,13 @@ Engine::Engine()
 	instance = this;
 	systems_.reserve(15);
 }
+
+Engine::Engine(std::string_view inputFile) : inputManager_(inputFile)
+{
+	instance = this;
+	systems_.reserve(15);
+}
+
 void Engine::ScheduleNetJob(neko::Job* pJob)
 {
 	jobSystem_.AddJob(pJob, networkQueue_);

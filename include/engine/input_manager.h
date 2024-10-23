@@ -4,9 +4,14 @@
 #include "engine/window.h"
 
 #include <math/fixed.h>
+
 #include <SDL_gamecontroller.h>
 #include <SDL_events.h>
+
 #include <cstdint>
+#include <string_view>
+#include <vector>
+#include <string>
 
 namespace splash
 {
@@ -49,6 +54,8 @@ struct PlayerInput
 class InputManager : public OnEventInterface
 {
 public:
+	InputManager() = default;
+	explicit InputManager(std::string_view inputFile);
 	void Begin();
 	void ManageEvent(const SDL_Event& event);
 	void End();
@@ -63,6 +70,8 @@ private:
 	static SDL_GameController* FindGameController();
 	static SDL_JoystickID GetControllerInstanceId(SDL_GameController *controller);
 	SDL_GameController* controller_ = nullptr;
+	std::string inputFile_;
+	std::vector<PlayerInput> playerInputs_;
 	int eventIndex_ = -1;
 };
 }

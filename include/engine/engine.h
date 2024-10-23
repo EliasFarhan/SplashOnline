@@ -20,6 +20,8 @@ class Engine
 {
 public:
 	Engine();
+
+	explicit Engine(std::string_view inputFile);
 	void Run();
 
 	void ScheduleJob(neko::Job* job);

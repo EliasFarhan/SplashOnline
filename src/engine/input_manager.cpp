@@ -12,17 +12,28 @@
 
 namespace splash
 {
+InputManager::InputManager(std::string_view inputFile) : inputFile_(inputFile.data())
+{
+}
+
 void InputManager::Begin()
 {
 #ifdef TRACY_ENABLE
 	ZoneScoped;
 #endif
-	AddEventListener(this);
-	SDL_GameControllerAddMappingsFromFile("data/config/gamecontrollerdb.txt");
-	controller_ = FindGameController();
-	if(controller_ == nullptr)
+	if(inputFile_.empty())
 	{
-		LogWarning("No controller attached");
+		AddEventListener(this);
+		SDL_GameControllerAddMappingsFromFile("data/config/gamecontrollerdb.txt");
+		controller_ = FindGameController();
+		if(controller_ == nullptr)
+		{
+			LogWarning("No controller attached");
+		}
+	}
+	else
+	{
+		//TODO load sqlite data from local input file db
 	}
 }
 

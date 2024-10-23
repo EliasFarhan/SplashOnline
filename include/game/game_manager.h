@@ -31,6 +31,7 @@ public:
 	void SetSystemIndex(int index) override;
 	[[nodiscard]] neko::Vec2i GetPlayerScreenPos() const;
 	[[nodiscard]] bool HasDesync() const {return hasDesync_;}
+	[[nodiscard]] int GetCurrentFrame() const {return currentFrame_;}
 private:
 	void RollbackUpdate();
 	GameSystems gameSystems_;
@@ -51,5 +52,8 @@ private:
 };
 
 neko::Vec2i GetPlayerScreenPos();
+int GetCurrentFrame();
+
+
 }
 #endif //SPLASHONLINE_GAME_GAME_MANAGER_H_

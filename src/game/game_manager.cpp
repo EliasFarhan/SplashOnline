@@ -365,6 +365,15 @@ neko::Vec2i GetPlayerScreenPos()
 	return instance->GetPlayerScreenPos();
 }
 
+int GetCurrentFrame()
+{
+	if(instance == nullptr)
+	{
+		return -1;
+	}
+	return  instance->GetCurrentFrame();
+}
+
 neko::Vec2i GameManager::GetPlayerScreenPos() const
 {
 	int playerIndex = 0;
