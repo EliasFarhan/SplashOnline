@@ -10,6 +10,7 @@
 #include <thread/job_system.h>
 #include <fmt/format.h>
 #include <sqlite3.h>
+#include <rigtorp/SPSCQueue.h>
 
 #include <optional>
 
@@ -26,9 +27,142 @@ namespace splash
 
 static sqlite3* db_ = nullptr;
 static std::unique_ptr<neko::FuncJob> openJob_{};
-static std::unique_ptr<neko::FuncJob> confirmFrameJob_{};
-static std::unique_ptr<neko::FuncJob> localInputJob_{};
-static std::unique_ptr<neko::FuncJob> remoteInputJob_{};
+static std::unique_ptr<neko::FuncJob> runQueriesJob_{};
+
+struct ConfirmFrameData
+{
+	Checksum<7> checksum{};
+	int confirmFrame{};
+};
+
+struct RemoteInputData
+{
+	int currentFrame{};
+	int remoteFrame{};
+	int playerNumber{};
+	PlayerInput playerInput{};
+};
+
+struct LocalInputData
+{
+	int currentFrame{};
+	PlayerInput playerInput{};
+};
+
+using QueryData = std::variant<ConfirmFrameData, RemoteInputData, LocalInputData>;
+static rigtorp::SPSCQueue<QueryData> queries{50};
+
+static void Query(const ConfirmFrameData& data)
+{
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
+	const auto checksumStatement = fmt::format("INSERT INTO confirm_frame ("
+												   "confirm_frame,"
+												   "player_character_checksum,"
+												   "player_physics_checksum,"
+												   "player_input_checksum,"
+												   "player_previous_input_checksum,"
+												   "player_bodies_checksum,"
+												   "bullets_checksum,"
+												   "bullet_bodies_checksum,"
+												   "final_checksum)"
+												   " VALUES ("
+												   "{},{},{},{},{},{},{},{},{});",
+												   data.confirmFrame,
+												   data.checksum[0],
+												   data.checksum[1],
+												   data.checksum[2],
+												   data.checksum[3],
+												   data.checksum[4],
+												   data.checksum[5],
+												   data.checksum[6],
+												   static_cast<std::uint32_t>(data.checksum));
+	char* errorMsg = nullptr;
+	const auto result = sqlite3_exec(db_, checksumStatement.data(), nullptr, nullptr, &errorMsg);
+	if(result != SQLITE_OK)
+	{
+		LogError(fmt::format("Could not insert confirm_frame: {}", errorMsg));
+		sqlite3_free(errorMsg);
+	}
+}
+
+static void Query(const RemoteInputData& data)
+{
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
+	const auto inputStatment = fmt::format("INSERT INTO remote_inputs ("
+											   "remote_frame,"
+											   "local_frame,"
+											   "player_number,"
+											   "move_x,"
+											   "move_y,"
+											   "target_x,"
+											   "target_y,"
+											   "button) VALUES ({},{},{},{},{},{},{},{});",
+				data.remoteFrame,
+				data.currentFrame,
+				data.playerNumber,
+				data.playerInput.moveDirX.underlyingValue(),
+				data.playerInput.moveDirY.underlyingValue(),
+				data.playerInput.targetDirX.underlyingValue(),
+				data.playerInput.targetDirY.underlyingValue(),
+				data.playerInput.buttons);
+	char* errorMsg = nullptr;
+	const auto result = sqlite3_exec(db_, inputStatment.data(), nullptr, nullptr, &errorMsg);
+	if(result != SQLITE_OK)
+	{
+		LogError(fmt::format("Could not insert remote input: {}", errorMsg));
+		sqlite3_free(errorMsg);
+	}
+}
+
+static void Query(const LocalInputData& data)
+{
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
+	const auto inputStatment = fmt::format("INSERT INTO local_inputs ("
+				"frame ,"
+				"move_x,"
+				"move_y,"
+				"target_x,"
+				"target_y,"
+				"button) VALUES ({},{},{},{},{},{});",
+				data.currentFrame,
+				data.playerInput.moveDirX.underlyingValue(),
+				data.playerInput.moveDirY.underlyingValue(),
+				data.playerInput.targetDirX.underlyingValue(),
+				data.playerInput.targetDirY.underlyingValue(),
+				data.playerInput.buttons	);
+	char* errorMsg = nullptr;
+	const auto result = sqlite3_exec(db_, inputStatment.data(), nullptr, nullptr, &errorMsg);
+	if(result != SQLITE_OK)
+	{
+		LogError(fmt::format("Could not insert local input: {}", errorMsg));
+		sqlite3_free(errorMsg);
+	}
+}
+
+static void RunQuery(const QueryData& queryData)
+{
+	std::visit([&](auto&& arg)
+	{
+		using T = std::decay_t<decltype(arg)>;
+		Query(arg);
+	}, queryData);
+}
+
+static void RunQueries()
+{
+	if(runQueriesJob_->HasStarted() && !runQueriesJob_->IsDone())
+	{
+		return;
+	}
+	runQueriesJob_->Reset();
+	ScheduleAsyncJob(runQueriesJob_.get());
+}
 
 void OpenDatabase(int playerNumber)
 {
@@ -107,10 +241,18 @@ void OpenDatabase(int playerNumber)
 		{
 			LogError(fmt::format("Could not create table confirm_frame: {}", errorMsg));
 			sqlite3_free(errorMsg);
-			return;
 		}
 	});
 	ScheduleAsyncJob(openJob_.get());
+	runQueriesJob_ = std::make_unique<neko::FuncJob>([]()
+	{
+		while(!queries.empty())
+		{
+			auto query = *queries.front();
+			RunQuery(query);
+			queries.pop();
+		}
+	});
 }
 
 void CloseDatabase()
@@ -133,50 +275,11 @@ void AddConfirmFrame(const Checksum<7>& checksum, int confirmFrame)
 	{
 		return;
 	}
-	if(confirmFrame &&  !confirmFrameJob_->IsDone())
-	{
-#ifdef TRACY_ENABLE
-		ZoneNamedN(joinTask, "Join Task", true);
-#endif
-		confirmFrameJob_->Join();
-	}
 
 
-	confirmFrameJob_ = std::make_unique<neko::FuncJob>([checksum, confirmFrame](){
-#ifdef TRACY_ENABLE
-		ZoneNamedN(dbInsert, "Insert Confirm Db", true);
-#endif
-		const auto checksumStatement = fmt::format("INSERT INTO confirm_frame ("
-												   "confirm_frame,"
-												   "player_character_checksum,"
-												   "player_physics_checksum,"
-												   "player_input_checksum,"
-												   "player_previous_input_checksum,"
-												   "player_bodies_checksum,"
-												   "bullets_checksum,"
-												   "bullet_bodies_checksum,"
-												   "final_checksum)"
-												   " VALUES ("
-												   "{},{},{},{},{},{},{},{},{});",
-												   confirmFrame,
-												   checksum[0],
-												   checksum[1],
-												   checksum[2],
-												   checksum[3],
-												   checksum[4],
-												   checksum[5],
-												   checksum[6],
-												   static_cast<std::uint32_t>(checksum));
-		char* errorMsg = nullptr;
-		const auto result = sqlite3_exec(db_, checksumStatement.data(), nullptr, nullptr, &errorMsg);
-		if(result != SQLITE_OK)
-		{
-			LogError(fmt::format("Could not insert confirm_frame: {}", errorMsg));
-			sqlite3_free(errorMsg);
-			return;
-		}
-	});
-	ScheduleAsyncJob(confirmFrameJob_.get());
+	queries.push(ConfirmFrameData{checksum, confirmFrame});
+
+	RunQueries();
 }
 
 void AddLocalInput(int currentFrame, PlayerInput playerInput)
@@ -188,6 +291,11 @@ void AddLocalInput(int currentFrame, PlayerInput playerInput)
 	{
 		return;
 	}
+
+	queries.push(LocalInputData{currentFrame, playerInput});
+
+	RunQueries();
+	/*
 	if(localInputJob_ &&  !localInputJob_->IsDone())
 	{
 #ifdef TRACY_ENABLE
@@ -200,31 +308,11 @@ void AddLocalInput(int currentFrame, PlayerInput playerInput)
 #ifdef TRACY_ENABLE
 		ZoneNamedN(dbInsert, "Insert Input Db", true);
 #endif
-		const auto inputStatment = fmt::format("INSERT INTO local_inputs ("
-				"frame ,"
-				"move_x,"
-				"move_y,"
-				"target_x,"
-				"target_y,"
-				"button) VALUES ({},{},{},{},{},{});",
-				currentFrame,
-				playerInput.moveDirX.underlyingValue(),
-				playerInput.moveDirY.underlyingValue(),
-				playerInput.targetDirX.underlyingValue(),
-				playerInput.targetDirY.underlyingValue(),
-				playerInput.buttons	);
-		char* errorMsg = nullptr;
-		const auto result = sqlite3_exec(db_, inputStatment.data(), nullptr, nullptr, &errorMsg);
-		if(result != SQLITE_OK)
-		{
-			LogError(fmt::format("Could not insert local input: {}", errorMsg));
-			sqlite3_free(errorMsg);
-			return;
-		}
+
 
 	});
 	ScheduleAsyncJob(localInputJob_.get());
-
+	*/
 }
 
 void AddRemoteInput(int currentFrame, int remoteFrame, int playerNumber, PlayerInput playerInput)
@@ -239,6 +327,11 @@ void AddRemoteInput(int currentFrame, int remoteFrame, int playerNumber, PlayerI
 #endif
 		return;
 	}
+
+	queries.push(RemoteInputData{currentFrame, remoteFrame, playerNumber, playerInput});
+
+	RunQueries();
+	/*
 	if(remoteInputJob_ && !remoteInputJob_->IsDone())
 	{
 		remoteInputJob_->Join();
@@ -249,34 +342,10 @@ void AddRemoteInput(int currentFrame, int remoteFrame, int playerNumber, PlayerI
 		ZoneNamedN(dbInsert, "Insert Remote Db", true);
 #endif
 
-		const auto inputStatment = fmt::format("INSERT INTO remote_inputs ("
-											   "remote_frame,"
-											   "local_frame,"
-											   "player_number,"
-											   "move_x,"
-											   "move_y,"
-											   "target_x,"
-											   "target_y,"
-											   "button) VALUES ({},{},{},{},{},{},{},{});",
-				remoteFrame,
-				currentFrame,
-				playerNumber,
-				playerInput.moveDirX.underlyingValue(),
-				playerInput.moveDirY.underlyingValue(),
-				playerInput.targetDirX.underlyingValue(),
-				playerInput.targetDirY.underlyingValue(),
-				playerInput.buttons);
-		char* errorMsg = nullptr;
-		const auto result = sqlite3_exec(db_, inputStatment.data(), nullptr, nullptr, &errorMsg);
-		if(result != SQLITE_OK)
-		{
-			LogError(fmt::format("Could not insert remote input: {}", errorMsg));
-			sqlite3_free(errorMsg);
-			return;
-		}
+
 	});
 	ScheduleAsyncJob(remoteInputJob_.get());
-
+*/
 }
 
 }
