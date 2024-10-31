@@ -16,7 +16,7 @@
 namespace splash
 {
 
-class Engine
+class Engine final
 {
 public:
 	Engine();

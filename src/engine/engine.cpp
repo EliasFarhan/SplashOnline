@@ -10,7 +10,7 @@
 #endif
 namespace splash
 {
-Engine* instance = nullptr;
+static Engine* instance = nullptr;
 
 void Engine::Run()
 {

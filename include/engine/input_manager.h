@@ -7,6 +7,7 @@
 
 #include <SDL_gamecontroller.h>
 #include <SDL_events.h>
+#include <sqlite3.h>
 
 #include <cstdint>
 #include <string_view>
@@ -72,6 +73,7 @@ private:
 	SDL_GameController* controller_ = nullptr;
 	std::string inputFile_;
 	std::vector<PlayerInput> playerInputs_;
+	sqlite3* db_ = nullptr;
 	int eventIndex_ = -1;
 };
 }
