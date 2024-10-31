@@ -63,6 +63,9 @@ void GameView::Begin()
 }
 void GameView::Update(float dt)
 {
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
 	timeSinceTick_ += dt;
 	levelRenderer_.Update(dt);
 	playerRenderer_.Update(dt);

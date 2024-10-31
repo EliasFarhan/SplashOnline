@@ -18,6 +18,7 @@ namespace fs = std::filesystem;
 
 #ifdef TRACY_ENABLE
 #include <tracy/Tracy.hpp>
+#include <tracy/TracyC.h>
 #endif
 
 namespace splash
@@ -134,6 +135,9 @@ void AddConfirmFrame(const Checksum<7>& checksum, int confirmFrame)
 	}
 	if(confirmFrame &&  !confirmFrameJob_->IsDone())
 	{
+#ifdef TRACY_ENABLE
+		ZoneNamedN(joinTask, "Join Task", true);
+#endif
 		confirmFrameJob_->Join();
 	}
 
@@ -186,6 +190,9 @@ void AddLocalInput(int currentFrame, PlayerInput playerInput)
 	}
 	if(localInputJob_ &&  !localInputJob_->IsDone())
 	{
+#ifdef TRACY_ENABLE
+		ZoneNamedN(joinTask, "Join Task", true);
+#endif
 		localInputJob_->Join();
 	}
 
@@ -227,6 +234,9 @@ void AddRemoteInput(int currentFrame, int remoteFrame, int playerNumber, PlayerI
 #endif
 	if(db_ == nullptr)
 	{
+#ifdef TRACY_ENABLE
+		ZoneNamedN(joinTask, "Join Task", true);
+#endif
 		return;
 	}
 	if(remoteInputJob_ && !remoteInputJob_->IsDone())

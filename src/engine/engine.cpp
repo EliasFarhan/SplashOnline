@@ -99,6 +99,9 @@ void Engine::End()
 
 void Engine::ScheduleJob(neko::Job* job)
 {
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
 	jobSystem_.AddJob(job, otherQueue_);
 }
 

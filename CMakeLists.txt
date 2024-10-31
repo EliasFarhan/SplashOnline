@@ -14,8 +14,8 @@ option(ENABLE_ASAN "Enable Adress Sanitizer" OFF)
 
 #tracy profiler
 if(ENABLE_PROFILING)
-    set(TRACY_DIR externals/tracy)
-    add_subdirectory(${TRACY_DIR})
+    set(Tracy_DIR externals/tracy)
+    add_subdirectory(${Tracy_DIR})
 endif (ENABLE_PROFILING)
 
 #NekoLib
@@ -59,17 +59,14 @@ add_compile_definitions(FMT_HEADER_ONLY=1)
 set(FMT_DIR externals/fmt)
 add_subdirectory(${FMT_DIR})
 
-if(ENABLE_DESYNC_DEBUG)
-    set(SQLITE3_DIR "externals/sqlite3")
-    add_subdirectory(${SQLITE3_DIR})
-endif(ENABLE_DESYNC_DEBUG)
+set(SQLITE3_DIR "externals/sqlite3")
+add_subdirectory(${SQLITE3_DIR})
 
 file(GLOB_RECURSE GAME_FILES src/*.cpp include/*.h)
 
 add_library(SplashLib ${GAME_FILES})
-target_link_libraries(SplashLib PUBLIC SDL2-static SDL2_ttf SDL2main imgui spine_sdl NekoCore NekoPhysics)
+target_link_libraries(SplashLib PUBLIC SDL2-static SDL2_ttf SDL2main imgui spine_sdl NekoCore NekoPhysics sqlite3)
 if(ENABLE_DESYNC_DEBUG)
-    target_link_libraries(SplashLib PUBLIC sqlite3)
     target_compile_definitions(SplashLib PUBLIC ENABLE_DESYNC_DEBUG)
 endif(ENABLE_DESYNC_DEBUG)
 if(ENABLE_PROFILING)

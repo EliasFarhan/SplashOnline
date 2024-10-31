@@ -15,6 +15,10 @@
 #include "utils/game_db.h"
 #endif
 
+#ifdef TRACY_ENABLE
+#include <tracy/Tracy.hpp>
+#endif
+
 template <> class fmt::formatter<splash::PlayerInput> {
 public:
 	constexpr auto parse (format_parse_context& ctx) { return ctx.begin(); }
@@ -34,6 +38,9 @@ namespace splash
 static GameManager* instance = nullptr;
 void GameManager::Begin()
 {
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
 	instance = this;
 #ifdef ENABLE_DESYNC_DEBUG
 	auto* netClient = GetNetworkClient();
@@ -45,6 +52,9 @@ void GameManager::Begin()
 }
 void GameManager::Update(float dt)
 {
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
 	if(!IsSpineLoaded() || !IsTextureLoaded() || !IsFmodLoaded())
 	{
 		return;
@@ -137,6 +147,9 @@ void GameManager::End()
 }
 void GameManager::Tick()
 {
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
 	const auto gameTime = static_cast<int>(gameTimer_.RemainingTime());
 	gameTimer_.Update(fixedDeltaTime);
 	if(gameTimer_.Over())
@@ -241,6 +254,9 @@ void GameManager::SetSystemIndex(int index)
 }
 void GameManager::RollbackUpdate()
 {
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
 	auto* netClient = GetNetworkClient();
 	//import network inputs
 	auto inputPackets = netClient->GetInputPackets();
