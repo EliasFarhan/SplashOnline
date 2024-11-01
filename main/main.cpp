@@ -18,7 +18,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
 		splash::LogDebug(fmt::format("Using player inputs from {}", input_file));
 	}
 
-	splash::Engine engine;
+	splash::Engine engine{input_file};
 	splash::AudioManager audioManager;
 	splash::SplashManager splashManager;
 	engine.Run();

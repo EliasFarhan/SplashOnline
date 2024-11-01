@@ -10,9 +10,12 @@
 #include <sqlite3.h>
 
 #include <cstdint>
+#include <memory>
 #include <string_view>
 #include <vector>
 #include <string>
+
+#include "thread/job_system.h"
 
 namespace splash
 {
@@ -71,6 +74,8 @@ private:
 	static SDL_GameController* FindGameController();
 	static SDL_JoystickID GetControllerInstanceId(SDL_GameController *controller);
 	SDL_GameController* controller_ = nullptr;
+
+	std::unique_ptr<neko::FuncJob> loadInputsJob_;
 	std::string inputFile_;
 	std::vector<PlayerInput> playerInputs_;
 	sqlite3* db_ = nullptr;

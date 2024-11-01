@@ -6,6 +6,10 @@
 #include "graphics/graphics_manager.h"
 #include "utils/log.h"
 #include "game/game_manager.h"
+
+#include <fmt/format.h>
+
+#include "engine/engine.h"
 #ifdef TRACY_ENABLE
 #include <tracy/Tracy.hpp>
 #endif
@@ -14,6 +18,48 @@ namespace splash
 {
 InputManager::InputManager(std::string_view inputFile) : inputFile_(inputFile.data())
 {
+}
+
+static int callback(void *data, int argc, char **argv, char **azColName)
+{
+	std::vector<PlayerInput>& inputs = *static_cast<std::vector<PlayerInput>*>(data);
+
+	PlayerInput currentInput{};
+	int frame = -1;
+	for(int i = 0; i < argc; i++)
+	{
+		std::string_view arg = azColName[i];
+		if("frame" == arg)
+		{
+			frame = std::stoi(argv[i]);
+		}
+		else if(arg == "move_x")
+		{
+			currentInput.moveDirX = neko::Fixed8::fromUnderlyingValue(std::stoi(argv[i]));
+		}
+		else if(arg == "move_y")
+		{
+			currentInput.moveDirY = neko::Fixed8::fromUnderlyingValue(std::stoi(argv[i]));
+		}
+		else if(arg == "target_x")
+		{
+			currentInput.targetDirX = neko::Fixed8::fromUnderlyingValue(std::stoi(argv[i]));
+		}
+		else if(arg == "target_y")
+		{
+			currentInput.targetDirY = neko::Fixed8::fromUnderlyingValue(std::stoi(argv[i]));
+		}
+		else if(arg == "button")
+		{
+			currentInput.buttons = std::stoi(argv[i]);
+		}
+	}
+	if(frame > inputs.size())
+	{
+		inputs.resize(frame);
+	}
+	inputs[frame] = currentInput;
+	return 0;
 }
 
 void InputManager::Begin()
@@ -33,7 +79,30 @@ void InputManager::Begin()
 	}
 	else
 	{
+		playerInputs_.resize(3000);
 		//TODO load sqlite data from local input file db
+		loadInputsJob_ = std::make_unique<neko::FuncJob>([this]()
+		{
+#ifdef TRACY_ENABLE
+			ZoneNamed(loadInputDb, "Load Input Db");
+#endif
+			auto result = sqlite3_open(inputFile_.data(), &db_);
+			if(result != SQLITE_OK)
+			{
+				LogError(fmt::format("Could not open db: {}", inputFile_.data()));
+				return;
+			}
+			constexpr auto inputQuery = "SELECT frame, move_x, move_y, target_x, target_y, button FROM local_inputs;";
+			char* errorMsg = nullptr;
+			result = sqlite3_exec(db_, inputQuery, callback, &playerInputs_, &errorMsg);
+			if(result != SQLITE_OK)
+			{
+				LogError(fmt::format("Could not load player inputs (error: {}) from db: {}", result, inputFile_.data()));
+			}
+
+			sqlite3_close(db_);
+		});
+		ScheduleAsyncJob(loadInputsJob_.get());
 	}
 }
 
@@ -98,7 +167,12 @@ void InputManager::End()
 }
 PlayerInput InputManager::GetPlayerInput() const
 {
+	if(!inputFile_.empty())
+	{
+		return playerInputs_[GetCurrentFrame()];
+	}
 	PlayerInput input{};
+
 	if(controller_ != nullptr)
 	{
 		const float trigger = static_cast<float>(SDL_GameControllerGetAxis(controller_, SDL_CONTROLLER_AXIS_TRIGGERRIGHT))/32767.0f;

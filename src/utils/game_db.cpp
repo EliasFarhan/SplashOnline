@@ -259,6 +259,10 @@ void CloseDatabase()
 {
 	if(db_ == nullptr)
 		return;
+	if(runQueriesJob_->HasStarted() && !runQueriesJob_->IsDone())
+	{
+		runQueriesJob_->Join();
+	}
 	if(openJob_->HasStarted() && openJob_->IsDone())
 	{
 		sqlite3_close(db_);
@@ -295,24 +299,6 @@ void AddLocalInput(int currentFrame, PlayerInput playerInput)
 	queries.push(LocalInputData{currentFrame, playerInput});
 
 	RunQueries();
-	/*
-	if(localInputJob_ &&  !localInputJob_->IsDone())
-	{
-#ifdef TRACY_ENABLE
-		ZoneNamedN(joinTask, "Join Task", true);
-#endif
-		localInputJob_->Join();
-	}
-
-	localInputJob_ = std::make_unique<neko::FuncJob>([currentFrame, playerInput](){
-#ifdef TRACY_ENABLE
-		ZoneNamedN(dbInsert, "Insert Input Db", true);
-#endif
-
-
-	});
-	ScheduleAsyncJob(localInputJob_.get());
-	*/
 }
 
 void AddRemoteInput(int currentFrame, int remoteFrame, int playerNumber, PlayerInput playerInput)
@@ -322,30 +308,12 @@ void AddRemoteInput(int currentFrame, int remoteFrame, int playerNumber, PlayerI
 #endif
 	if(db_ == nullptr)
 	{
-#ifdef TRACY_ENABLE
-		ZoneNamedN(joinTask, "Join Task", true);
-#endif
 		return;
 	}
 
 	queries.push(RemoteInputData{currentFrame, remoteFrame, playerNumber, playerInput});
 
 	RunQueries();
-	/*
-	if(remoteInputJob_ && !remoteInputJob_->IsDone())
-	{
-		remoteInputJob_->Join();
-	}
-
-	remoteInputJob_ = std::make_unique<neko::FuncJob>([currentFrame, remoteFrame, playerNumber, playerInput](){
-#ifdef TRACY_ENABLE
-		ZoneNamedN(dbInsert, "Insert Remote Db", true);
-#endif
-
-
-	});
-	ScheduleAsyncJob(remoteInputJob_.get());
-*/
 }
 
 }
