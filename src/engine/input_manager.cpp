@@ -25,7 +25,7 @@ static int callback(void *data, int argc, char **argv, char **azColName)
 	std::vector<PlayerInput>& inputs = *static_cast<std::vector<PlayerInput>*>(data);
 
 	PlayerInput currentInput{};
-	int frame = -1;
+	std::ptrdiff_t frame = -1;
 	for(int i = 0; i < argc; i++)
 	{
 		std::string_view arg = azColName[i];
@@ -54,7 +54,7 @@ static int callback(void *data, int argc, char **argv, char **azColName)
 			currentInput.buttons = std::stoi(argv[i]);
 		}
 	}
-	if(frame > inputs.size())
+	if(frame > std::ssize(inputs))
 	{
 		inputs.resize(frame);
 	}

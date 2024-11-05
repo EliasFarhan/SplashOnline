@@ -42,7 +42,6 @@ private:
 	float currentTime_ = 0.0f;
 	int currentFrame_ = -1;
 	int systemIndex_ = -1;
-	std::array<bool, MaxPlayerNmb> connectedPlayers_{};
 	std::array<PlayerInput, MaxPlayerNmb> playerInputs_;
 
 	bool isGameOver_ = false;

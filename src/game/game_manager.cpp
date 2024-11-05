@@ -239,8 +239,7 @@ GameManager::GameManager(const GameData& gameData):
 	gameRenderer_(&gameSystems_),
 	rollbackManager_(gameData),
 	introDelayTimer_{gameData.introDelay, gameData.introDelay},
-	gameTimer_(neko::Scalar {-1.0f}, gameData.period),
-	connectedPlayers_(gameData.connectedPlayers)
+	gameTimer_(neko::Scalar {-1.0f}, gameData.period)
 {
 	AddSystem(this);
 }
