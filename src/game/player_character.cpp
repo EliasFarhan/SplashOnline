@@ -92,6 +92,7 @@ void PlayerManager::Tick()
 #ifdef TRACY_ENABLE
 	ZoneScoped;
 #endif
+	const auto fixedDeltaTime = GetFixedDeltaTime();
 	for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
 	{
 
@@ -105,9 +106,10 @@ void PlayerManager::Tick()
 		auto& physicsWorld = gameSystems_->GetPhysicsWorld();
 		auto& body = physicsWorld.body(playerPhysic.bodyIndex);
 
-		const auto reactor = neko::Scalar {playerInput.moveDirY};
-		const auto moveX = neko::Abs(playerInput.moveDirX) > PlayerCharacter::deadZone ? neko::Scalar{playerInput.moveDirX} : neko::Scalar{};
-		auto target = neko::Vec2f{neko::Scalar {playerInput.targetDirX}, neko::Scalar {playerInput.targetDirY}};
+		const auto reactor = neko::Scalar {(float)playerInput.moveDirY};
+		const auto moveX = neko::Abs(playerInput.moveDirX) > PlayerCharacter::deadZone ? neko::Scalar{(float)playerInput.moveDirX} : neko::Scalar{};
+		auto target = neko::Vec2f{neko::Scalar {(float)playerInput.targetDirX}, neko::Scalar {(float)playerInput.targetDirY}};
+
 
 		playerCharacter.jumpTimer.Update(fixedDeltaTime);
 		playerCharacter.collidedTimer.Update(fixedDeltaTime);
@@ -202,7 +204,7 @@ void PlayerManager::Tick()
 					const auto divisor = neko::Exp<neko::Scalar>()*neko::Scalar(playerCharacter.resistancePhase-1);
 					newCap = (PlayerCharacter::CapMoveForce-PlayerCharacter::WetCapMoveForce)/divisor+PlayerCharacter::WetCapMoveForce;
 				}
-				if(newCap > neko::Fixed16{} && neko::Abs(f) > newCap)
+				if(newCap > neko::Scalar{} && neko::Abs(f) > newCap)
 				{
 					f = newCap * neko::Sign(deltaSpeed) ;
 				}
@@ -213,7 +215,7 @@ void PlayerManager::Tick()
 		}
 		// In Air Move and not dashing!!!
 		if(!playerCharacter.IsGrounded() &&
-			neko::Abs(moveX) > neko::Scalar{PlayerCharacter::deadZone} &&
+			neko::Abs(moveX) > neko::Scalar{(float)PlayerCharacter::deadZone} &&
 			!playerCharacter.IsDashing())
 		{
 			const auto horizontalForce = PlayerCharacter::InAirForce * moveX;
@@ -286,7 +288,7 @@ void PlayerManager::Tick()
 			playerCharacter.preJetBurstTimer.Stop();
 			playerCharacter.jetBurstCoolDownTimer.Stop();
 		}
-		if((reactor < PlayerCharacter::ReactorThreshold || body.velocity.y < neko::Fixed{0.0f}) &&
+		if((reactor < PlayerCharacter::ReactorThreshold || body.velocity.y < neko::Scalar{0.0f}) &&
 			playerCharacter.jumpTimer.RemainingTime() < PlayerCharacter::JumpCancelTime)
 		{
 			playerCharacter.jumpTimer.Stop();
@@ -410,7 +412,7 @@ void PlayerManager::Tick()
 			target = {};
 			playerCharacter.reloadTimer.Update(fixedDeltaTime);
 		}
-		bool isShooting = target.Length() > neko::Scalar {PlayerCharacter::deadZone};
+		bool isShooting = target.Length() > neko::Scalar {(float)PlayerCharacter::deadZone};
 		if(!isShooting)
 		{
 			const auto reserveDt = fixedDeltaTime * playerCharacter.reserveWaterTimer.GetPeriod() /
@@ -554,6 +556,7 @@ void PlayerManager::SetPreviousPlayerInput(neko::Span<PlayerInput> playerInputs)
 
 void PlayerManager::OnTriggerEnter(neko::ColliderIndex playerIndex, int playerNumber, const neko::Collider& otherCollider)
 {
+
 	const auto& body = gameSystems_->GetPhysicsWorld().body(playerPhysics_[playerNumber].bodyIndex);
 	const auto& otherBody = gameSystems_->GetPhysicsWorld().body(otherCollider.bodyIndex);
 	const auto* otherUserData = static_cast<const ColliderUserData*>(otherCollider.userData);
@@ -615,7 +618,7 @@ void PlayerManager::OnTriggerEnter(neko::ColliderIndex playerIndex, int playerNu
 			if(!playerCharacters_[playerNumber].IsGrounded())
 			{
 				const auto dashedVel = neko::Vec2f(otherBody.velocity.x, PlayerCharacter::DashedSpeed);
-				playerPhysics_[playerNumber].AddForce((dashedVel - body.velocity) / body.inverseMass / fixedDeltaTime,
+				playerPhysics_[playerNumber].AddForce((dashedVel - body.velocity) / body.inverseMass / GetFixedDeltaTime(),
 					PlayerCharacter::DashedPriority);
 			}
 			//LogDebug(fmt::format("Dashing player {} on player {}", otherPlayerNumber+1, playerNumber+1));

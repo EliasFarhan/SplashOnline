@@ -13,7 +13,12 @@
 
 namespace splash
 {
-static constexpr neko::Fixed16 fixedDeltaTime{1, 60};
+inline neko::Scalar GetFixedDeltaTime()
+{
+	return neko::Scalar(1.0f) / neko::Scalar(60.0f);
+}
+
+inline neko::Scalar fixedDeltaTime = GetFixedDeltaTime();
 
 enum class Character
 {

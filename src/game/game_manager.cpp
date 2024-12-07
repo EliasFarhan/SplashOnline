@@ -98,7 +98,7 @@ void GameManager::Update(float dt)
 	if(introDelayTimer_.Over() && !gameTimer_.Over() && !isGameOver_)
 	{
 		currentTime_ += dt;
-		constexpr auto fixedDt = static_cast<float>(fixedDeltaTime);
+		auto fixedDt = static_cast<float>(fixedDeltaTime);
 		while (currentTime_ > fixedDt)
 		{
 			Tick();

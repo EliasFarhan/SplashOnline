@@ -43,7 +43,7 @@ void BulletManager::Tick()
 	{
 		if(!bullet.timeToLiveTimer.Over())
 		{
-			bullet.timeToLiveTimer.Update(fixedDeltaTime);
+			bullet.timeToLiveTimer.Update(GetFixedDeltaTime());
 			auto& body = physicsWorld.body(bullet.bodyIndex);
 			if(bullet.timeToLiveTimer.Over())
 			{
@@ -64,7 +64,7 @@ void BulletManager::Tick()
 		}
 		if(!bullet.destroyedTimer.Over())
 		{
-			bullet.destroyedTimer.Update(fixedDeltaTime);
+			bullet.destroyedTimer.Update(GetFixedDeltaTime());
 			if(bullet.destroyedTimer.Over())
 			{
 				bullet.playerNumber = -1;

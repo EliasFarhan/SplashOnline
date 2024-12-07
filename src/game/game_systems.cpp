@@ -31,7 +31,7 @@ void GameSystems::Tick()
 #ifdef TRACY_ENABLE
 	ZoneScoped;
 #endif
-	physicsManager_.Step(fixedDeltaTime);
+	physicsManager_.Step(GetFixedDeltaTime());
 	playerManager_.Tick();
 	bulletManager_.Tick();
 }
