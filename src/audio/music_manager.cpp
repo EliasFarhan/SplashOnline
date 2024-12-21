@@ -25,9 +25,12 @@ void MusicManager::Begin()
 }
 void MusicManager::End()
 {
-	eventInstance_->stop(FMOD_STUDIO_STOP_IMMEDIATE);
-	eventInstance_->release();
-	instance = nullptr;
+    if(eventInstance_ != nullptr)
+    {
+        eventInstance_->stop(FMOD_STUDIO_STOP_IMMEDIATE);
+        eventInstance_->release();
+    }
+    instance = nullptr;
 }
 
 void MusicManager::Play()

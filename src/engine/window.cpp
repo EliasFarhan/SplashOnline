@@ -71,6 +71,7 @@ void UpdateWindow()
         }
         ManageInputEvent(e);
         ManageGraphicsEvent(e);
+        ManageGuiEvent(e);
         for(auto* eventInterface : eventInterfaces_)
         {
             eventInterface->OnEvent(e);

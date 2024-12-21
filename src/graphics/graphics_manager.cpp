@@ -20,7 +20,6 @@ namespace
 {
     TextureManager textureManager_;
     SpineManager spineManager_;
-    GuiRenderer guiRenderer_;
     SDL_Renderer* renderer_ = nullptr;
     std::vector<DrawInterface*> drawInterfaces_;
     neko::Vec2i windowSize_{};
@@ -82,7 +81,7 @@ void BeginGraphics()
 	LogDebug(fmt::format("Renderer: {}", info.name));
 
 	textureManager_.Begin();
-	guiRenderer_.Begin();
+	BeginGuiRenderer();
 }
 
 void EndGraphics()
@@ -90,7 +89,7 @@ void EndGraphics()
 #ifdef TRACY_ENABLE
 	ZoneScoped;
 #endif
-	guiRenderer_.End();
+	EndGuiRenderer();
 	textureManager_.End();
 	SDL_DestroyRenderer(renderer_);
 }
@@ -111,7 +110,7 @@ void UpdateGraphics()
 	{
 		spineManager_.UpdateLoad();
 	}
-	guiRenderer_.Update();
+	UpdateGuiRenderer();
 }
 
 static void Draw()
@@ -136,7 +135,7 @@ static void Draw()
 		rect = {0,offset_.y+ actualSize_.y, windowSize_.x, offset_.y};
 		SDL_RenderFillRect(renderer_, &rect);
 	}
-	guiRenderer_.Draw();
+	DrawGuiRenderer();
 }
 static void PreDraw()
 {
