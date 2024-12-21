@@ -12,8 +12,6 @@ namespace splash
 {
 namespace
 {
-    Window window_{};
-    GraphicsManager graphicsManager_{};
     std::vector<SystemInterface *> systems_;
     int otherQueue_{};
     int networkQueue_{};
@@ -41,9 +39,9 @@ static void BeginEngine()
 		LogError(fmt::format("SDL failed to initialise: {}", SDL_GetError()));
 		return;
 	}
-	window_.Begin();
+	BeginWindow();
 	BeginInputManager();
-	graphicsManager_.Begin();
+	BeginGraphics();
 	for(auto* system : systems_)
 	{
 		if(system == nullptr) continue;
@@ -61,9 +59,9 @@ void EndEngine()
 		if(system == nullptr) continue;
 		system->End();
 	}
-	graphicsManager_.End();
+	EndGraphics();
 	EndInputManager();
-	window_.End();
+	EndWindow();
 	neko::JobSystem::End();
 
 	/* Shuts down all SDL subsystems */
@@ -78,7 +76,7 @@ void RunEngine()
     BeginEngine();
     auto freq = static_cast<double>(SDL_GetPerformanceFrequency());
     Uint64 previous = SDL_GetPerformanceCounter();
-    while (window_.IsOpen())
+    while (IsWindowOpen())
     {
 #ifdef TRACY_ENABLE
         ZoneNamedN(engineLoop, "Engine Loop", true);
@@ -88,18 +86,16 @@ void RunEngine()
         previous = current_;
 
         dt_ = static_cast<float>(delta/freq);
-        window_.Update();
+        UpdateWindow();
 
-        graphicsManager_.Update(dt_);
+        UpdateGraphics();
         for(auto & system : systems_)
         {
             if(system == nullptr) continue;
             system->Update(dt_);
         }
 
-        graphicsManager_.PreDraw();
-        graphicsManager_.Draw();
-        graphicsManager_.PostDraw();
+        DrawGraphics();
 #ifdef TRACY_ENABLE
         FrameMark;
 #endif

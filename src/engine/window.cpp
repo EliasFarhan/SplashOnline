@@ -1,6 +1,7 @@
 #include "engine/window.h"
 #include "utils/log.h"
 #include "engine/input_manager.h"
+#include "graphics/graphics_manager.h"
 
 #include <fmt/format.h>
 
@@ -10,11 +11,17 @@
 
 namespace splash
 {
+namespace
+{
+    std::vector<OnEventInterface*> eventInterfaces_;
+    SDL_Window* window_ = nullptr;
+    bool isOpen_ = false;
+}
 
 #define WIDTH 1280
 #define HEIGHT 720
 
-void Window::Begin()
+void BeginWindow()
 {
 #ifdef TRACY_ENABLE
 	ZoneScoped;
@@ -36,24 +43,19 @@ void Window::Begin()
     isOpen_ = true;
 }
 
-void Window::End()
+void EndWindow()
 {
 	/* Frees memory */
 	SDL_DestroyWindow(window_);
 }
 
-static Window* instance = nullptr;
-Window::Window()
-{
-	instance = this;
-}
 
-SDL_Window* Window::GetWindow()
+SDL_Window* GetWindow()
 {
 	return window_;
 }
 
-void Window::Update()
+void UpdateWindow()
 {
 #ifdef TRACY_ENABLE
 	ZoneScoped;
@@ -68,6 +70,7 @@ void Window::Update()
             isOpen_ = false;
         }
         ManageInputEvent(e);
+        ManageGraphicsEvent(e);
         for(auto* eventInterface : eventInterfaces_)
         {
             eventInterface->OnEvent(e);
@@ -75,7 +78,7 @@ void Window::Update()
     }
 }
 
-void Window::AddEventListener(OnEventInterface *eventInterface)
+void AddEventListener(OnEventInterface *eventInterface)
 {
 	auto it = std::find(eventInterfaces_.begin(), eventInterfaces_.end(), nullptr);
 	if(it != eventInterfaces_.end())
@@ -89,39 +92,21 @@ void Window::AddEventListener(OnEventInterface *eventInterface)
 		eventInterfaces_.push_back(eventInterface);
 	}
 }
-bool Window::IsOpen() const noexcept
+bool IsWindowOpen()
 {
 	return isOpen_;
 }
 
-std::pair<int, int> Window::GetWindowSize() const
+std::pair<int, int> GetWindowSize()
 {
 	std::pair<int, int> windowSize;
 	SDL_GetWindowSize(window_, &windowSize.first, &windowSize.second);
     return windowSize;
 }
 
-void Window::RemoveEventListener(OnEventInterface* eventInterface)
+void RemoveEventListener(OnEventInterface* eventInterface)
 {
 	eventInterfaces_[eventInterface->GetEventListenerIndex()] = nullptr;
 }
 
-SDL_Window* GetWindow()
-{
-	return instance->GetWindow();
-}
-
-void AddEventListener(OnEventInterface *eventInterface)
-{
-    instance->AddEventListener(eventInterface);
-}
-
-std::pair<int, int> GetWindowSize()
-{
-	return instance->GetWindowSize();
-}
-void RemoveEventListener(OnEventInterface* eventInterface)
-{
-	instance->RemoveEventListener(eventInterface);
-}
 }
