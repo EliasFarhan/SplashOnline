@@ -13,20 +13,20 @@
 
 #include <algorithm>
 #include <numeric>
+#include <vector>
 
 
 namespace splash
 {
-static GuiRenderer* instance = nullptr;
-
-
-GuiRenderer::GuiRenderer()
+namespace
 {
-	instance = this;
-	AddEventListener(this);
+    SDL_Renderer* renderer_;
+    std::vector<OnGuiInterface*> guiInterfaces_;
+    DebugConfig debugConfig_{};
+    neko::SmallVector<float, 20> deltaTimes_{};
 }
 
-void GuiRenderer::Begin()
+void BeginGuiRenderer()
 {
 	renderer_ = GetRenderer();
 	IMGUI_CHECKVERSION();
@@ -43,15 +43,14 @@ void GuiRenderer::Begin()
 
 }
 
-void GuiRenderer::End()
+void EndGuiRenderer()
 {
-	instance = nullptr;
 	ImGui_ImplSDLRenderer2_Shutdown();
 	ImGui_ImplSDL2_Shutdown();
 	ImGui::DestroyContext();
 }
 
-void GuiRenderer::Draw()
+void DrawGuiRenderer()
 {
 	ImGui::Render();
 	ImGuiIO& io = ImGui::GetIO();
@@ -62,7 +61,7 @@ void GuiRenderer::Draw()
 	ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer_);
 }
 
-void GuiRenderer::AddGuiInterface(OnGuiInterface* guiInterface)
+void AddGuiInterface(OnGuiInterface* guiInterface)
 {
 	auto it = std::find(guiInterfaces_.begin(), guiInterfaces_.end(), nullptr);
 	if(it != guiInterfaces_.end())
@@ -77,15 +76,15 @@ void GuiRenderer::AddGuiInterface(OnGuiInterface* guiInterface)
 	}
 }
 
-void GuiRenderer::RemoveGuiInterface(OnGuiInterface* guiInterface)
+void RemoveGuiInterface(OnGuiInterface* guiInterface)
 {
 	guiInterfaces_[guiInterface->GetGuiIndex()] = nullptr;
 }
-void GuiRenderer::OnEvent(const SDL_Event& event)
+void ManageGuiEvent(const SDL_Event& event)
 {
 	ImGui_ImplSDL2_ProcessEvent(&event);
 }
-void GuiRenderer::Update()
+void UpdateGuiRenderer()
 {
 	// Start the Dear ImGui frame
 	ImGui_ImplSDLRenderer2_NewFrame();
@@ -122,27 +121,9 @@ void GuiRenderer::Update()
 	}
 }
 
-int GuiRenderer::GetEventListenerIndex() const
-{
-	return eventListenerIndex_;
-}
-
-void GuiRenderer::SetEventListenerIndex(int index)
-{
-	eventListenerIndex_ = index;
-}
-
-void AddGuiInterface(OnGuiInterface* guiInterface)
-{
-	instance->AddGuiInterface(guiInterface);
-}
-
-void RemoveGuiInterface(OnGuiInterface* guiInterface)
-{
-	instance->RemoveGuiInterface(guiInterface);
-}
 const DebugConfig& GetDebugConfig()
 {
-	return instance->GetDebugConfig();
+    return debugConfig_;
 }
+
 }

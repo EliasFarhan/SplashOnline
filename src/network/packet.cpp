@@ -1,12 +1,7 @@
-//
-// Created by unite on 19.08.2024.
-//
 
 #include "network/packet.h"
-
 #include "utils/log.h"
 
-#include <fmt/format.h>
 
 namespace splash
 {

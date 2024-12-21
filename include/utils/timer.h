@@ -12,7 +12,7 @@ template<typename T=neko::Scalar, int Period=0, int Dividend=1000>
 class Timer
 {
 public:
-	static constexpr T period{static_cast<T>(Period)/static_cast<T>(Dividend)};
+	inline static T period{static_cast<T>(Period)/static_cast<T>(Dividend)};
 	constexpr explicit Timer(T time): time_(time){}
 
 	constexpr void Update(T deltaTime) noexcept

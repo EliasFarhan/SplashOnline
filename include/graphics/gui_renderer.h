@@ -12,55 +12,40 @@
 #include <SDL.h>
 #include <vector>
 
-namespace splash
-{
+namespace splash {
 
 class OnGuiInterface
-{
+        {
 public:
-	virtual ~OnGuiInterface() = default;
-	virtual void OnGui() = 0;
-	virtual void SetGuiIndex(int index) = 0;
-	[[nodiscard]] virtual int GetGuiIndex() const = 0;
+    virtual ~OnGuiInterface() = default;
+
+    virtual void OnGui() = 0;
+
+    virtual void SetGuiIndex(int index) = 0;
+
+    [[nodiscard]] virtual int GetGuiIndex() const = 0;
 };
 
 struct DebugConfig
-{
-	bool showPhysicsBox = false;
+        {
+    bool showPhysicsBox = false;
 };
 
-class GuiRenderer : public OnEventInterface
-{
-public:
-	GuiRenderer();
-	void Begin();
-	void Update();
-	void End();
+void BeginGuiRenderer();
 
-	void Draw();
+void UpdateGuiRenderer();
 
-	void AddGuiInterface(OnGuiInterface* guiInterface);
-	void RemoveGuiInterface(OnGuiInterface* guiInterface);
-	void OnEvent(const SDL_Event& event) override;
+void EndGuiRenderer();
 
-	int GetEventListenerIndex() const override;
+void DrawGuiRenderer();
 
-	void SetEventListenerIndex(int index) override;
+void ManageGuiEvent(const SDL_Event &event);
 
-	[[nodiscard]] const auto& GetDebugConfig() { return debugConfig_; }
-private:
-	SDL_Renderer* renderer_;
-	std::vector<OnGuiInterface*> guiInterfaces_;
-	DebugConfig debugConfig_{};
-	int eventListenerIndex_ = -1;
-	neko::SmallVector<float, 20> deltaTimes_{};
+void AddGuiInterface(OnGuiInterface *guiInterface);
 
-};
+void RemoveGuiInterface(OnGuiInterface *guiInterface);
 
-void AddGuiInterface(OnGuiInterface* guiInterface);
-void RemoveGuiInterface(OnGuiInterface* guiInterface);
-
-const DebugConfig& GetDebugConfig();
+const DebugConfig &GetDebugConfig();
 }
 
 #endif //SPLASHONLINE_GUI_RENDERER_H_

@@ -51,8 +51,8 @@ void EndScreenView::Draw()
 							   static_cast<TextureManager::TextureId>(static_cast<int>(TextureManager::TextureId::LOSE_P1_CAT)+i);
 		const auto textureSize = static_cast<neko::Vec2<float>>(GetTextureSize(textureId))/pixelPerMeter;
 		neko::Vec2f size = neko::Vec2f{gameWindowSize}/neko::Scalar {pixelPerMeter};
-		neko::Scalar x = neko::Scalar{i+1}*size.x/neko::Scalar(playerCount_+1)-size.x/neko::Scalar{2};
-		neko::Scalar y = neko::Scalar{(playerCount_+1)-playerRanks_[i]}*size.y/neko::Scalar(playerCount_+1)-size.y/neko::Scalar{2};
+		neko::Scalar x = neko::Scalar{static_cast<float>(i+1)}*size.x/neko::Scalar(playerCount_+1)-size.x/neko::Scalar{2};
+		neko::Scalar y = neko::Scalar{static_cast<float>((playerCount_+1)-playerRanks_[i])}*size.y/neko::Scalar(playerCount_+1)-size.y/neko::Scalar{2};
 		y = neko::Lerp(neko::Scalar{}, y, static_cast<neko::Scalar>(transitionTimer_.CurrentRatio()));
 
 		const auto rect = GetDrawingRect({x, y}, neko::Vec2f(textureSize));

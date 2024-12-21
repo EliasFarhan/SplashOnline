@@ -15,6 +15,10 @@
 #include "utils/game_db.h"
 #endif
 
+#ifdef TRACY_ENABLE
+#include <tracy/Tracy.hpp>
+#endif
+
 template <> class fmt::formatter<splash::PlayerInput> {
 public:
 	constexpr auto parse (format_parse_context& ctx) { return ctx.begin(); }
@@ -34,6 +38,9 @@ namespace splash
 static GameManager* instance = nullptr;
 void GameManager::Begin()
 {
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
 	instance = this;
 #ifdef ENABLE_DESYNC_DEBUG
 	auto* netClient = GetNetworkClient();
@@ -45,7 +52,10 @@ void GameManager::Begin()
 }
 void GameManager::Update(float dt)
 {
-	if(!IsSpineLoaded() || !IsTextureLoaded() || !IsFmodLoaded())
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
+	if(!IsSpineLoaded() || !IsTexturesLoaded() || !IsFmodLoaded())
 	{
 		return;
 	}
@@ -88,7 +98,7 @@ void GameManager::Update(float dt)
 	if(introDelayTimer_.Over() && !gameTimer_.Over() && !isGameOver_)
 	{
 		currentTime_ += dt;
-		constexpr auto fixedDt = static_cast<float>(fixedDeltaTime);
+		auto fixedDt = static_cast<float>(fixedDeltaTime);
 		while (currentTime_ > fixedDt)
 		{
 			Tick();
@@ -137,6 +147,9 @@ void GameManager::End()
 }
 void GameManager::Tick()
 {
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
 	const auto gameTime = static_cast<int>(gameTimer_.RemainingTime());
 	gameTimer_.Update(fixedDeltaTime);
 	if(gameTimer_.Over())
@@ -226,8 +239,7 @@ GameManager::GameManager(const GameData& gameData):
 	gameRenderer_(&gameSystems_),
 	rollbackManager_(gameData),
 	introDelayTimer_{gameData.introDelay, gameData.introDelay},
-	gameTimer_(neko::Scalar {-1.0f}, gameData.period),
-	connectedPlayers_(gameData.connectedPlayers)
+	gameTimer_(neko::Scalar {-1.0f}, gameData.period)
 {
 	AddSystem(this);
 }
@@ -241,6 +253,9 @@ void GameManager::SetSystemIndex(int index)
 }
 void GameManager::RollbackUpdate()
 {
+#ifdef TRACY_ENABLE
+	ZoneScoped;
+#endif
 	auto* netClient = GetNetworkClient();
 	//import network inputs
 	auto inputPackets = netClient->GetInputPackets();
@@ -367,6 +382,15 @@ neko::Vec2i GetPlayerScreenPos()
 		return {};
 	}
 	return instance->GetPlayerScreenPos();
+}
+
+int GetCurrentFrame()
+{
+	if(instance == nullptr)
+	{
+		return -1;
+	}
+	return  instance->GetCurrentFrame();
 }
 
 neko::Vec2i GameManager::GetPlayerScreenPos() const

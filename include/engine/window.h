@@ -27,27 +27,15 @@ public:
 	virtual void SetEventListenerIndex(int index) = 0;
 };
 
-class Window
-{
-public:
-	Window();
-	void Begin();
-    void Update();
-	void End();
-	SDL_Window* GetWindow();
-    void AddEventListener(OnEventInterface* eventInterface);
-    void RemoveEventListener(OnEventInterface* eventInterface);
-	[[nodiscard]] bool IsOpen() const noexcept;
-    [[nodiscard]] std::pair<int, int> GetWindowSize() const;
-private:
-    std::vector<OnEventInterface*> eventInterfaces_;
-	SDL_Window* window_ = nullptr;
-    bool isOpen_ = false;
-};
-
 SDL_Window* GetWindow();
+void BeginWindow();
+void UpdateWindow();
+void EndWindow();
+std::pair<int, int> GetWindowSize();
+bool IsWindowOpen();
+
 void AddEventListener(OnEventInterface* eventInterface);
 void RemoveEventListener(OnEventInterface* eventInterface);
-std::pair<int, int> GetWindowSize();
+
 }
 #endif //SPLASHONLINE_WINDOW_H_

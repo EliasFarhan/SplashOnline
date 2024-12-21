@@ -31,6 +31,7 @@ public:
 	void SetSystemIndex(int index) override;
 	[[nodiscard]] neko::Vec2i GetPlayerScreenPos() const;
 	[[nodiscard]] bool HasDesync() const {return hasDesync_;}
+	[[nodiscard]] int GetCurrentFrame() const {return currentFrame_;}
 private:
 	void RollbackUpdate();
 	GameSystems gameSystems_;
@@ -41,7 +42,6 @@ private:
 	float currentTime_ = 0.0f;
 	int currentFrame_ = -1;
 	int systemIndex_ = -1;
-	std::array<bool, MaxPlayerNmb> connectedPlayers_{};
 	std::array<PlayerInput, MaxPlayerNmb> playerInputs_;
 
 	bool isGameOver_ = false;
@@ -51,5 +51,8 @@ private:
 };
 
 neko::Vec2i GetPlayerScreenPos();
+int GetCurrentFrame();
+
+
 }
 #endif //SPLASHONLINE_GAME_GAME_MANAGER_H_

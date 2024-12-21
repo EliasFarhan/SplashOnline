@@ -7,16 +7,16 @@ set (CMAKE_CXX_STANDARD_REQUIRED ON)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 
-option(ENABLE_PROFILER "Enable Tracy Profiling" OFF)
+option(ENABLE_PROFILING "Enable Tracy Profiling" OFF)
 option(BUILD_SHARED_LIBS "Build the library as a shared library" OFF)
 option(ENABLE_DESYNC_DEBUG "Register states in sqlite3 for debug" OFF)
 option(ENABLE_ASAN "Enable Adress Sanitizer" OFF)
 
 #tracy profiler
-if(ENABLE_PROFILER)
-    set(TRACY_DIR externals/tracy)
-    add_subdirectory(${TRACY_DIR})
-endif (ENABLE_PROFILER)
+if(ENABLE_PROFILING)
+    set(Tracy_DIR externals/tracy)
+    add_subdirectory(${Tracy_DIR})
+endif (ENABLE_PROFILING)
 
 #NekoLib
 set(NEKOLIB_DIR externals/NekoLib)
@@ -59,23 +59,20 @@ add_compile_definitions(FMT_HEADER_ONLY=1)
 set(FMT_DIR externals/fmt)
 add_subdirectory(${FMT_DIR})
 
-if(ENABLE_DESYNC_DEBUG)
-    set(SQLITE3_DIR "externals/sqlite3")
-    add_subdirectory(${SQLITE3_DIR})
-endif(ENABLE_DESYNC_DEBUG)
+set(SQLITE3_DIR "externals/sqlite3")
+add_subdirectory(${SQLITE3_DIR})
 
 file(GLOB_RECURSE GAME_FILES src/*.cpp include/*.h)
 
 add_library(SplashLib ${GAME_FILES})
-target_link_libraries(SplashLib PUBLIC SDL2-static SDL2_ttf SDL2main imgui spine_sdl NekoCore NekoPhysics)
+target_link_libraries(SplashLib PUBLIC SDL2-static SDL2_ttf SDL2main imgui spine_sdl NekoCore NekoPhysics sqlite3)
 if(ENABLE_DESYNC_DEBUG)
-    target_link_libraries(SplashLib PUBLIC sqlite3)
     target_compile_definitions(SplashLib PUBLIC ENABLE_DESYNC_DEBUG)
 endif(ENABLE_DESYNC_DEBUG)
-if(ENABLE_PROFILER)
+if(ENABLE_PROFILING)
     target_compile_definitions(SplashLib PUBLIC TRACY_ENABLE=1)
     target_link_libraries(SplashLib PUBLIC TracyClient)
-endif(ENABLE_PROFILER)
+endif(ENABLE_PROFILING)
 target_include_directories(SplashLib PUBLIC include/ externals/include ${FMT_DIR}/include)
 #fmod
 set(FMOD_DIR externals/Fmod)
@@ -181,11 +178,13 @@ add_custom_target(
         DEPENDS ${DATA_FILES} ${DATA_BINARY_FILES})
 add_dependencies(SplashLib SplashData)
 
+add_subdirectory(externals/argh)
+
 file(GLOB MAIN_FILES main/*.cpp)
 foreach (MAIN_FILE ${MAIN_FILES})
     get_filename_component(MAIN_NAME ${MAIN_FILE} NAME_WE)
     add_executable(${MAIN_NAME} ${MAIN_FILE})
-    target_link_libraries(${MAIN_NAME} PUBLIC SplashLib)
+    target_link_libraries(${MAIN_NAME} PUBLIC SplashLib argh)
 endforeach ()
 
 #catch2

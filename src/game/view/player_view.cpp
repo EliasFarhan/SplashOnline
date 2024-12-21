@@ -78,9 +78,9 @@ void PlayerView::Update([[maybe_unused]]float dt)
 		if(!playerRenderData.isRespawning)
 		{
 			const auto targetDir = neko::Vec2f(
-					static_cast<neko::Scalar>(playerInput.targetDirX),
-					static_cast<neko::Scalar>(playerInput.targetDirY));
-			const bool isShooting = targetDir.Length() > static_cast<neko::Scalar>(PlayerCharacter::deadZone) && !playerCharacter.IsReloading();
+					static_cast<neko::Scalar>(static_cast<float>(playerInput.targetDirX)),
+					static_cast<neko::Scalar>(static_cast<float>(playerInput.targetDirY)));
+			const bool isShooting = targetDir.Length() > static_cast<neko::Scalar>(static_cast<float>(PlayerCharacter::deadZone)) && !playerCharacter.IsReloading();
 			if(isShooting)
 			{
 				if ((playerInput.targetDirX > PlayerCharacter::deadZone && !playerRenderData.faceRight) ||
@@ -247,7 +247,7 @@ void PlayerView::Update([[maybe_unused]]float dt)
 				}
 				else
 				{
-					if (neko::Scalar{ playerInput.moveDirY } > PlayerCharacter::JetBurstThreshold)
+					if (neko::Scalar{ static_cast<float>(playerInput.moveDirY) } > PlayerCharacter::JetBurstThreshold)
 					{
 						if(playerCharacter.jumpTimer.Over())
 						{
@@ -284,8 +284,8 @@ void PlayerView::Update([[maybe_unused]]float dt)
 					}
 					else
 					{
-						if ((targetDir.x > static_cast<neko::Scalar>(PlayerCharacter::deadZone) && !playerRenderData.faceRight) ||
-							(targetDir.x < static_cast<neko::Scalar>(-PlayerCharacter::deadZone) && playerRenderData.faceRight))
+						if ((targetDir.x > static_cast<neko::Scalar>(static_cast<float>(PlayerCharacter::deadZone)) && !playerRenderData.faceRight) ||
+							(targetDir.x < static_cast<neko::Scalar>(static_cast<float>(-PlayerCharacter::deadZone)) && playerRenderData.faceRight))
 						{
 							playerRenderData.faceRight = !playerRenderData.faceRight;
 						}
@@ -312,7 +312,7 @@ void PlayerView::Update([[maybe_unused]]float dt)
 				{
 					SwitchToState(PlayerRenderState::IDLE, playerNumber);
 				}
-				if (neko::Scalar{ playerInput.moveDirY } < PlayerCharacter::ReactorThreshold)
+				if (neko::Scalar{ static_cast<float>(playerInput.moveDirY) } < PlayerCharacter::ReactorThreshold)
 				{
 					SwitchToState(PlayerRenderState::FALL, playerNumber);
 				}
@@ -331,7 +331,7 @@ void PlayerView::Update([[maybe_unused]]float dt)
 			{
 				if (playerCharacter.jumpTimer.Over())
 				{
-					if (neko::Scalar{ playerInput.moveDirY } > PlayerCharacter::JetBurstThreshold)
+					if (neko::Scalar{ static_cast<float>(playerInput.moveDirY) } > PlayerCharacter::JetBurstThreshold)
 					{
 						SwitchToState(PlayerRenderState::JET, playerNumber);
 						playerSoundDatas_[playerNumber].jetpackSoundInstance->setParameterValue("Transition Jetpack", 0.0f);

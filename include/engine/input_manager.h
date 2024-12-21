@@ -4,9 +4,18 @@
 #include "engine/window.h"
 
 #include <math/fixed.h>
+
 #include <SDL_gamecontroller.h>
 #include <SDL_events.h>
+#include <sqlite3.h>
+
 #include <cstdint>
+#include <memory>
+#include <string_view>
+#include <vector>
+#include <string>
+
+#include "thread/job_system.h"
 
 namespace splash
 {
@@ -46,25 +55,14 @@ struct PlayerInput
 	}
 };
 
-class InputManager : public OnEventInterface
-{
-public:
-	void Begin();
-	void ManageEvent(const SDL_Event& event);
-	void End();
 
-	[[nodiscard]] PlayerInput GetPlayerInput() const;
-	void OnEvent(const SDL_Event& event) override;
-	[[nodiscard]] int GetEventListenerIndex() const override;
-	void SetEventListenerIndex(int index) override;
+static constexpr float deadZone = 0.2f;
+void SetInputFile(std::string_view inputFile);
+void BeginInputManager();
+void ManageInputEvent(const SDL_Event& event);
+void EndInputManager();
+PlayerInput GetPlayerInput();
 
-	static constexpr float deadZone = 0.2f;
-private:
-	static SDL_GameController* FindGameController();
-	static SDL_JoystickID GetControllerInstanceId(SDL_GameController *controller);
-	SDL_GameController* controller_ = nullptr;
-	int eventIndex_ = -1;
-};
 }
 
 #endif //SPLASHONLINE_INPUT_MANAGER_H

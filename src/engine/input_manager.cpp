@@ -6,39 +6,134 @@
 #include "graphics/graphics_manager.h"
 #include "utils/log.h"
 #include "game/game_manager.h"
+
+#include <fmt/format.h>
+
+#include "engine/engine.h"
 #ifdef TRACY_ENABLE
 #include <tracy/Tracy.hpp>
 #endif
 
 namespace splash
 {
-void InputManager::Begin()
+namespace
+{
+    SDL_GameController* controller_ = nullptr;
+    std::unique_ptr<neko::FuncJob> loadInputsJob_;
+    std::string inputFile_;
+    std::vector<PlayerInput> playerInputs_;
+    sqlite3* db_ = nullptr;
+}
+
+
+static int callback(void *data, int argc, char **argv, char **azColName)
+{
+	std::vector<PlayerInput>& inputs = *static_cast<std::vector<PlayerInput>*>(data);
+
+	PlayerInput currentInput{};
+	std::ptrdiff_t frame = -1;
+	for(int i = 0; i < argc; i++)
+	{
+		std::string_view arg = azColName[i];
+		if("frame" == arg)
+		{
+			frame = std::stoi(argv[i]);
+		}
+		else if(arg == "move_x")
+		{
+			currentInput.moveDirX = neko::Fixed8::fromUnderlyingValue(std::stoi(argv[i]));
+		}
+		else if(arg == "move_y")
+		{
+			currentInput.moveDirY = neko::Fixed8::fromUnderlyingValue(std::stoi(argv[i]));
+		}
+		else if(arg == "target_x")
+		{
+			currentInput.targetDirX = neko::Fixed8::fromUnderlyingValue(std::stoi(argv[i]));
+		}
+		else if(arg == "target_y")
+		{
+			currentInput.targetDirY = neko::Fixed8::fromUnderlyingValue(std::stoi(argv[i]));
+		}
+		else if(arg == "button")
+		{
+			currentInput.buttons = std::stoi(argv[i]);
+		}
+	}
+	if(frame > std::ssize(inputs))
+	{
+		inputs.resize(frame);
+	}
+	inputs[frame] = currentInput;
+	return 0;
+}
+
+
+static SDL_JoystickID GetControllerInstanceId(SDL_GameController* controller)
+{
+    return SDL_JoystickInstanceID(
+            SDL_GameControllerGetJoystick(controller));
+
+}
+
+static SDL_GameController* FindGameController()
+{
+    for (int i = 0; i < SDL_NumJoysticks(); i++) {
+        if (SDL_IsGameController(i)) {
+            return SDL_GameControllerOpen(i);
+        }
+    }
+
+    LogWarning("No controller found");
+    return nullptr;
+}
+
+void BeginInputManager()
 {
 #ifdef TRACY_ENABLE
 	ZoneScoped;
 #endif
-	AddEventListener(this);
-	SDL_GameControllerAddMappingsFromFile("data/config/gamecontrollerdb.txt");
-	controller_ = FindGameController();
-	if(controller_ == nullptr)
+	if(inputFile_.empty())
 	{
-		LogWarning("No controller attached");
-	}
-}
-
-SDL_GameController* InputManager::FindGameController()
-{
-	for (int i = 0; i < SDL_NumJoysticks(); i++) {
-		if (SDL_IsGameController(i)) {
-			return SDL_GameControllerOpen(i);
+		SDL_GameControllerAddMappingsFromFile("data/config/gamecontrollerdb.txt");
+		controller_ = FindGameController();
+		if(controller_ == nullptr)
+		{
+			LogWarning("No controller attached");
 		}
 	}
+	else
+	{
+		playerInputs_.resize(3000);
+		//TODO load sqlite data from local input file db
+		loadInputsJob_ = std::make_unique<neko::FuncJob>([]()
+		{
+#ifdef TRACY_ENABLE
+			ZoneNamed(loadInputDb, "Load Input Db");
+#endif
+			auto result = sqlite3_open(inputFile_.data(), &db_);
+			if(result != SQLITE_OK)
+			{
+				LogError(fmt::format("Could not open db: {}", inputFile_.data()));
+				return;
+			}
+			constexpr auto inputQuery = "SELECT frame, move_x, move_y, target_x, target_y, button FROM local_inputs;";
+			char* errorMsg = nullptr;
+			result = sqlite3_exec(db_, inputQuery, callback, &playerInputs_, &errorMsg);
+			if(result != SQLITE_OK)
+			{
+				LogError(fmt::format("Could not load player inputs (error: {}) from db: {}", result, inputFile_.data()));
+			}
 
-	LogWarning("No controller found");
-	return nullptr;
+			sqlite3_close(db_);
+		});
+		ScheduleAsyncJob(loadInputsJob_.get());
+	}
 }
 
-void InputManager::ManageEvent(const SDL_Event& event)
+
+
+void ManageInputEvent(const SDL_Event& event)
 {
 	switch (event.type)
 	{
@@ -64,28 +159,28 @@ void InputManager::ManageEvent(const SDL_Event& event)
 		}
 		break;
 	}
+	default:
+		break;
 	}
 }
 
-SDL_JoystickID InputManager::GetControllerInstanceId(SDL_GameController* controller)
-{
-	return SDL_JoystickInstanceID(
-			SDL_GameControllerGetJoystick(controller));
 
-}
-
-void InputManager::End()
+void EndInputManager()
 {
-	RemoveEventListener(this);
 	if(controller_ != nullptr)
 	{
 		SDL_GameControllerClose(controller_);
 		controller_ = nullptr;
 	}
 }
-PlayerInput InputManager::GetPlayerInput() const
+PlayerInput GetPlayerInput()
 {
+	if(!inputFile_.empty())
+	{
+		return playerInputs_[GetCurrentFrame()];
+	}
 	PlayerInput input{};
+
 	if(controller_ != nullptr)
 	{
 		const float trigger = static_cast<float>(SDL_GameControllerGetAxis(controller_, SDL_CONTROLLER_AXIS_TRIGGERRIGHT))/32767.0f;
@@ -141,16 +236,9 @@ PlayerInput InputManager::GetPlayerInput() const
 	}
 	return input;
 }
-void InputManager::OnEvent(const SDL_Event& event)
+
+void SetInputFile(std::string_view inputFile)
 {
-	ManageEvent(event);
-}
-int InputManager::GetEventListenerIndex() const
-{
-	return eventIndex_;
-}
-void InputManager::SetEventListenerIndex(int index)
-{
-	eventIndex_ = index;
+    inputFile_ = inputFile;
 }
 }

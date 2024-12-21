@@ -34,7 +34,7 @@ struct PlayerCharacter
 	static constexpr neko::Scalar JumpForce{ 320.0f };//437.5
 	static constexpr neko::Scalar HitEffectPeriod{ 0.02f };
 	static constexpr int FirstShotsCount = 3;
-	static constexpr neko::Fixed8 deadZone{ InputManager::deadZone };
+	static constexpr neko::Fixed8 deadZone{ splash::deadZone };
 	static constexpr int MaxResistancePhase = 3;
 	static constexpr int MovePriority = 1;
 	static constexpr int DashPrepPriority = 2;
