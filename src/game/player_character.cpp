@@ -92,7 +92,6 @@ void PlayerManager::Tick()
 #ifdef TRACY_ENABLE
 	ZoneScoped;
 #endif
-	const auto fixedDeltaTime = GetFixedDeltaTime();
 	for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
 	{
 
@@ -106,9 +105,9 @@ void PlayerManager::Tick()
 		auto& physicsWorld = gameSystems_->GetPhysicsWorld();
 		auto& body = physicsWorld.body(playerPhysic.bodyIndex);
 
-		const auto reactor = neko::Scalar {(float)playerInput.moveDirY};
-		const auto moveX = neko::Abs(playerInput.moveDirX) > PlayerCharacter::deadZone ? neko::Scalar{(float)playerInput.moveDirX} : neko::Scalar{};
-		auto target = neko::Vec2f{neko::Scalar {(float)playerInput.targetDirX}, neko::Scalar {(float)playerInput.targetDirY}};
+		const auto reactor = neko::Scalar {static_cast<float>(playerInput.moveDirY)};
+		const auto moveX = neko::Abs(playerInput.moveDirX) > PlayerCharacter::deadZone ? neko::Scalar{static_cast<float>(playerInput.moveDirX)} : neko::Scalar{};
+		auto target = neko::Vec2f{neko::Scalar {static_cast<float>(playerInput.targetDirX)}, neko::Scalar {static_cast<float>(playerInput.targetDirY)}};
 
 
 		playerCharacter.jumpTimer.Update(fixedDeltaTime);
@@ -215,7 +214,7 @@ void PlayerManager::Tick()
 		}
 		// In Air Move and not dashing!!!
 		if(!playerCharacter.IsGrounded() &&
-			neko::Abs(moveX) > neko::Scalar{(float)PlayerCharacter::deadZone} &&
+			neko::Abs(moveX) > neko::Scalar{static_cast<float>(PlayerCharacter::deadZone)} &&
 			!playerCharacter.IsDashing())
 		{
 			const auto horizontalForce = PlayerCharacter::InAirForce * moveX;
@@ -412,7 +411,7 @@ void PlayerManager::Tick()
 			target = {};
 			playerCharacter.reloadTimer.Update(fixedDeltaTime);
 		}
-		bool isShooting = target.Length() > neko::Scalar {(float)PlayerCharacter::deadZone};
+		bool isShooting = target.Length() > neko::Scalar {static_cast<float>(PlayerCharacter::deadZone)};
 		if(!isShooting)
 		{
 			const auto reserveDt = fixedDeltaTime * playerCharacter.reserveWaterTimer.GetPeriod() /

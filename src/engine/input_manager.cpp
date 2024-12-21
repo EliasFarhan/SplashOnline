@@ -16,9 +16,15 @@
 
 namespace splash
 {
-InputManager::InputManager(std::string_view inputFile) : inputFile_(inputFile.data())
+namespace
 {
+    SDL_GameController* controller_ = nullptr;
+    std::unique_ptr<neko::FuncJob> loadInputsJob_;
+    std::string inputFile_;
+    std::vector<PlayerInput> playerInputs_;
+    sqlite3* db_ = nullptr;
 }
+
 
 static int callback(void *data, int argc, char **argv, char **azColName)
 {
@@ -62,14 +68,33 @@ static int callback(void *data, int argc, char **argv, char **azColName)
 	return 0;
 }
 
-void InputManager::Begin()
+
+static SDL_JoystickID GetControllerInstanceId(SDL_GameController* controller)
+{
+    return SDL_JoystickInstanceID(
+            SDL_GameControllerGetJoystick(controller));
+
+}
+
+static SDL_GameController* FindGameController()
+{
+    for (int i = 0; i < SDL_NumJoysticks(); i++) {
+        if (SDL_IsGameController(i)) {
+            return SDL_GameControllerOpen(i);
+        }
+    }
+
+    LogWarning("No controller found");
+    return nullptr;
+}
+
+void BeginInputManager()
 {
 #ifdef TRACY_ENABLE
 	ZoneScoped;
 #endif
 	if(inputFile_.empty())
 	{
-		AddEventListener(this);
 		SDL_GameControllerAddMappingsFromFile("data/config/gamecontrollerdb.txt");
 		controller_ = FindGameController();
 		if(controller_ == nullptr)
@@ -81,7 +106,7 @@ void InputManager::Begin()
 	{
 		playerInputs_.resize(3000);
 		//TODO load sqlite data from local input file db
-		loadInputsJob_ = std::make_unique<neko::FuncJob>([this]()
+		loadInputsJob_ = std::make_unique<neko::FuncJob>([]()
 		{
 #ifdef TRACY_ENABLE
 			ZoneNamed(loadInputDb, "Load Input Db");
@@ -106,19 +131,9 @@ void InputManager::Begin()
 	}
 }
 
-SDL_GameController* InputManager::FindGameController()
-{
-	for (int i = 0; i < SDL_NumJoysticks(); i++) {
-		if (SDL_IsGameController(i)) {
-			return SDL_GameControllerOpen(i);
-		}
-	}
 
-	LogWarning("No controller found");
-	return nullptr;
-}
 
-void InputManager::ManageEvent(const SDL_Event& event)
+void ManageInputEvent(const SDL_Event& event)
 {
 	switch (event.type)
 	{
@@ -149,23 +164,16 @@ void InputManager::ManageEvent(const SDL_Event& event)
 	}
 }
 
-SDL_JoystickID InputManager::GetControllerInstanceId(SDL_GameController* controller)
-{
-	return SDL_JoystickInstanceID(
-			SDL_GameControllerGetJoystick(controller));
 
-}
-
-void InputManager::End()
+void EndInputManager()
 {
-	RemoveEventListener(this);
 	if(controller_ != nullptr)
 	{
 		SDL_GameControllerClose(controller_);
 		controller_ = nullptr;
 	}
 }
-PlayerInput InputManager::GetPlayerInput() const
+PlayerInput GetPlayerInput()
 {
 	if(!inputFile_.empty())
 	{
@@ -228,16 +236,9 @@ PlayerInput InputManager::GetPlayerInput() const
 	}
 	return input;
 }
-void InputManager::OnEvent(const SDL_Event& event)
+
+void SetInputFile(std::string_view inputFile)
 {
-	ManageEvent(event);
-}
-int InputManager::GetEventListenerIndex() const
-{
-	return eventIndex_;
-}
-void InputManager::SetEventListenerIndex(int index)
-{
-	eventIndex_ = index;
+    inputFile_ = inputFile;
 }
 }

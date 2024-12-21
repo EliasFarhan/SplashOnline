@@ -1,5 +1,6 @@
 #include "engine/window.h"
 #include "utils/log.h"
+#include "engine/input_manager.h"
 
 #include <fmt/format.h>
 
@@ -66,6 +67,7 @@ void Window::Update()
         {
             isOpen_ = false;
         }
+        ManageInputEvent(e);
         for(auto* eventInterface : eventInterfaces_)
         {
             eventInterface->OnEvent(e);

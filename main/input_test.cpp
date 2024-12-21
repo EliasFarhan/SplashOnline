@@ -76,9 +76,8 @@ private:
 }
 int main([[maybe_unused]]int argc, [[maybe_unused]]char** argv)
 {
-	splash::Engine engine{};
 	splash::InputTestSystem inputTestSystem{};
-	engine.Run();
+	splash::RunEngine();
 
 	return 0;
 }

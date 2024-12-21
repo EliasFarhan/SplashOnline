@@ -83,13 +83,12 @@ private:
 int main([[maybe_unused]]int argc, [[maybe_unused]]char** argv)
 {
 
-	splash::Engine engine;
 
 	ExitGames::LoadBalancing::ClientConstructOptions clientConstructOptions{};
 	clientConstructOptions.setRegionSelectionMode(ExitGames::LoadBalancing::RegionSelectionMode::SELECT);
 	splash::NetworkClient client{clientConstructOptions};
 	NetworkTestSystem networkTestSystem(&client);
 
-	engine.Run();
+	splash::RunEngine();
     return 0;
 }

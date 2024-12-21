@@ -10,52 +10,25 @@
 #endif
 namespace splash
 {
-static Engine* instance = nullptr;
-
-void Engine::Run()
+namespace
 {
-	otherQueue_ = jobSystem_.SetupNewQueue(1);
-	networkQueue_ = jobSystem_.SetupNewQueue(1);
-
-	Begin();
-	double freq = static_cast<double>(SDL_GetPerformanceFrequency());
-	Uint64 previous = SDL_GetPerformanceCounter();
-	while (window_.IsOpen())
-	{
-#ifdef TRACY_ENABLE
-		ZoneNamedN(engineLoop, "Engine Loop", true);
-#endif
-		current_ = SDL_GetPerformanceCounter();
-		auto delta =  static_cast<double>(current_ - previous);
-		previous = current_;
-
-		dt_ = static_cast<float>(delta/freq);
-		window_.Update();
-
-		graphicsManager_.Update(dt_);
-		for(std::size_t i = 0; i < systems_.size(); i++)
-		{
-			if(systems_[i] == nullptr) continue;
-			systems_[i]->Update(dt_);
-		}
-
-		graphicsManager_.PreDraw();
-		graphicsManager_.Draw();
-		graphicsManager_.PostDraw();
-#ifdef TRACY_ENABLE
-		FrameMark;
-#endif
-	}
-	End();
-
+    Window window_{};
+    GraphicsManager graphicsManager_{};
+    std::vector<SystemInterface *> systems_;
+    int otherQueue_{};
+    int networkQueue_{};
+    float dt_ = 0.0f;
+    Uint64 current_ = 0u;
 }
 
-void Engine::Begin()
+
+
+static void BeginEngine()
 {
 #ifdef TRACY_ENABLE
 	ZoneScoped;
 #endif
-	jobSystem_.Begin();
+	neko::JobSystem::Begin();
 
 	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 	SDL_LogSetPriority(SDL_LOG_CATEGORY_ERROR, SDL_LOG_PRIORITY_INFO);
@@ -69,7 +42,7 @@ void Engine::Begin()
 		return;
 	}
 	window_.Begin();
-	inputManager_.Begin();
+	BeginInputManager();
 	graphicsManager_.Begin();
 	for(auto* system : systems_)
 	{
@@ -78,7 +51,7 @@ void Engine::Begin()
 	}
 }
 
-void Engine::End()
+void EndEngine()
 {
 #ifdef TRACY_ENABLE
 	ZoneScoped;
@@ -89,96 +62,95 @@ void Engine::End()
 		system->End();
 	}
 	graphicsManager_.End();
-	inputManager_.End();
+	EndInputManager();
 	window_.End();
-	jobSystem_.End();
+	neko::JobSystem::End();
 
 	/* Shuts down all SDL subsystems */
 	SDL_Quit();
 }
 
-void Engine::ScheduleJob(neko::Job* job)
+void RunEngine()
 {
+    otherQueue_ = neko::JobSystem::SetupNewQueue(1);
+    networkQueue_ = neko::JobSystem::SetupNewQueue(1);
+
+    BeginEngine();
+    auto freq = static_cast<double>(SDL_GetPerformanceFrequency());
+    Uint64 previous = SDL_GetPerformanceCounter();
+    while (window_.IsOpen())
+    {
 #ifdef TRACY_ENABLE
-	ZoneScoped;
+        ZoneNamedN(engineLoop, "Engine Loop", true);
 #endif
-	jobSystem_.AddJob(job, otherQueue_);
+        current_ = SDL_GetPerformanceCounter();
+        auto delta =  static_cast<double>(current_ - previous);
+        previous = current_;
+
+        dt_ = static_cast<float>(delta/freq);
+        window_.Update();
+
+        graphicsManager_.Update(dt_);
+        for(auto & system : systems_)
+        {
+            if(system == nullptr) continue;
+            system->Update(dt_);
+        }
+
+        graphicsManager_.PreDraw();
+        graphicsManager_.Draw();
+        graphicsManager_.PostDraw();
+#ifdef TRACY_ENABLE
+        FrameMark;
+#endif
+    }
+    EndEngine();
+
 }
 
-void Engine::AddSystem(SystemInterface* system)
-{
-	auto it = std::find(systems_.begin(), systems_.end(), nullptr);
-	if(it != systems_.end())
-	{
-		*it = system;
-		system->SetSystemIndex(static_cast<int>(std::distance(systems_.begin(), it)));
-	}
-	else
-	{
-		system->SetSystemIndex(static_cast<int>(systems_.size()));
-		systems_.push_back(system);
-	}
-}
 
-void Engine::RemoveSystem(SystemInterface* system)
-{
-	systems_[system->GetSystemIndex()] = nullptr;
-}
-
-PlayerInput Engine::GetPlayerInput() const
-{
-	return inputManager_.GetPlayerInput();
-}
-
-Engine::Engine()
-{
-	instance = this;
-	systems_.reserve(15);
-}
-
-Engine::Engine(std::string_view inputFile) : inputManager_(inputFile)
-{
-	instance = this;
-	systems_.reserve(15);
-}
-
-void Engine::ScheduleNetJob(neko::Job* pJob)
-{
-	jobSystem_.AddJob(pJob, networkQueue_);
-}
 
 
 
 void AddSystem(SystemInterface* system)
 {
-	instance->AddSystem(system);
+    auto it = std::find(systems_.begin(), systems_.end(), nullptr);
+    if(it != systems_.end())
+    {
+        *it = system;
+        system->SetSystemIndex(static_cast<int>(std::distance(systems_.begin(), it)));
+    }
+    else
+    {
+        system->SetSystemIndex(static_cast<int>(systems_.size()));
+        systems_.push_back(system);
+    }
 }
 
 void RemoveSystem(SystemInterface* system)
 {
-	instance->RemoveSystem(system);
+    systems_[system->GetSystemIndex()] = nullptr;
 }
 
 void ScheduleAsyncJob(neko::Job* job)
 {
-	instance->ScheduleJob(job);
+#ifdef TRACY_ENABLE
+    ZoneScoped;
+#endif
+    neko::JobSystem::AddJob(job, otherQueue_);
 }
 
-PlayerInput GetPlayerInput()
-{
-	return instance->GetPlayerInput();
-}
 void ScheduleNetJob(neko::Job* job)
 {
-	instance->ScheduleNetJob(job);
+    neko::JobSystem::AddJob(job, networkQueue_);
 }
 
 float GetDeltaTime()
 {
-	return instance->GetDeltaTime();
+	return dt_;
 }
 Uint64 GetCurrentFrameTime()
 {
-	return instance->GetCurrentFrameTime();
+	return current_;
 }
 }
