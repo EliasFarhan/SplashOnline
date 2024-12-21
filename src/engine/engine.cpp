@@ -110,6 +110,10 @@ void RunEngine()
 
 void AddSystem(SystemInterface* system)
 {
+	if(systems_.empty())
+	{
+		systems_.reserve(10);
+	}
     auto it = std::find(systems_.begin(), systems_.end(), nullptr);
     if(it != systems_.end())
     {

@@ -21,7 +21,6 @@ void ScheduleAsyncJob(neko::Job* job);
 void ScheduleNetJob(neko::Job* job);
 void AddSystem(SystemInterface* system);
 void RemoveSystem(SystemInterface* system);
-PlayerInput GetPlayerInput();
 float GetDeltaTime();
 Uint64 GetCurrentFrameTime();
 }
