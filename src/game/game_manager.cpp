@@ -304,6 +304,10 @@ void GameManager::RollbackUpdate()
 #ifdef ENABLE_DESYNC_DEBUG
 			AddConfirmFrame(localConfirmValue, lastConfirmFrame);
 #endif
+			LogDebug(fmt::format("Receive confirm frame: {} remote confirm value: {} local confirm value: {}",
+				confirmPacket.frame,
+				confirmPacket.checksum,
+				(uint32_t)localConfirmValue));
 			if (static_cast<std::uint32_t>(localConfirmValue) != lastConfirmValue)
 			{
 				LogError(fmt::format("Desync at f{} with local confirm value: player {} bullet {}", rollbackManager_
@@ -317,7 +321,7 @@ void GameManager::RollbackUpdate()
 			{
 				const auto confirmValue = rollbackManager_.ConfirmLastFrame();
 				const auto lastConfirmFrame = rollbackManager_.GetLastConfirmFrame();
-				//LogDebug(fmt::format("Confirm Frame Sending at f{} with local confirm value: player {} bullet {}", lastConfirmFrame, confirmValue[0], confirmValue[1]));
+				LogDebug(fmt::format("Confirm Frame Sending at f{} with local confirm value: player {} bullet {}", lastConfirmFrame, confirmValue[0], confirmValue[1]));
 
 				ConfirmFramePacket confirmPacket{};
 				confirmPacket.frame = lastConfirmFrame;

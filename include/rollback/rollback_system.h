@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <initializer_list>
 #include <numeric>
+#include "utils/adler32.h"
 
 namespace splash
 {
@@ -39,7 +40,9 @@ struct Checksum
 
 	[[nodiscard]] explicit operator std::uint32_t() const
 	{
-		return std::accumulate(data_.cbegin(), data_.cend(), 0);
+		Adler32 adler32{};
+		adler32.Add(data_);
+		return adler32.GetValue();
 	}
 
 	template<int otherArgCount>
@@ -54,14 +57,14 @@ private:
 	neko::SmallVector<std::uint32_t, argCount> data_{};
 };
 
-	template<typename T, int argCount>
-    class RollbackInterface
-    {
-    public:
-		virtual ~RollbackInterface() = default;
-        [[nodiscard]] virtual Checksum<argCount> CalculateChecksum() const = 0;
-        virtual void RollbackFrom(const T& system) = 0;
-    };
+template<typename T, int argCount>
+class RollbackInterface
+{
+public:
+	virtual ~RollbackInterface() = default;
+	[[nodiscard]] virtual Checksum<argCount> CalculateChecksum() const = 0;
+	virtual void RollbackFrom(const T& system) = 0;
+};
 
 }
 
