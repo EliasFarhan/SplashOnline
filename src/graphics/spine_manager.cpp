@@ -99,7 +99,7 @@ void SpineManager::UpdateLoad()
 #ifdef TRACY_ENABLE
 	ZoneScoped;
 #endif
-	if(!IsTextureLoaded())
+	if(!IsTexturesLoaded())
 	{
 		return;
 	}

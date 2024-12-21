@@ -55,7 +55,7 @@ void GameManager::Update(float dt)
 #ifdef TRACY_ENABLE
 	ZoneScoped;
 #endif
-	if(!IsSpineLoaded() || !IsTextureLoaded() || !IsFmodLoaded())
+	if(!IsSpineLoaded() || !IsTexturesLoaded() || !IsFmodLoaded())
 	{
 		return;
 	}

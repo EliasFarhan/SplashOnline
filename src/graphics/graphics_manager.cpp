@@ -18,7 +18,6 @@ namespace splash
 
 namespace
 {
-    TextureManager textureManager_;
     SpineManager spineManager_;
     SDL_Renderer* renderer_ = nullptr;
     std::vector<DrawInterface*> drawInterfaces_;
@@ -80,7 +79,7 @@ void BeginGraphics()
 
 	LogDebug(fmt::format("Renderer: {}", info.name));
 
-	textureManager_.Begin();
+	TextureManager::Begin();
 	BeginGuiRenderer();
 }
 
@@ -90,7 +89,7 @@ void EndGraphics()
 	ZoneScoped;
 #endif
 	EndGuiRenderer();
-	textureManager_.End();
+	TextureManager::End();
 	SDL_DestroyRenderer(renderer_);
 }
 
@@ -102,9 +101,9 @@ SDL_Renderer* GetRenderer()
 
 void UpdateGraphics()
 {
-	if(!textureManager_.IsLoaded())
+	if(!IsTexturesLoaded())
 	{
-		textureManager_.UpdateLoad();
+		UpdateTexturesLoad();
 	}
 	if(!spineManager_.IsLoaded())
 	{

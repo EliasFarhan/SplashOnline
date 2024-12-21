@@ -24,7 +24,7 @@ public:
 	}
 	void Update([[maybe_unused]] float dt) override
 	{
-		if(splash::IsTextureLoaded() && bg_ == nullptr)
+		if(splash::IsTexturesLoaded() && bg_ == nullptr)
 		{
 			bg_ = splash::GetTexture(splash::TextureManager::TextureId::BG);
 		}
