@@ -12,7 +12,6 @@
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
 {
-	splash::Engine engine;
 	splash::AudioManager audioManager;
 	splash::GameData gameData{};
 	gameData.introDelay = 0.1f;
@@ -25,6 +24,6 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
 
 
 	splash::GameManager gameManager{gameData};
-	engine.Run();
+	splash::RunEngine();
 	return 0;
 }

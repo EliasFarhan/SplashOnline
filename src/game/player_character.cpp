@@ -7,6 +7,7 @@
 #include "game/const.h"
 #include "utils/log.h"
 #include "rollback/rollback_manager.h"
+#include "utils/adler32.h"
 
 #include <fmt/format.h>
 
@@ -92,7 +93,6 @@ void PlayerManager::Tick()
 #ifdef TRACY_ENABLE
 	ZoneScoped;
 #endif
-	const auto fixedDeltaTime = GetFixedDeltaTime();
 	for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
 	{
 
@@ -106,9 +106,9 @@ void PlayerManager::Tick()
 		auto& physicsWorld = gameSystems_->GetPhysicsWorld();
 		auto& body = physicsWorld.body(playerPhysic.bodyIndex);
 
-		const auto reactor = neko::Scalar {(float)playerInput.moveDirY};
-		const auto moveX = neko::Abs(playerInput.moveDirX) > PlayerCharacter::deadZone ? neko::Scalar{(float)playerInput.moveDirX} : neko::Scalar{};
-		auto target = neko::Vec2f{neko::Scalar {(float)playerInput.targetDirX}, neko::Scalar {(float)playerInput.targetDirY}};
+		const auto reactor = neko::Scalar {static_cast<float>(playerInput.moveDirY)};
+		const auto moveX = neko::Abs(playerInput.moveDirX) > PlayerCharacter::deadZone ? neko::Scalar{static_cast<float>(playerInput.moveDirX)} : neko::Scalar{};
+		auto target = neko::Vec2f{neko::Scalar {static_cast<float>(playerInput.targetDirX)}, neko::Scalar {static_cast<float>(playerInput.targetDirY)}};
 
 
 		playerCharacter.jumpTimer.Update(fixedDeltaTime);
@@ -215,7 +215,7 @@ void PlayerManager::Tick()
 		}
 		// In Air Move and not dashing!!!
 		if(!playerCharacter.IsGrounded() &&
-			neko::Abs(moveX) > neko::Scalar{(float)PlayerCharacter::deadZone} &&
+			neko::Abs(moveX) > neko::Scalar{static_cast<float>(PlayerCharacter::deadZone)} &&
 			!playerCharacter.IsDashing())
 		{
 			const auto horizontalForce = PlayerCharacter::InAirForce * moveX;
@@ -412,7 +412,7 @@ void PlayerManager::Tick()
 			target = {};
 			playerCharacter.reloadTimer.Update(fixedDeltaTime);
 		}
-		bool isShooting = target.Length() > neko::Scalar {(float)PlayerCharacter::deadZone};
+		bool isShooting = target.Length() > neko::Scalar {static_cast<float>(PlayerCharacter::deadZone)};
 		if(!isShooting)
 		{
 			const auto reserveDt = fixedDeltaTime * playerCharacter.reserveWaterTimer.GetPeriod() /
@@ -717,42 +717,31 @@ void PlayerManager::Respawn(int playerNumber)
 
 Checksum<static_cast<int>(PlayerChecksumIndex::LENGTH)> PlayerManager::CalculateChecksum() const
 {
-	std::uint32_t playerCharacterResult = 0;
-	std::uint32_t playerPhysicsResult = 0;
+	Adler32 playerCharacterResult;
+	Adler32 playerPhysicsResult;
 	for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
 	{
 		if(!IsValid(playerNumber))
 		{
 			continue;
 		}
-		const auto* player = reinterpret_cast<const std::uint32_t*>(&playerCharacters_[playerNumber]);
-		for(std::size_t i = 0; i < sizeof(PlayerCharacter)/sizeof(std::uint32_t); i++)
-		{
-			playerCharacterResult += player[i];
-		}
+		Adler32 adler32{};
 
-		const auto* physics = reinterpret_cast<const std::uint32_t*>(&playerPhysics_[playerNumber]);
-		for(std::size_t i = 0; i < sizeof(PlayerPhysic)/sizeof(std::uint32_t); i++)
-		{
-			playerPhysicsResult += physics[i];
-		}
+		auto value = adler32.Add(playerCharacters_[playerNumber]);
+		playerCharacterResult.Add(reinterpret_cast<uint8_t*>(&value), sizeof(value));
+
+		adler32.Reset();
+		value = adler32.Add(playerPhysics_[playerNumber]);
+		playerPhysicsResult.Add(reinterpret_cast<uint8_t*>(&value), sizeof(value));
 	}
 
-	std::uint32_t playerInputResult = 0;
-	const auto* playerInputPtr = reinterpret_cast<const std::uint8_t*>(playerInputs_.data());
-	for(std::size_t i = 0; i < sizeof(playerInputs_); i++)
-	{
-		playerInputResult += static_cast<std::uint32_t>(playerInputPtr[i]);
-	}
+	Adler32 playerInputResult;
+	playerInputResult.Add(playerInputs_);
 
-	std::uint32_t previousPlayerInputResult = 0;
-	playerInputPtr = reinterpret_cast<const std::uint8_t*>(previousPlayerInputs_.data());
-	for(std::size_t i = 0; i < sizeof(previousPlayerInputs_); i++)
-	{
-		previousPlayerInputResult += static_cast<std::uint32_t>(playerInputPtr[i]);
-	}
+	Adler32 previousPlayerInputResult;
+	previousPlayerInputResult.Add(previousPlayerInputs_);
 
-	std::uint32_t playerBodyResult = 0;
+	Adler32 playerBodyResult;
 	for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
 	{
 		if(!IsValid(playerNumber))
@@ -760,9 +749,9 @@ Checksum<static_cast<int>(PlayerChecksumIndex::LENGTH)> PlayerManager::Calculate
 			continue;
 		}
 		const auto& body = gameSystems_->GetPhysicsWorld().body(playerPhysics_[playerNumber].bodyIndex);
-		playerBodyResult+= neko::GenerateChecksum(body);
+		playerBodyResult.Add(body);
 	}
-	return {playerCharacterResult, playerPhysicsResult, playerInputResult, previousPlayerInputResult, playerBodyResult};
+	return {playerCharacterResult.GetValue(), playerPhysicsResult.GetValue(), playerInputResult.GetValue(), previousPlayerInputResult.GetValue(), playerBodyResult.GetValue()};
 }
 
 void PlayerManager::RollbackFrom(const PlayerManager& system)

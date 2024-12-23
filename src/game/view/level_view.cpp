@@ -133,11 +133,11 @@ void LevelView::Draw()
 }
 void LevelView::Update(float dt)
 {
-	if(!IsTextureLoaded())
+	if(!IsTexturesLoaded())
 	{
 		return;
 	}
-	if(platformTextures_[0] == nullptr && IsTextureLoaded())
+	if(platformTextures_[0] == nullptr && IsTexturesLoaded())
 	{
 		LoadTextures();
 	}

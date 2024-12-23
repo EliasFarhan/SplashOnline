@@ -25,68 +25,79 @@
 namespace splash
 {
 
-static TextureManager* instance = nullptr;
-
-static constexpr std::array<std::string_view, static_cast<int>(TextureManager::TextureId::LENGTH)> texturePaths =
-	{{
-		"data/sprites/kittymanjaro/bg.png",
-		"data/sprites/kittymanjaro/cloud1.png",
-		"data/sprites/kittymanjaro/cloud2.png",
-		"data/sprites/kittymanjaro/cloud3.png",
-		"data/sprites/kittymanjaro/floatrock1.png",
-		"data/sprites/kittymanjaro/floatrock2.png",
-		"data/sprites/kittymanjaro/floatrock3.png",
-		"data/sprites/kittymanjaro/floatrock4.png",
-		"data/sprites/kittymanjaro/backfog.png",
-		"data/sprites/kittymanjaro/frontfog.png",
-		"data/sprites/kittymanjaro/midbg.png",
-		"data/sprites/kittymanjaro/plat1.png",
-		"data/sprites/kittymanjaro/plat2.png",
-		"data/sprites/kittymanjaro/plat3.png",
-
-		"data/sprites/ui/arrow_cyan.png",
-		"data/sprites/ui/arrow_orange.png",
-		"data/sprites/ui/arrow_magenta.png",
-		"data/sprites/ui/arrow_turquoise.png",
-		"data/sprites/ui/right_arrow.png",
-		"data/sprites/ui/cat_playerhead.png",
-		"data/sprites/ui/lucha_playerhead.png",
-		"data/sprites/ui/owl_playerhead.png",
-		"data/sprites/ui/robo_playerhead.png",
-		"data/sprites/ui/OOB_cyan.png",
-		"data/sprites/ui/OOB_orange.png",
-		"data/sprites/ui/OOB_mag.png",
-		"data/sprites/ui/OOB_turq.png",
-		"data/sprites/ui/cat_win.png",
-		"data/sprites/ui/lucha_win.png",
-		"data/sprites/ui/hoot_win.png",
-		"data/sprites/ui/robo_win.png",
-		"data/sprites/ui/cat_lost.png",
-		"data/sprites/ui/lucha_lost.png",
-		"data/sprites/ui/hoot_lost.png",
-		"data/sprites/ui/robo_lost.png",
-		"data/sprites/ui/switch_procontroller.png",
-
-		"data/spine/kwakwalogo/SBPkwakwa_ver4_2.png",
-		"data/spine/announcer/SBPannouncers_ver4_2.png",
-		"data/spine/chars/SBPChars_ver4_2.png",
-		"data/spine/arms/SBPCharArms_ver4_2.png",
-		"data/spine/gun/SBPweapons_ver4_2.png",
-		"data/spine/water/SBPwater_ver4_2.png",
-		"data/spine/cloud/SBPCloud_ver_4_2.png",
-		"data/spine/FX/SBPfx_ver4_2.png",
-
-
-
-	}};
-
 struct Image
 {
-	void* pixels = nullptr;
-	int width = 0;
-	int height = 0;
-	int comp = 0;
+    void* pixels = nullptr;
+    int width = 0;
+    int height = 0;
+    int comp = 0;
 };
+namespace
+{
+
+constexpr std::array<std::string_view, static_cast<int>(TextureManager::TextureId::LENGTH)> texturePaths =
+    {{
+         "data/sprites/kittymanjaro/bg.png",
+         "data/sprites/kittymanjaro/cloud1.png",
+         "data/sprites/kittymanjaro/cloud2.png",
+         "data/sprites/kittymanjaro/cloud3.png",
+         "data/sprites/kittymanjaro/floatrock1.png",
+         "data/sprites/kittymanjaro/floatrock2.png",
+         "data/sprites/kittymanjaro/floatrock3.png",
+         "data/sprites/kittymanjaro/floatrock4.png",
+         "data/sprites/kittymanjaro/backfog.png",
+         "data/sprites/kittymanjaro/frontfog.png",
+         "data/sprites/kittymanjaro/midbg.png",
+         "data/sprites/kittymanjaro/plat1.png",
+         "data/sprites/kittymanjaro/plat2.png",
+         "data/sprites/kittymanjaro/plat3.png",
+
+         "data/sprites/ui/arrow_cyan.png",
+         "data/sprites/ui/arrow_orange.png",
+         "data/sprites/ui/arrow_magenta.png",
+         "data/sprites/ui/arrow_turquoise.png",
+         "data/sprites/ui/right_arrow.png",
+         "data/sprites/ui/cat_playerhead.png",
+         "data/sprites/ui/lucha_playerhead.png",
+         "data/sprites/ui/owl_playerhead.png",
+         "data/sprites/ui/robo_playerhead.png",
+         "data/sprites/ui/OOB_cyan.png",
+         "data/sprites/ui/OOB_orange.png",
+         "data/sprites/ui/OOB_mag.png",
+         "data/sprites/ui/OOB_turq.png",
+         "data/sprites/ui/cat_win.png",
+         "data/sprites/ui/lucha_win.png",
+         "data/sprites/ui/hoot_win.png",
+         "data/sprites/ui/robo_win.png",
+         "data/sprites/ui/cat_lost.png",
+         "data/sprites/ui/lucha_lost.png",
+         "data/sprites/ui/hoot_lost.png",
+         "data/sprites/ui/robo_lost.png",
+         "data/sprites/ui/switch_procontroller.png",
+
+         "data/spine/kwakwalogo/SBPkwakwa_ver4_2.png",
+         "data/spine/announcer/SBPannouncers_ver4_2.png",
+         "data/spine/chars/SBPChars_ver4_2.png",
+         "data/spine/arms/SBPCharArms_ver4_2.png",
+         "data/spine/gun/SBPweapons_ver4_2.png",
+         "data/spine/water/SBPwater_ver4_2.png",
+         "data/spine/cloud/SBPCloud_ver_4_2.png",
+         "data/spine/FX/SBPfx_ver4_2.png",
+
+
+
+     }};
+    std::array<SDL_Texture*, static_cast<int>(TextureManager::TextureId::LENGTH)> textures_{};
+    std::array<neko::Vec2i, static_cast<int>(TextureManager::TextureId::LENGTH)> texturesSizes_{};
+
+std::atomic<int> loadingIndex{-1};
+std::array<Image, static_cast<int>(TextureManager::TextureId::LENGTH)> images;
+std::array<SDL_Surface*, static_cast<int>(TextureManager::TextureId::LENGTH)> surfaces;
+std::unique_ptr<neko::FuncJob> loadingJob;
+}
+
+
+
 
 Image LoadImageFromFile(std::string_view path)
 {
@@ -130,14 +141,10 @@ SDL_Texture* CreateTextureFromSurface(SDL_Renderer* renderer, SDL_Surface* surfa
 	return SDL_CreateTextureFromSurface(renderer, surface);
 }
 
-static std::atomic<int> loadingIndex{-1};
-static std::array<Image, static_cast<int>(TextureManager::TextureId::LENGTH)> images;
-static std::array<SDL_Surface*, static_cast<int>(TextureManager::TextureId::LENGTH)> surfaces;
-static std::unique_ptr<neko::FuncJob> loadingJob;
+
 
 void TextureManager::Begin()
 {
-	renderer_ = GetRenderer();
 	loadingJob = std::make_unique<neko::FuncJob>([](){
 		for(int i = 0; i < static_cast<int>(texturePaths.size()); i++)
 		{
@@ -174,17 +181,17 @@ void TextureManager::End()
 	textures_ = {};
 }
 
-bool TextureManager::IsLoaded() const
+bool IsTexturesLoaded()
 {
 	return textures_[static_cast<int>(TextureManager::TextureId::LENGTH)-1] != nullptr;
 }
 
-void TextureManager::UpdateLoad()
+void UpdateTexturesLoad()
 {
 #ifdef TRACY_ENABLE
 	ZoneScoped;
 #endif
-	if(IsLoaded())
+	if(IsTexturesLoaded())
 	{
 		return;
 	}
@@ -202,7 +209,7 @@ void TextureManager::UpdateLoad()
 		ZoneNamedN(loadingTexture, "Loading SDL Texture", true);
 		ZoneTextV(loadingTexture, texturePaths[i].data(), texturePaths[i].size());
 #endif
-		textures_[i] = CreateTextureFromSurface(renderer_, surfaces[i]);
+		textures_[i] = CreateTextureFromSurface(GetRenderer(), surfaces[i]);
 		texturesSizes_[i] = {images[i].width, images[i].height};
 		SDL_FreeSurface(surfaces[i]);
 		stbi_image_free(images[i].pixels);
@@ -216,24 +223,12 @@ void TextureManager::UpdateLoad()
 		}
 	}
 }
-TextureManager::TextureManager()
-{
-	instance = this;
-}
-neko::Vec2i TextureManager::GetTextureSize(TextureManager::TextureId id) const
+neko::Vec2i GetTextureSize(TextureManager::TextureId id)
 {
 	return texturesSizes_[static_cast<int>(id)];
 }
-SDL_Texture* GetTexture(TextureManager::TextureId textureId)
+SDL_Texture* GetTexture(TextureManager::TextureId textureId) noexcept
 {
-	return instance->GetTexture(textureId);
-}
-bool IsTextureLoaded()
-{
-	return instance->IsLoaded();
-}
-neko::Vec2i GetTextureSize(TextureManager::TextureId textureId)
-{
-	return instance->GetTextureSize(textureId);
+    return textures_[static_cast<std::size_t>(textureId)];
 }
 }

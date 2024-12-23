@@ -55,32 +55,14 @@ struct PlayerInput
 	}
 };
 
-class InputManager : public OnEventInterface
-{
-public:
-	InputManager() = default;
-	explicit InputManager(std::string_view inputFile);
-	void Begin();
-	void ManageEvent(const SDL_Event& event);
-	void End();
 
-	[[nodiscard]] PlayerInput GetPlayerInput() const;
-	void OnEvent(const SDL_Event& event) override;
-	[[nodiscard]] int GetEventListenerIndex() const override;
-	void SetEventListenerIndex(int index) override;
+static constexpr float deadZone = 0.2f;
+void SetInputFile(std::string_view inputFile);
+void BeginInputManager();
+void ManageInputEvent(const SDL_Event& event);
+void EndInputManager();
+PlayerInput GetPlayerInput();
 
-	static constexpr float deadZone = 0.2f;
-private:
-	static SDL_GameController* FindGameController();
-	static SDL_JoystickID GetControllerInstanceId(SDL_GameController *controller);
-	SDL_GameController* controller_ = nullptr;
-
-	std::unique_ptr<neko::FuncJob> loadInputsJob_;
-	std::string inputFile_;
-	std::vector<PlayerInput> playerInputs_;
-	sqlite3* db_ = nullptr;
-	int eventIndex_ = -1;
-};
 }
 
 #endif //SPLASHONLINE_INPUT_MANAGER_H

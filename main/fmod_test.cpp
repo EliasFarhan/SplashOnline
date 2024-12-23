@@ -84,10 +84,9 @@ private:
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
 {
-	splash::Engine engine;
 	splash::AudioManager audioManager;
 	splash::FmodTestSystem testSystem;
 
-	engine.Run();
+	splash::RunEngine();
 	return 0;
 }

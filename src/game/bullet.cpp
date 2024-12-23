@@ -3,6 +3,7 @@
 //
 #include "game/bullet.h"
 #include "game/game_systems.h"
+#include "utils/adler32.h"
 
 #include <algorithm>
 
@@ -159,20 +160,16 @@ void BulletManager::SpawnWata(
 
 Checksum<static_cast<int>(BulletChecksumIndex::LENGTH)> BulletManager::CalculateChecksum() const
 {
-	std::uint32_t bulletResult = 0;
-	std::uint32_t bulletBodyResult = 0;
+	Adler32 bulletResult;
+	Adler32 bulletBodyResult;
 	for(const auto & bullet : bullets_)
 	{
-		const auto* bulletPtr = reinterpret_cast<const std::uint32_t*>(&bullet);
-		for(std::size_t j = 0; j < sizeof(Bullet)/sizeof(std::uint32_t); j++)
-		{
-			bulletResult += bulletPtr[j];
-		}
-		const auto& body = gameSystems_->GetPhysicsWorld().body(bullet.bodyIndex);
-		bulletBodyResult += neko::GenerateChecksum(body);
+		bulletResult.Add(bullet);
 
+		const auto& body = gameSystems_->GetPhysicsWorld().body(bullet.bodyIndex);
+		bulletBodyResult.Add(body);
 	}
-	return {bulletResult, bulletBodyResult};
+	return {bulletResult.GetValue(), bulletBodyResult.GetValue()};
 }
 
 void BulletManager::RollbackFrom(const BulletManager& system)

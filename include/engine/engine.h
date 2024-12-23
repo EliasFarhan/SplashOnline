@@ -16,41 +16,11 @@
 namespace splash
 {
 
-class Engine final
-{
-public:
-	Engine();
-
-	explicit Engine(std::string_view inputFile);
-	void Run();
-
-	void ScheduleJob(neko::Job* job);
-	void AddSystem(SystemInterface* system);
-	void RemoveSystem(SystemInterface* system);
-	PlayerInput GetPlayerInput() const;
-	void ScheduleNetJob(neko::Job* pJob);
-	float GetDeltaTime() const {return dt_;}
-	Uint64 GetCurrentFrameTime() const{return current_;}
-private:
-
-	void Begin();
-	void End();
-
-	Window window_{};
-	GraphicsManager graphicsManager_{};
-	InputManager inputManager_;
-	std::vector<SystemInterface*> systems_;
-	int otherQueue_{};
-	int networkQueue_{};
-	float dt_ = 0.0f;
-	Uint64 current_ = 0u;
-};
-
+void RunEngine();
 void ScheduleAsyncJob(neko::Job* job);
 void ScheduleNetJob(neko::Job* job);
 void AddSystem(SystemInterface* system);
 void RemoveSystem(SystemInterface* system);
-PlayerInput GetPlayerInput();
 float GetDeltaTime();
 Uint64 GetCurrentFrameTime();
 }
