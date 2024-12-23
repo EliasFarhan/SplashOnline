@@ -14,8 +14,8 @@ static Engine* instance = nullptr;
 
 void Engine::Run()
 {
-	otherQueue_ = jobSystem_.SetupNewQueue(1);
-	networkQueue_ = jobSystem_.SetupNewQueue(1);
+	otherQueue_ = neko::JobSystem::SetupNewQueue(1);
+	networkQueue_ = neko::JobSystem::SetupNewQueue(1);
 
 	Begin();
 	double freq = static_cast<double>(SDL_GetPerformanceFrequency());
@@ -55,7 +55,7 @@ void Engine::Begin()
 #ifdef TRACY_ENABLE
 	ZoneScoped;
 #endif
-	jobSystem_.Begin();
+	neko::JobSystem::Begin();
 
 	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 	SDL_LogSetPriority(SDL_LOG_CATEGORY_ERROR, SDL_LOG_PRIORITY_INFO);
@@ -91,7 +91,7 @@ void Engine::End()
 	graphicsManager_.End();
 	inputManager_.End();
 	window_.End();
-	jobSystem_.End();
+	neko::JobSystem::End();
 
 	/* Shuts down all SDL subsystems */
 	SDL_Quit();
@@ -102,7 +102,7 @@ void Engine::ScheduleJob(neko::Job* job)
 #ifdef TRACY_ENABLE
 	ZoneScoped;
 #endif
-	jobSystem_.AddJob(job, otherQueue_);
+	neko::JobSystem::AddJob(job, otherQueue_);
 }
 
 void Engine::AddSystem(SystemInterface* system)
@@ -144,7 +144,7 @@ Engine::Engine(std::string_view inputFile) : inputManager_(inputFile)
 
 void Engine::ScheduleNetJob(neko::Job* pJob)
 {
-	jobSystem_.AddJob(pJob, networkQueue_);
+	neko::JobSystem::AddJob(pJob, networkQueue_);
 }
 
 

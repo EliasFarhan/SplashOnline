@@ -9,8 +9,10 @@ set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 option(ENABLE_PROFILING "Enable Tracy Profiling" OFF)
 option(BUILD_SHARED_LIBS "Build the library as a shared library" OFF)
+option(USE_SQLITE "Use sqlite lib" ON)
 option(ENABLE_DESYNC_DEBUG "Register states in sqlite3 for debug" OFF)
 option(ENABLE_ASAN "Enable Adress Sanitizer" OFF)
+
 
 #tracy profiler
 if(ENABLE_PROFILING)
@@ -18,6 +20,9 @@ if(ENABLE_PROFILING)
     add_subdirectory(${Tracy_DIR})
 endif (ENABLE_PROFILING)
 
+if(NOT USE_SQLITE)
+    set(ENABLE_DESYNC_DEBUG OFF)
+endif ()
 #NekoLib
 set(NEKOLIB_DIR externals/NekoLib)
 add_subdirectory(${NEKOLIB_DIR})
@@ -59,13 +64,18 @@ add_compile_definitions(FMT_HEADER_ONLY=1)
 set(FMT_DIR externals/fmt)
 add_subdirectory(${FMT_DIR})
 
-set(SQLITE3_DIR "externals/sqlite3")
-add_subdirectory(${SQLITE3_DIR})
-
+if(USE_SQLITE)
+    set(SQLITE3_DIR "externals/sqlite3")
+    add_subdirectory(${SQLITE3_DIR})
+endif()
 file(GLOB_RECURSE GAME_FILES src/*.cpp include/*.h)
 
 add_library(SplashLib ${GAME_FILES})
-target_link_libraries(SplashLib PUBLIC SDL2-static SDL2_ttf SDL2main imgui spine_sdl NekoCore NekoPhysics sqlite3)
+target_link_libraries(SplashLib PUBLIC SDL2-static SDL2_ttf SDL2main imgui spine_sdl NekoCore NekoPhysics)
+if(USE_SQLITE)
+    target_link_libraries(SplashLib PUBLIC sqlite3)
+    target_compile_definitions(SplashLib PUBLIC USE_SQLITE)
+endif ()
 if(ENABLE_DESYNC_DEBUG)
     target_compile_definitions(SplashLib PUBLIC ENABLE_DESYNC_DEBUG)
 endif(ENABLE_DESYNC_DEBUG)
