@@ -7,7 +7,6 @@
 
 #include <SDL_gamecontroller.h>
 #include <SDL_events.h>
-#include <sqlite3.h>
 
 #include <cstdint>
 #include <memory>

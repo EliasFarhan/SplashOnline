@@ -9,9 +9,13 @@
 
 #include <fmt/format.h>
 
+
 #include "engine/engine.h"
 #ifdef TRACY_ENABLE
 #include <tracy/Tracy.hpp>
+#endif
+#ifdef USE_SQLITE
+#include <sqlite3.h>
 #endif
 
 namespace splash
@@ -19,10 +23,12 @@ namespace splash
 namespace
 {
     SDL_GameController* controller_ = nullptr;
-    std::unique_ptr<neko::FuncJob> loadInputsJob_;
     std::string inputFile_;
     std::vector<PlayerInput> playerInputs_;
+#ifdef USE_SQLITE
     sqlite3* db_ = nullptr;
+    std::unique_ptr<neko::FuncJob> loadInputsJob_;
+#endif
 }
 
 
@@ -105,6 +111,7 @@ void BeginInputManager()
 	else
 	{
 		playerInputs_.resize(3000);
+#ifdef USE_SQLITE
 		//TODO load sqlite data from local input file db
 		loadInputsJob_ = std::make_unique<neko::FuncJob>([]()
 		{
@@ -128,6 +135,7 @@ void BeginInputManager()
 			sqlite3_close(db_);
 		});
 		ScheduleAsyncJob(loadInputsJob_.get());
+#endif
 	}
 }
 
@@ -175,10 +183,12 @@ void EndInputManager()
 }
 PlayerInput GetPlayerInput()
 {
+#ifdef USE_SQLITE
 	if(!inputFile_.empty())
 	{
 		return playerInputs_[GetCurrentFrame()];
 	}
+#endif
 	PlayerInput input{};
 
 	if(controller_ != nullptr)
