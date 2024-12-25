@@ -717,9 +717,9 @@ void PlayerManager::Respawn(int playerNumber)
 
 Checksum<static_cast<int>(PlayerChecksumIndex::LENGTH)> PlayerManager::CalculateChecksum() const
 {
-	Adler32 playerCharacterResult;
-	Adler32 playerPhysicsResult;
-	Adler32 playerBodyResult;
+	Adler32 playerCharacterResult{};
+	Adler32 playerPhysicsResult{};
+	Adler32 playerBodyResult{};
 	for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
 	{
 		if(!IsValid(playerNumber))
@@ -734,10 +734,10 @@ Checksum<static_cast<int>(PlayerChecksumIndex::LENGTH)> PlayerManager::Calculate
 		playerBodyResult.Add(body);
 	}
 
-	Adler32 playerInputResult;
+	Adler32 playerInputResult{};
 	playerInputResult.Add(playerInputs_);
 
-	Adler32 previousPlayerInputResult;
+	Adler32 previousPlayerInputResult{};
 	previousPlayerInputResult.Add(previousPlayerInputs_);
 
 	return {playerCharacterResult.GetValue(), playerPhysicsResult.GetValue(), playerInputResult.GetValue(), previousPlayerInputResult.GetValue(), playerBodyResult.GetValue()};

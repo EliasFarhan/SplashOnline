@@ -160,8 +160,8 @@ void BulletManager::SpawnWata(
 
 Checksum<static_cast<int>(BulletChecksumIndex::LENGTH)> BulletManager::CalculateChecksum() const
 {
-	Adler32 bulletResult;
-	Adler32 bulletBodyResult;
+	Adler32 bulletResult{};
+	Adler32 bulletBodyResult{};
 	for(const auto & bullet : bullets_)
 	{
 		bulletResult.Add(bullet);
