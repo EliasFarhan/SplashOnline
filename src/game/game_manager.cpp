@@ -319,14 +319,22 @@ void GameManager::RollbackUpdate()
 #ifdef ENABLE_DESYNC_DEBUG
 			AddConfirmFrame(localConfirmValue, lastConfirmFrame);
 #endif
-			LogDebug(fmt::format("Receive confirm frame: {} remote confirm value: {} local confirm value: {}",
+			/*LogDebug(fmt::format("Receive confirm frame: {} remote confirm value: {} local confirm value: {}",
 				confirmPacket.frame,
 				confirmPacket.checksum,
-				(uint32_t)localConfirmValue));
+				(uint32_t)localConfirmValue));*/
 			if (static_cast<std::uint32_t>(localConfirmValue) != lastConfirmValue)
 			{
-				LogError(fmt::format("Desync at f{} with local confirm value: player {} bullet {}", rollbackManager_
-					.GetLastConfirmFrame(), localConfirmValue[0], localConfirmValue[1]));
+				LogError(fmt::format("Desync at f{} with local confirm value:\n"
+									 "player chara {}, player phys: {}, inputs: {}, prev inputs: {}, player body: {}, bullet {}, bullet body: {}",
+									 rollbackManager_.GetLastConfirmFrame(),
+									 localConfirmValue[0],
+									 localConfirmValue[1],
+									 localConfirmValue[2],
+									 localConfirmValue[3],
+									 localConfirmValue[4],
+									 localConfirmValue[5],
+									 localConfirmValue[6]));
 			}
 		}
 		//validate frame
@@ -336,7 +344,16 @@ void GameManager::RollbackUpdate()
 			{
 				const auto confirmValue = rollbackManager_.ConfirmLastFrame();
 				const auto lastConfirmFrame = rollbackManager_.GetLastConfirmFrame();
-				LogDebug(fmt::format("Confirm Frame Sending at f{} with local confirm value: player {} bullet {}", lastConfirmFrame, confirmValue[0], confirmValue[1]));
+				LogDebug(fmt::format("Confirm Frame Sending at f{} with local confirm value:\n"
+									 "player chara {}, player phys: {}, inputs: {}, prev inputs: {}, player body: {}, bullet {}, bullet body: {}",
+									 lastConfirmFrame,
+									 confirmValue[0],
+									 confirmValue[1],
+									 confirmValue[2],
+									 confirmValue[3],
+									 confirmValue[4],
+									 confirmValue[5],
+									 confirmValue[6]));
 
 				ConfirmFramePacket confirmPacket{};
 				confirmPacket.frame = lastConfirmFrame;

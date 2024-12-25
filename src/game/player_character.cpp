@@ -719,20 +719,19 @@ Checksum<static_cast<int>(PlayerChecksumIndex::LENGTH)> PlayerManager::Calculate
 {
 	Adler32 playerCharacterResult;
 	Adler32 playerPhysicsResult;
+	Adler32 playerBodyResult;
 	for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
 	{
 		if(!IsValid(playerNumber))
 		{
 			continue;
 		}
-		Adler32 adler32{};
 
-		auto value = adler32.Add(playerCharacters_[playerNumber]);
-		playerCharacterResult.Add(reinterpret_cast<uint8_t*>(&value), sizeof(value));
+		playerCharacterResult.Add(playerCharacters_[playerNumber]);
+		playerPhysicsResult.Add(playerPhysics_[playerNumber]);
 
-		adler32.Reset();
-		value = adler32.Add(playerPhysics_[playerNumber]);
-		playerPhysicsResult.Add(reinterpret_cast<uint8_t*>(&value), sizeof(value));
+		const auto& body = gameSystems_->GetPhysicsWorld().body(playerPhysics_[playerNumber].bodyIndex);
+		playerBodyResult.Add(body);
 	}
 
 	Adler32 playerInputResult;
@@ -741,16 +740,6 @@ Checksum<static_cast<int>(PlayerChecksumIndex::LENGTH)> PlayerManager::Calculate
 	Adler32 previousPlayerInputResult;
 	previousPlayerInputResult.Add(previousPlayerInputs_);
 
-	Adler32 playerBodyResult;
-	for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
-	{
-		if(!IsValid(playerNumber))
-		{
-			continue;
-		}
-		const auto& body = gameSystems_->GetPhysicsWorld().body(playerPhysics_[playerNumber].bodyIndex);
-		playerBodyResult.Add(body);
-	}
 	return {playerCharacterResult.GetValue(), playerPhysicsResult.GetValue(), playerInputResult.GetValue(), previousPlayerInputResult.GetValue(), playerBodyResult.GetValue()};
 }
 
