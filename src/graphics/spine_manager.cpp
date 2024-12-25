@@ -21,19 +21,21 @@
 namespace splash
 {
 
-static SpineManager* instance = nullptr;
+namespace
+{
+
 
 static constexpr std::array<std::string_view, static_cast<int>(SpineManager::AtlasId::LENGTH)> atlasPaths
-{{
-	"data/spine/kwakwalogo/SBPkwakwa_ver4_2.atlas",
-	"data/spine/announcer/SBPannouncers_ver4_2.atlas",
-	"data/spine/chars/SBPChars_ver4_2.atlas",
-	"data/spine/arms/SBPCharArms_ver4_2.atlas",
-	"data/spine/gun/SBPweapons_ver4_2.atlas",
-	"data/spine/water/SBPwater_ver4_2.atlas",
-	"data/spine/cloud/SBPCloud_ver_4_2.atlas",
-	"data/spine/FX/SBPfx_ver4_2.atlas",
-}};
+	{{
+		 "data/spine/kwakwalogo/SBPkwakwa_ver4_2.atlas",
+		 "data/spine/announcer/SBPannouncers_ver4_2.atlas",
+		 "data/spine/chars/SBPChars_ver4_2.atlas",
+		 "data/spine/arms/SBPCharArms_ver4_2.atlas",
+		 "data/spine/gun/SBPweapons_ver4_2.atlas",
+		 "data/spine/water/SBPwater_ver4_2.atlas",
+		 "data/spine/cloud/SBPCloud_ver_4_2.atlas",
+		 "data/spine/FX/SBPfx_ver4_2.atlas",
+	 }};
 static constexpr std::array<std::string_view, static_cast<int>(SpineManager::SkeletonId::LENGTH)> skeletonPaths
 	{{
 		 "data/spine/kwakwalogo/SBP_kwakwalogo.skel",
@@ -71,29 +73,42 @@ static constexpr std::array<std::string_view, static_cast<int>(SpineManager::Ske
 
 	 }};
 
-void SpineManager::load([[maybe_unused]] spine::AtlasPage& page, [[maybe_unused]] const spine::String& path)
+std::array<std::unique_ptr<spine::Atlas>, static_cast<int>(SpineManager::AtlasId::LENGTH)> atlases_{};
+std::array<std::unique_ptr<spine::AtlasAttachmentLoader>, static_cast<int>(SpineManager::AtlasId::LENGTH)> attachmentLoaders_;
+std::array<std::unique_ptr<spine::SkeletonJson>, static_cast<int>(SpineManager::SkeletonId::LENGTH)> skeletonJsons_;
+std::array<spine::SkeletonData*, static_cast<int>(SpineManager::SkeletonId::LENGTH)> skeletonData_{};
+
+class SpineLoader : public spine::TextureLoader
 {
-	static int i = 0;
-	auto* texture = GetTexture(static_cast<TextureManager::TextureId>(static_cast<int>(TextureManager::TextureId::KWAKWA_LOGO)+i));
-	page.texture = texture;
-	SDL_QueryTexture(texture, nullptr, nullptr, &page.width, &page.height);
-	switch (page.magFilter) {
-	case spine::TextureFilter_Nearest:
-		SDL_SetTextureScaleMode(texture, SDL_ScaleModeNearest);
-		break;
-	case spine::TextureFilter_Linear:
-		SDL_SetTextureScaleMode(texture, SDL_ScaleModeLinear);
-		break;
-	default:
-		SDL_SetTextureScaleMode(texture, SDL_ScaleModeBest);
+public:
+	void load([[maybe_unused]] spine::AtlasPage& page, [[maybe_unused]] const spine::String& path)
+	{
+		static int i = 0;
+		auto* texture = GetTexture(static_cast<TextureManager::TextureId>(static_cast<int>(TextureManager::TextureId::KWAKWA_LOGO)+i));
+		page.texture = texture;
+		SDL_QueryTexture(texture, nullptr, nullptr, &page.width, &page.height);
+		switch (page.magFilter) {
+		case spine::TextureFilter_Nearest:
+			SDL_SetTextureScaleMode(texture, SDL_ScaleModeNearest);
+			break;
+		case spine::TextureFilter_Linear:
+			SDL_SetTextureScaleMode(texture, SDL_ScaleModeLinear);
+			break;
+		default:
+			SDL_SetTextureScaleMode(texture, SDL_ScaleModeBest);
+		}
+		i++;
 	}
-	i++;
+
+	void unload([[maybe_unused]]void* texture)
+	{
+		//No need for this function, we are taking care of freeing our own textures
+	}
+};
+SpineLoader loader;
 }
 
-void SpineManager::unload([[maybe_unused]]void* texture)
-{
-	//No need for this function, we are taking care of freeing our own textures
-}
+
 void SpineManager::UpdateLoad()
 {
 #ifdef TRACY_ENABLE
@@ -117,7 +132,7 @@ void SpineManager::UpdateLoad()
 #endif
 		if(atlases_[i] != nullptr)
 			continue;
-		atlases_[i] = std::make_unique<spine::Atlas>(atlasPaths[i].data(), this);
+		atlases_[i] = std::make_unique<spine::Atlas>(atlasPaths[i].data(), &loader);
 		if(atlases_[i]->getPages().size() == 0)
 		{
 			LogError(fmt::format("Could not load atlas data: {}", atlasPaths[i]));
@@ -224,11 +239,11 @@ void SpineManager::End()
 	attachmentLoaders_ = {};
 	skeletonJsons_ = {};
 }
-bool SpineManager::IsLoaded()
+bool IsSpineLoaded()
 {
-	return atlases_[static_cast<int>(AtlasId::LENGTH)-1] != nullptr && skeletonData_[static_cast<int>(SkeletonId::LENGTH)-1] != nullptr;
+	return atlases_[static_cast<int>(SpineManager::AtlasId::LENGTH)-1] != nullptr && skeletonData_[static_cast<int>(SpineManager::SkeletonId::LENGTH)-1] != nullptr;
 }
-std::unique_ptr<spine::SkeletonDrawable> SpineManager::CreateSkeletonDrawable(SpineManager::SkeletonId skeletonId)
+std::unique_ptr<spine::SkeletonDrawable> CreateSkeletonDrawable(SpineManager::SkeletonId skeletonId)
 {
 #ifdef TRACY_ENABLE
 	ZoneScoped;
@@ -239,17 +254,5 @@ std::unique_ptr<spine::SkeletonDrawable> SpineManager::CreateSkeletonDrawable(Sp
 		return nullptr;
 	}
 	return std::make_unique<spine::SkeletonDrawable>(skeletonData_[static_cast<int>(skeletonId)]);
-}
-SpineManager::SpineManager()
-{
-	instance = this;
-}
-std::unique_ptr<spine::SkeletonDrawable> CreateSkeletonDrawable(SpineManager::SkeletonId skeletonId)
-{
-	return instance->CreateSkeletonDrawable(skeletonId);
-}
-bool IsSpineLoaded()
-{
-	return instance->IsLoaded();
 }
 }

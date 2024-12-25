@@ -23,22 +23,20 @@
 namespace splash
 {
 
-class SpineManager : public spine::TextureLoader
+namespace SpineManager
 {
-public:
-	enum class AtlasId
-	{
-		KWAKWA_LOGO,
-		ANNOUNCERS,
-		CHARACTERS_NOARM,
-		CHARACTERS_ARMS,
-		BASEGUN,
-		WATA,
-		CLOUD,
-		FX,
-		LENGTH,
-	};
-
+enum class AtlasId
+{
+	KWAKWA_LOGO,
+	ANNOUNCERS,
+	CHARACTERS_NOARM,
+	CHARACTERS_ARMS,
+	BASEGUN,
+	WATA,
+	CLOUD,
+	FX,
+	LENGTH,
+};
 	enum class SkeletonId
 	{
 		KWAKWA_LOGO,
@@ -76,25 +74,12 @@ public:
 
 	};
 
-	SpineManager();
 	void Begin();
 	void Update(float dt);
 	void End();
 
 	void UpdateLoad();
 
-	void load(spine::AtlasPage& page, const spine::String& path) override;
-
-	void unload(void* texture) override;
-
-	bool IsLoaded();
-
-	std::unique_ptr<spine::SkeletonDrawable> CreateSkeletonDrawable(SkeletonId skeletonId);
-private:
-	std::array<std::unique_ptr<spine::Atlas>, static_cast<int>(AtlasId::LENGTH)> atlases_{};
-	std::array<std::unique_ptr<spine::AtlasAttachmentLoader>, static_cast<int>(AtlasId::LENGTH)> attachmentLoaders_;
-	std::array<std::unique_ptr<spine::SkeletonJson>, static_cast<int>(SkeletonId::LENGTH)> skeletonJsons_;
-	std::array<spine::SkeletonData*, static_cast<int>(SkeletonId::LENGTH)> skeletonData_{};
 
 };
 bool IsSpineLoaded();

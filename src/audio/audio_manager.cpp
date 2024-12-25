@@ -58,7 +58,7 @@ void AudioManager::Begin()
 			  std::terminate();
 		  }
 	  }
-	  musicManager_.Begin();
+	  MusicManager::Begin();
 	  isLoaded_.store(true, std::memory_order_release);
 	});
 	ScheduleAsyncJob(loadingJob.get());
@@ -66,7 +66,7 @@ void AudioManager::Begin()
 void AudioManager::End()
 {
 	RemoveSystem(this);
-	musicManager_.End();
+	MusicManager::End();
 	system_->release();
 }
 void AudioManager::Update([[maybe_unused]]float dt)
@@ -131,10 +131,6 @@ FMOD::Studio::EventDescription* GetEventDescription(std::string_view eventName)
 bool IsFmodLoaded()
 {
 	return instance->IsLoaded();
-}
-MusicManager& GetMusicManager()
-{
-	return instance->GetMusicManager();
 }
 FMOD::Studio::EventInstance* FmodPlaySound(std::string_view eventName)
 {

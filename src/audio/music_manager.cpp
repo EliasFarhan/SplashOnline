@@ -9,12 +9,14 @@
 
 namespace splash
 {
+namespace
+{
 
-static MusicManager* instance = nullptr;
+FMOD::Studio::EventInstance* eventInstance_ = nullptr;
+}
 
 void MusicManager::Begin()
 {
-	instance = this;
 	FMOD::Studio::EventDescription* eventDescription = GetEventDescription("event:/Music/Music"); //"event:/Music/Music"
 
 	if(eventDescription->createInstance(&eventInstance_) != FMOD_OK)
@@ -30,10 +32,9 @@ void MusicManager::End()
         eventInstance_->stop(FMOD_STUDIO_STOP_IMMEDIATE);
         eventInstance_->release();
     }
-    instance = nullptr;
 }
 
-void MusicManager::Play()
+void PlayMusic()
 {
 	if(eventInstance_ != nullptr)
 	{
@@ -41,14 +42,15 @@ void MusicManager::Play()
 	}
 }
 
-void MusicManager::SetParameter(std::string_view name, float value)
+void SetMusicParameter(std::string_view name, float value)
 {
 	if(eventInstance_ != nullptr)
 	{
 		eventInstance_->setParameterValue(name.data(), value);
 	}
 }
-float MusicManager::GetVolume() const
+
+float GetMusicVolume()
 {
 	if(eventInstance_ != nullptr)
 	{
@@ -58,47 +60,12 @@ float MusicManager::GetVolume() const
 	}
 	return 0;
 }
-void MusicManager::SetVolume(float newVolume)
+
+void SetMusicVolume(float newVolume)
 {
 	if(eventInstance_ != nullptr)
 	{
 		eventInstance_->setVolume(newVolume);
 	}
-}
-
-void PlayMusic()
-{
-	if(instance == nullptr)
-	{
-		return;
-	}
-	instance->Play();
-}
-
-void SetMusicParameter(std::string_view name, float value)
-{
-	if(instance == nullptr)
-	{
-		return;
-	}
-	instance->SetParameter(name, value);
-}
-
-float GetMusicVolume()
-{
-	if(instance == nullptr)
-	{
-		return 0.0f;
-	}
-	return instance->GetVolume();
-}
-
-void SetMusicVolume(float newVolume)
-{
-	if(instance == nullptr)
-	{
-		return;
-	}
-	instance->SetVolume(newVolume);
 }
 }

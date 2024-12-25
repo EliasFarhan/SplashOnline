@@ -29,7 +29,7 @@ public:
 
 	void OnGui() override;
 	void SetGuiIndex(int index) override;
-	int GetGuiIndex() const override;
+	[[nodiscard]] int GetGuiIndex() const override;
 
 	void Begin() override;
 
@@ -37,7 +37,7 @@ public:
 
 	void Update(float dt) override;
 
-	int GetSystemIndex() const override;
+	[[nodiscard]] int GetSystemIndex() const override;
 
 	void SetSystemIndex(int index) override;
 
@@ -45,7 +45,7 @@ public:
 
 	void SetGraphicsIndex(int index) override;
 
-	int GetGraphicsIndex() const override;
+	[[nodiscard]] int GetGraphicsIndex() const override;
 
 private:
 	std::unique_ptr<NetworkClient> client_{};
@@ -66,4 +66,4 @@ private:
 
 }
 
-#endif //SPLASHONLINE_INCLUDE_ENGINE_SPLASH_H_
+#endif //SPLASHONLINE_ENGINE_SPLASH_H_

@@ -23,13 +23,11 @@ public:
 	[[nodiscard]] int GetSystemIndex() const override;
 	void SetSystemIndex(int index) override;
 
-	MusicManager& GetMusicManager() { return musicManager_; }
 	FMOD::Studio::EventDescription* GetEventDescription(std::string_view eventName);
 	[[nodiscard]] bool IsLoaded() const { return isLoaded_.load(std::memory_order_consume); }
 
 	FMOD::Studio::EventInstance* PlaySound(std::string_view eventName);
 private:
-	MusicManager musicManager_;
 	FMOD::Studio::System* system_ = nullptr;
 	int systemIndex_ = 0;
 	std::atomic<bool> isLoaded_{false};
