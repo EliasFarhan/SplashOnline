@@ -14,14 +14,19 @@
 
 namespace splash
 {
-static AudioManager* instance = nullptr;
+
+namespace
+{
+FMOD::Studio::System* system_ = nullptr;
+std::atomic<bool> isLoaded_{false};
+}
 
 void AudioManager::Begin()
 {
 #ifdef TRACY_ENABLE
 	ZoneScoped;
 #endif
-	static std::unique_ptr<neko::FuncJob> loadingJob = std::make_unique<neko::FuncJob>([this]()
+	static std::unique_ptr<neko::FuncJob> loadingJob = std::make_unique<neko::FuncJob>([]()
 	{
 #ifdef TRACY_ENABLE
 	  TracyCZoneN(systemCreate, "Create Fmod Studio System", true);
@@ -74,7 +79,7 @@ void AudioManager::Update([[maybe_unused]]float dt)
 #ifdef TRACY_ENABLE
 	ZoneScoped;
 #endif
-	if(isLoaded_.load(std::memory_order_consume))
+	if(isLoaded_.load(std::memory_order_acquire))
 	{
 #ifdef TRACY_ENABLE
 		ZoneNamedN(updateFmodSystem, "Update Fmod", true);
@@ -90,25 +95,30 @@ void AudioManager::SetSystemIndex(int index)
 {
 	systemIndex_ = index;
 }
-FMOD::Studio::EventDescription* AudioManager::GetEventDescription(std::string_view eventName)
+
+AudioManager::AudioManager()
+{
+	AddSystem(this);
+}
+
+FMOD::Studio::EventDescription* GetEventDescription(std::string_view eventName)
 {
 	FMOD::Studio::EventDescription* eventDescription = nullptr;
 	const auto errorCode = system_->getEvent(eventName.data(), &eventDescription );
 	if(errorCode != FMOD_OK)
 	{
-		LogError(fmt::format("Fmod getting event description error: {}", static_cast<int>(errorCode)));
+		LogError(fmt::format("Fmod getting event description error: {}",
+			static_cast<int>(errorCode)));
 		return nullptr;
 	}
 	return eventDescription;
 }
-AudioManager::AudioManager()
+bool IsFmodLoaded()
 {
-	instance = this;
-	AddSystem(this);
+	return isLoaded_.load(std::memory_order_acquire);
 }
-FMOD::Studio::EventInstance* AudioManager::PlaySound(std::string_view eventName)
-{
-	FMOD::Studio::EventDescription* eventDescription = GetEventDescription(eventName);
+FMOD::Studio::EventInstance* FmodPlaySound(std::string_view eventName)
+{FMOD::Studio::EventDescription* eventDescription = GetEventDescription(eventName);
 
 	if(eventDescription == nullptr)
 	{
@@ -123,17 +133,5 @@ FMOD::Studio::EventInstance* AudioManager::PlaySound(std::string_view eventName)
 	eventInstance->start();
 	eventInstance->release();
 	return eventInstance;
-}
-FMOD::Studio::EventDescription* GetEventDescription(std::string_view eventName)
-{
-	return instance->GetEventDescription(eventName);
-}
-bool IsFmodLoaded()
-{
-	return instance->IsLoaded();
-}
-FMOD::Studio::EventInstance* FmodPlaySound(std::string_view eventName)
-{
-	return instance->PlaySound(eventName);
 }
 }

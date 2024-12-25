@@ -46,7 +46,7 @@ void NetworkClient::joinRoomEventAction(int playerNr,
 
 	LogDebug(fmt::format("Join Room Event: playerNr: {} player name: {}", playerNr, player.getName().ASCIIRepresentation().cstr()));
 
-	if(state_.load(std::memory_order_consume) == State::JOINING)
+	if(state_.load(std::memory_order_acquire) == State::JOINING)
 	{
 		state_.store(State::IN_ROOM, std::memory_order_release);
 		localPlayerIndex_ = networkManager_.GetClient().getLocalPlayer().getNumber();
@@ -60,7 +60,7 @@ void NetworkClient::leaveRoomEventAction(int playerNr, bool isInactive)
 	(void) playerNr;
 	auto& room = networkManager_.GetClient().getCurrentlyJoinedRoom();
 	isMaster_ = room.getMasterClientID() == localPlayerIndex_;
-	if(state_.load(std::memory_order_consume) == State::IN_GAME)
+	if(state_.load(std::memory_order_acquire) == State::IN_GAME)
 	{
 		state_.store(State::IN_ROOM);
 		room.setIsOpen(true);
@@ -75,7 +75,7 @@ void NetworkClient::customEventAction(int playerNr, nByte eventCode, const ExitG
 
 	case PacketType::START_GAME:
 	{
-		if(state_.load(std::memory_order_consume) == State::IN_ROOM)
+		if(state_.load(std::memory_order_acquire) == State::IN_ROOM)
 		{
 			state_.store(State::IN_GAME, std::memory_order_release);
 			LogDebug("In Game");
@@ -84,7 +84,7 @@ void NetworkClient::customEventAction(int playerNr, nByte eventCode, const ExitG
 	}
 	case PacketType::INPUT:
 	{
-		if(state_.load(std::memory_order_consume) == State::IN_GAME)
+		if(state_.load(std::memory_order_acquire) == State::IN_GAME)
 		{
 			auto lastReceiveInput_ = ExitGames::Common::ValueObject<InputSerializer>(eventContent).getDataCopy();
 			std::scoped_lock<std::mutex> lock(inputMutex_);
@@ -94,7 +94,7 @@ void NetworkClient::customEventAction(int playerNr, nByte eventCode, const ExitG
 	}
 	case PacketType::CONFIRM_FRAME:
 	{
-		if(state_.load(std::memory_order_consume) == State::IN_GAME)
+		if(state_.load(std::memory_order_acquire) == State::IN_GAME)
 		{
 			auto lastReceiveConfirm_ = ExitGames::Common::ValueObject<ConfirmFrameSerializer>(eventContent).getDataCopy();
 			std::scoped_lock<std::mutex> lock(confirmPacketMutex_);
@@ -155,13 +155,13 @@ void NetworkClient::SetSystemIndex(int index)
 }
 void NetworkClient::OnGui()
 {
-	const auto state = state_.load(std::memory_order_consume);
+	const auto state = state_.load(std::memory_order_acquire);
 	if(state == State::IN_GAME)
 	{
 		return;
 	}
 	ImGui::Begin("Network Client");
-	switch(state_.load(std::memory_order_consume))
+	switch(state_.load(std::memory_order_acquire))
 	{
 	case State::UNCONNECTED:
 	{
@@ -281,7 +281,7 @@ void NetworkClient::RunNetwork()
 #endif
 	static constexpr Uint32 tickTime = 10;//10ms for network loop
 	auto previous = SDL_GetTicks();
-	while(isRunning_.load(std::memory_order_consume))
+	while(isRunning_.load(std::memory_order_acquire))
 	{
 
 		{
