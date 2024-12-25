@@ -20,6 +20,24 @@ public:
 		return (b << 16) | a;
 	}
 
+	template<typename T=neko::Scalar, int Period=0, int Dividend=1000>
+	uint32_t Add(const Timer<T, Period, Dividend>& timer)
+	{
+		return Add(timer.RemainingTime());
+	}
+
+	template<class T>
+	uint32_t Add(neko::Vec2<T> v)
+	{
+		Add(v.x);
+		return Add(v.y);
+	}
+
+	uint32_t Add(neko::Scalar s)
+	{
+		return Add(s.to_float());
+	}
+
 	template<typename T>
 	uint32_t Add(const T& data)
 	{

@@ -727,11 +727,56 @@ Checksum<static_cast<int>(PlayerChecksumIndex::LENGTH)> PlayerManager::Calculate
 			continue;
 		}
 
-		playerCharacterResult.Add(playerCharacters_[playerNumber]);
-		playerPhysicsResult.Add(playerPhysics_[playerNumber]);
+		const auto& playerCharacter = playerCharacters_[playerNumber];
+		playerCharacterResult.Add(playerCharacter.respawnPauseTimer);
+		playerCharacterResult.Add(playerCharacter.respawnMoveTimer);
+		playerCharacterResult.Add(playerCharacter.respawnStaticTime);
+		playerCharacterResult.Add(playerCharacter.invincibleTimer);
+		playerCharacterResult.Add(playerCharacter.hitTimer);
+		playerCharacterResult.Add(playerCharacter.reserveWaterTimer);
+		playerCharacterResult.Add(playerCharacter.waterTimer);
+		playerCharacterResult.Add(playerCharacter.reloadTimer);
+		playerCharacterResult.Add(playerCharacter.jetBurstCoolDownTimer);
+		playerCharacterResult.Add(playerCharacter.jumpTimer);
+		playerCharacterResult.Add(playerCharacter.preJetBurstTimer);
+		playerCharacterResult.Add(playerCharacter.dashDownTimer);
+		playerCharacterResult.Add(playerCharacter.stopDashTimer);
+		playerCharacterResult.Add(playerCharacter.slowDashTimer);
+		playerCharacterResult.Add(playerCharacter.bounceDashTimer);
+		playerCharacterResult.Add(playerCharacter.dashPrepTimer);
+		playerCharacterResult.Add(playerCharacter.dashedTimer);
+		playerCharacterResult.Add(playerCharacter.wasDownRecoverTimer);
+		playerCharacterResult.Add(playerCharacter.recoilTimer);
+		playerCharacterResult.Add(playerCharacter.collidedTimer);
+		playerCharacterResult.Add(playerCharacter.hitDirection);
+		playerCharacterResult.Add(playerCharacter.recoilDirection);
+		playerCharacterResult.Add(playerCharacter.fallCount);
+		playerCharacterResult.Add(playerCharacter.killCount);
+		playerCharacterResult.Add(playerCharacter.resistancePhase);
+		playerCharacterResult.Add(playerCharacter.hitPlayer);
+		playerCharacterResult.Add(playerCharacter.firstShots);
+		playerCharacterResult.Add(playerCharacter.collidedPlayer);
+		playerCharacterResult.Add(playerCharacter.footCount);
+
+
+		const auto& playerPhysic = playerPhysics_[playerNumber];
+		playerPhysicsResult.Add(playerPhysic.bodyIndex);
+		playerPhysicsResult.Add(playerPhysic.colliderIndex);
+		playerPhysicsResult.Add(playerPhysic.footColliderIndex);
+		playerPhysicsResult.Add(playerPhysic.headColliderIndex);
+		playerPhysicsResult.Add(playerPhysic.leftColliderIndex);
+		playerPhysicsResult.Add(playerPhysic.rightColliderIndex);
+		playerPhysicsResult.Add(playerPhysic.userData);
+		playerPhysicsResult.Add(playerPhysic.GetForce());
+		playerPhysicsResult.Add(playerPhysic.GetPriority());
 
 		const auto& body = gameSystems_->GetPhysicsWorld().body(playerPhysics_[playerNumber].bodyIndex);
-		playerBodyResult.Add(body);
+		playerBodyResult.Add(body.position);
+		playerBodyResult.Add(body.velocity);
+		playerBodyResult.Add(body.force);
+		playerBodyResult.Add(body.inverseMass);
+		playerBodyResult.Add(body.type);
+		playerBodyResult.Add(body.isActive);
 	}
 
 	Adler32 playerInputResult{};
