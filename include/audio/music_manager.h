@@ -5,14 +5,7 @@
 #ifndef SPLASHONLINE_MUSIC_MANAGER_H
 #define SPLASHONLINE_MUSIC_MANAGER_H
 
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wold-style-cast"
-#endif
-#include <fmod_studio.hpp>
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#endif
+
 
 #include <string_view>
 

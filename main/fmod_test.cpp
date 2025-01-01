@@ -70,7 +70,7 @@ public:
 	{
 		guiIndex_ = index;
 	}
-	int GetGuiIndex() const override
+	[[nodiscard]] int GetGuiIndex() const override
 	{
 		return guiIndex_;
 	}
@@ -84,7 +84,7 @@ private:
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
 {
-	splash::AudioManager audioManager;
+	splash::AddAudio();
 	splash::FmodTestSystem testSystem;
 
 	splash::RunEngine();

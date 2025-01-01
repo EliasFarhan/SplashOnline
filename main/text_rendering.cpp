@@ -95,7 +95,6 @@ private:
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
 {
-	splash::AudioManager audioManager;
 	TextRenderingSystem textRenderingSystem;
 	splash::RunEngine();
 	return 0;

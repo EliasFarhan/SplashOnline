@@ -1,4 +1,5 @@
 #include "audio/audio_manager.h"
+#include "audio/music_manager.h"
 #include "engine/engine.h"
 #include "utils/log.h"
 
@@ -12,13 +13,34 @@
 #include <tracy/TracyC.h>
 #endif
 
+
+#include <atomic>
+
 namespace splash
 {
+class AudioManager : public SystemInterface
+{
+public:
+	void Begin() override;
+	void End() override;
+	void Update(float dt) override;
+	[[nodiscard]] int GetSystemIndex() const override;
+	void SetSystemIndex(int index) override;
+private:
+	int systemIndex_ = 0;
+};
 
 namespace
 {
 FMOD::Studio::System* system_ = nullptr;
 std::atomic<bool> isLoaded_{false};
+AudioManager audioManager;
+}
+
+
+void AddAudio()
+{
+	AddSystem(&audioManager);
 }
 
 void AudioManager::Begin()
@@ -94,11 +116,6 @@ int AudioManager::GetSystemIndex() const
 void AudioManager::SetSystemIndex(int index)
 {
 	systemIndex_ = index;
-}
-
-AudioManager::AudioManager()
-{
-	AddSystem(this);
 }
 
 FMOD::Studio::EventDescription* GetEventDescription(std::string_view eventName)

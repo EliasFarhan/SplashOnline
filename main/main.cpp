@@ -19,7 +19,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
 	}
 
 	splash::SetInputFile(input_file);
-	splash::AudioManager audioManager;
+	splash::AddAudio();
 	splash::SplashManager splashManager;
 	splash::RunEngine();
 	return 0;
