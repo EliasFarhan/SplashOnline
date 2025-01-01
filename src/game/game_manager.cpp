@@ -87,8 +87,8 @@ void GameManager::Update(float dt)
 			currentFrame_ = 0;
 			gameTimer_.Reset();
 			FmodPlaySound(GetGameSoundEvent(GameSoundId::BLAST));
-			auto* netClient = GetNetworkClient();
-			if(netClient != nullptr && netClient->IsMaster())
+
+			if(NetworkClient::IsValid() && NetworkClient::IsMaster())
 			{
 				LogDebug("I am master!");
 			}
@@ -107,7 +107,7 @@ void GameManager::Update(float dt)
 	}
 	if(isGameOver_)
 	{
-		if(GetNetworkClient() != nullptr && rollbackManager_.GetLastConfirmFrame() == currentFrame_-1)
+		if(NetworkClient::IsValid() && rollbackManager_.GetLastConfirmFrame() == currentFrame_-1)
 		{
 			RollbackUpdate();
 		}
@@ -174,19 +174,18 @@ void GameManager::Tick()
 		}
 	}
 
-	auto* netClient = GetNetworkClient();
 	PlayerInput localPlayerInput = GetPlayerInput();
 #ifdef ENABLE_DESYNC_DEBUG
 	AddLocalInput(currentFrame_, localPlayerInput);
 #endif
-	if(netClient == nullptr)
+	if(!NetworkClient::IsValid())
 	{
 		playerInputs_[0] = localPlayerInput;
 		gameSystems_.SetPlayerInput(playerInputs_);
 	}
 	else
 	{
-		const auto localPlayerNumber = netClient->GetPlayerIndex()-1;
+		const auto localPlayerNumber = NetworkClient::GetPlayerIndex()-1;
 		//LogDebug(fmt::format("Local Input p{} f{} input: {}", localPlayerNumber+1, currentFrame_, localPlayerInput));
 		rollbackManager_.SetInput(localPlayerNumber, localPlayerInput, currentFrame_);
 		{
@@ -208,10 +207,10 @@ void GameManager::Tick()
 	gameSystems_.Tick();
 	gameRenderer_.Tick();
 
-	if(netClient != nullptr)
+	if(NetworkClient::IsValid())
 	{
 		//send input
-		const auto playerNumber =  netClient->GetPlayerIndex()-1;
+		const auto playerNumber =  NetworkClient::GetPlayerIndex()-1;
 		InputPacket inputPacket{};
 		inputPacket.playerNumber = playerNumber;
 		inputPacket.frame = currentFrame_;
@@ -223,7 +222,7 @@ void GameManager::Tick()
 		}
 		inputPacket.inputs = inputs.first;
 		inputPacket.inputSize = inputs.second;
-		netClient->SendInputPacket(inputPacket);
+		SendInputPacket(inputPacket);
 		/*LogDebug(fmt::format("Sent input from p{} f{} with input: {}",
 			inputPacket.playerNumber+1,
 			currentFrame_,
@@ -256,9 +255,8 @@ void GameManager::RollbackUpdate()
 #ifdef TRACY_ENABLE
 	ZoneScoped;
 #endif
-	auto* netClient = GetNetworkClient();
 	//import network inputs
-	auto inputPackets = netClient->GetInputPackets();
+	auto inputPackets = GetInputPackets();
 	for(auto& inputPacket: inputPackets)
 	{
 		/*LogDebug(fmt::format("Received input from p{} f{} s{} with input: {} at f{}",
@@ -276,7 +274,7 @@ void GameManager::RollbackUpdate()
 
 	{
 		//import confirm frames
-		auto confirmPackets = netClient->GetConfirmPackets();
+		auto confirmPackets = GetConfirmPackets();
 		for(auto& confirmPacket : confirmPackets)
 		{
 			//LogDebug(fmt::format("Received confirm inputs f{}: p1: {} p2: {}", confirmPacket.frame, confirmPacket.input[0], confirmPacket.input[1]));
@@ -338,7 +336,7 @@ void GameManager::RollbackUpdate()
 			}
 		}
 		//validate frame
-		if(netClient->IsMaster())
+		if(NetworkClient::IsMaster())
 		{
 			while(rollbackManager_.GetLastReceivedFrame() > neko::Max(rollbackManager_.GetLastConfirmFrame(), 0))
 			{
@@ -363,7 +361,7 @@ void GameManager::RollbackUpdate()
 #ifdef ENABLE_DESYNC_DEBUG
 				AddConfirmFrame(confirmValue, lastConfirmFrame);
 #endif
-				netClient->SendConfirmFramePacket(confirmPacket);
+				SendConfirmFramePacket(confirmPacket);
 			}
 		}
 	}
@@ -413,10 +411,9 @@ int GetCurrentFrame()
 neko::Vec2i GameManager::GetPlayerScreenPos() const
 {
 	int playerIndex = 0;
-	auto* netClient = GetNetworkClient();
-	if(netClient != nullptr)
+	if(NetworkClient::IsValid())
 	{
-		playerIndex = netClient->GetPlayerIndex()-1;
+		playerIndex = NetworkClient::GetPlayerIndex()-1;
 	}
 	const auto bodyIndex = gameSystems_.GetPlayerManager().GetPlayerPhysics()[playerIndex].bodyIndex;
 	return GetGraphicsPosition(gameSystems_.GetPhysicsWorld().body(bodyIndex).position);
@@ -426,7 +423,7 @@ void GameManager::ExitGame()
 {
 	isGameOver_ = true;
 	hasDesync_ = true;
-	LogError(fmt::format("Desync happened, please send splash_p{}.db to the developers", GetNetworkClient()->GetPlayerIndex()-1));
+	LogError(fmt::format("Desync happened, please send splash_p{}.db to the developers", NetworkClient::GetPlayerIndex()-1));
 }
 
 }

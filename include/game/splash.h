@@ -48,7 +48,6 @@ public:
 	[[nodiscard]] int GetGraphicsIndex() const override;
 
 private:
-	std::unique_ptr<NetworkClient> client_{};
 	std::unique_ptr<GameManager> gameManager_{};
 
 	Timer<float, 2000> logoTimer_{-1.0f};
