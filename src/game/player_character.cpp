@@ -141,6 +141,7 @@ void PlayerManager::Tick()
 				body.position = spawnPositions[playerNumber];
 				body.isActive = true;
 				playerCharacter.respawnStaticTime.Stop();
+				playerCharacter.invincibleTimer.Reset();
 			}
 			else
 			{
@@ -166,6 +167,10 @@ void PlayerManager::Tick()
 			continue;
 		}
 
+		if(!playerCharacter.invincibleTimer.Over())
+		{
+			playerCharacter.invincibleTimer.Update(fixedDeltaTime);
+		}
 		if(playerCharacter.preJetBurstTimer.Over() &&
 			(reactor < PlayerCharacter::ReactorThreshold ||
 			body.velocity.y > neko::Scalar{0.0f}))
@@ -592,7 +597,8 @@ void PlayerManager::OnTriggerEnter(neko::ColliderIndex playerIndex, int playerNu
 		Respawn(playerNumber);
 	}
 
-	if(otherUserData->type == ColliderType::BULLET && otherUserData->playerNumber != playerNumber)
+	if(otherUserData->type == ColliderType::BULLET &&
+		otherUserData->playerNumber != playerNumber && !playerCharacters_[playerNumber].IsInvincible())
 	{
 		playerCharacters_[playerNumber].hitDirection = otherBody.velocity.Normalized();
 		if(!playerCharacters_[playerNumber].hitTimer.Over())
@@ -609,18 +615,24 @@ void PlayerManager::OnTriggerEnter(neko::ColliderIndex playerIndex, int playerNu
 	if(otherUserData->type == ColliderType::PLAYER)
 	{
 		const auto otherPlayerNumber = otherUserData->playerNumber;
-		if(playerIndex == playerPhysics_[playerNumber].headColliderIndex && otherCollider.colliderIndex == playerPhysics_[otherPlayerNumber].footColliderIndex && playerCharacters_[otherPlayerNumber].IsDashing())
+		if(playerIndex == playerPhysics_[playerNumber].headColliderIndex &&
+			otherCollider.colliderIndex == playerPhysics_[otherPlayerNumber].footColliderIndex &&
+			playerCharacters_[otherPlayerNumber].IsDashing())
 		{
-			//LogDebug(fmt::format("Dashed player {} on player {}", playerNumber+1, otherPlayerNumber+1));
-			//Dashed collision
-			playerCharacters_[playerNumber].dashedTimer.Reset();
-			playerCharacters_[playerNumber].collidedPlayer = otherUserData->playerNumber;
-			if(!playerCharacters_[playerNumber].IsGrounded())
+			if(!playerCharacters_[playerNumber].IsInvincible())
 			{
-				const auto dashedVel = neko::Vec2f(otherBody.velocity.x, PlayerCharacter::DashedSpeed);
-				playerPhysics_[playerNumber].AddForce((dashedVel - body.velocity) / body.inverseMass / GetFixedDeltaTime(),
-					PlayerCharacter::DashedPriority);
+				//LogDebug(fmt::format("Dashed player {} on player {}", playerNumber+1, otherPlayerNumber+1));
+				//Dashed collision
+				playerCharacters_[playerNumber].dashedTimer.Reset();
+				playerCharacters_[playerNumber].collidedPlayer = otherUserData->playerNumber;
+				if(!playerCharacters_[playerNumber].IsGrounded())
+				{
+					const auto dashedVel = neko::Vec2f(otherBody.velocity.x, PlayerCharacter::DashedSpeed);
+					playerPhysics_[playerNumber].AddForce((dashedVel - body.velocity) / body.inverseMass / GetFixedDeltaTime(),
+						PlayerCharacter::DashedPriority);
+				}
 			}
+
 			//LogDebug(fmt::format("Dashing player {} on player {}", otherPlayerNumber+1, playerNumber+1));
 			if(!playerCharacters_[otherPlayerNumber].slowDashTimer.Over())
 			{

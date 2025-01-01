@@ -65,7 +65,7 @@ struct PlayerCharacter
 	Timer<neko::Scalar, 500> respawnPauseTimer{ neko::Scalar{ -1.0f }};
 	Timer<neko::Scalar, 1000> respawnMoveTimer{ neko::Scalar{ -1.0f }};
 	Timer<neko::Scalar, 2000> respawnStaticTime{ neko::Scalar{ 2.0f }};
-	Timer<neko::Scalar, 2000> invincibleTimer{ neko::Scalar{ -1 }};
+	Timer<neko::Scalar, 2000> invincibleTimer{ neko::Scalar{ -1.0f }};
 	int fallCount = 0;
 	int killCount = 0;
 
@@ -140,6 +140,11 @@ struct PlayerCharacter
 	[[nodiscard]] bool IsDashed() const
 	{
 		return !dashedTimer.Over();
+	}
+
+	[[nodiscard]] bool IsInvincible() const
+	{
+		return !invincibleTimer.Over();
 	}
 
 };
