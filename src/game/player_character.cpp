@@ -206,7 +206,8 @@ void PlayerManager::Tick()
 
 				if(playerCharacter.resistancePhase >= 2)
 				{
-					const auto divisor = neko::Exp<neko::Scalar>()*neko::Scalar(playerCharacter.resistancePhase-1);
+					const auto divisor = neko::Exp<neko::Scalar>()*neko::Scalar(
+						sixit::guidelines::precision_cast<float>(playerCharacter.resistancePhase-1));
 					newCap = (PlayerCharacter::CapMoveForce-PlayerCharacter::WetCapMoveForce)/divisor+PlayerCharacter::WetCapMoveForce;
 				}
 				if(newCap > neko::Scalar{} && neko::Abs(f) > newCap)
@@ -490,7 +491,7 @@ void PlayerManager::Tick()
 
 				neko::Scalar waterForce = PlayerCharacter::WaterForce;
 				const auto forceCoefficient = PlayerCharacter::decreaseFactor*playerCharacter.hitTimer.CurrentTime()/PlayerCharacter::HitEffectPeriod+neko::Scalar{1};
-				neko::Vec2f newForce = playerCharacter.hitDirection * waterForce * static_cast<neko::Scalar>(playerCharacter.resistancePhase) * forceCoefficient;
+				neko::Vec2f newForce = playerCharacter.hitDirection * waterForce * neko::Scalar(sixit::guidelines::precision_cast<float>(playerCharacter.resistancePhase)) * forceCoefficient;
 				playerPhysic.AddForce(newForce, PlayerCharacter::HitPriority);
 			}
 			playerCharacter.hitTimer.Update(fixedDeltaTime);
