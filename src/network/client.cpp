@@ -86,7 +86,7 @@ std::mutex inputMutex_;
 std::mutex confirmPacketMutex_;
 neko::FuncJob networkJob_{[](){RunNetwork();}};
 std::atomic<NetworkClient::State> state_ = NetworkClient::State::UNCONNECTED;
-int localPlayerIndex_ = -1;
+uint8_t localPlayerIndex_ = std::numeric_limits<uint8_t>::max();
 
 std::atomic<bool> isRunning_ = true;
 
@@ -128,7 +128,7 @@ void NetworkClientImpl::joinRoomEventAction(int playerNr,
 	if(state_.load(std::memory_order_acquire) == NetworkClient::State::JOINING)
 	{
 		state_.store(NetworkClient::State::IN_ROOM, std::memory_order_release);
-		localPlayerIndex_ = networkManager_->GetClient().getLocalPlayer().getNumber();
+		localPlayerIndex_ = sixit::guidelines::narrow_cast<uint8_t>(networkManager_->GetClient().getLocalPlayer().getNumber());
 		const auto& room = networkManager_->GetClient().getCurrentlyJoinedRoom();
 		isMaster_ = room.getMasterClientID() == localPlayerIndex_;
 	}
@@ -230,6 +230,7 @@ void BeginNetwork(const ExitGames::LoadBalancing::ClientConstructOptions& client
 	AddSystem(&networkSystem_);
 	AddGuiInterface(&networkClientUi_);
 
+	PingSerializer::registerType();
 	InputSerializer::registerType();
 	ConfirmFrameSerializer::registerType();
 	networkManager_ = std::make_unique<neko::NetworkManager>(&networkClient_, clientConstructOptions);
@@ -243,6 +244,7 @@ void NetworkSystem::End()
 {
 	ConfirmFrameSerializer::unregisterType();
 	InputSerializer::unregisterType();
+	PingSerializer::unregisterType();
 	RemoveSystem(this);
 	RemoveGuiInterface(&networkClientUi_);
 	isRunning_.store(false, std::memory_order_release);
@@ -404,7 +406,7 @@ static void RunNetwork()
 	TracyCZoneEnd(netEnd);
 #endif
 }
-int NetworkClient::GetPlayerIndex()
+uint8_t NetworkClient::GetPlayerIndex()
 {
 	return localPlayerIndex_;
 }

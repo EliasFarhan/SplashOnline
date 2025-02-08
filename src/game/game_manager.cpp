@@ -185,7 +185,7 @@ void GameManager::Tick()
 	}
 	else
 	{
-		const auto localPlayerNumber = NetworkClient::GetPlayerIndex()-1;
+		const uint8_t localPlayerNumber = NetworkClient::GetPlayerIndex()-1_u8;
 		//LogDebug(fmt::format("Local Input p{} f{} input: {}", localPlayerNumber+1, currentFrame_, localPlayerInput));
 		rollbackManager_.SetInput(localPlayerNumber, localPlayerInput, currentFrame_);
 		{
@@ -199,7 +199,7 @@ void GameManager::Tick()
 
 		playerInputs_ = rollbackManager_.GetInputs(currentFrame_);
 		gameSystems_.SetPlayerInput(playerInputs_);
-		if(currentFrame_ > 0)
+		if(currentFrame_ > 0 && currentFrame_ != std::numeric_limits<uint16_t>::max())
 		{
 			gameSystems_.SetPreviousPlayerInput(rollbackManager_.GetInputs(currentFrame_-1));
 		}
@@ -210,7 +210,7 @@ void GameManager::Tick()
 	if(NetworkClient::IsValid())
 	{
 		//send input
-		const auto playerNumber =  NetworkClient::GetPlayerIndex()-1;
+		const uint8_t playerNumber =  NetworkClient::GetPlayerIndex()-1_u8;
 		InputPacket inputPacket{};
 		inputPacket.playerNumber = playerNumber;
 		inputPacket.frame = currentFrame_;
@@ -292,7 +292,7 @@ void GameManager::RollbackUpdate()
 				//LogWarning("Confirm Frame is further than received from unreliable");
 			}
 			const auto& confirmInputs = confirmPacket.input;
-			for (int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
+			for (uint8_t playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
 			{
 				if (!IsValid(playerNumber))
 				{
@@ -354,7 +354,7 @@ void GameManager::RollbackUpdate()
 									 confirmValue[6]));
 
 				ConfirmFramePacket confirmPacket{};
-				confirmPacket.frame = lastConfirmFrame;
+				confirmPacket.frame = sixit::guidelines::narrow_cast<short>(lastConfirmFrame);
 				confirmPacket.checksum = static_cast<std::uint32_t>(confirmValue);
 				confirmPacket.input = rollbackManager_.GetInputs(lastConfirmFrame);
 				//LogDebug(fmt::format("Sending confirm inputs f{} p1: {} p2: {}", lastConfirmFrame, confirmPacket.input[0], confirmPacket.input[1]));

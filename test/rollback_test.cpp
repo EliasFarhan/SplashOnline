@@ -14,14 +14,14 @@ SCENARIO("Rollback predicts inputs by replicating them", "[rollback]")
 		WHEN("A player has several frames in advance")
 		{
 			static constexpr neko::Fixed8 player1Input{neko::Fixed8{ -0.5f }};
-			static constexpr int currentFrame = 5;
+			static constexpr auto currentFrame = 5_u16;
 
 			rollbackManager.SetInput(0, {player1Input}, 0);
 
 			REQUIRE(rollbackManager.GetLastReceivedFrame() == -1);
-			for (int i = 0; i < currentFrame; i++)
+			for (uint16_t i = 0; i < currentFrame; i++)
 			{
-				rollbackManager.SetInput(1, { neko::Fixed8{ 0.5f }}, i);
+				rollbackManager.SetInput(1_u8, { neko::Fixed8{ 0.5f }}, i);
 			}
 			REQUIRE(rollbackManager.GetLastReceivedFrame() == 0);
 			THEN("The other player as its same input replicated")
@@ -49,9 +49,9 @@ SCENARIO("Rollback can receive an InputPacket")
 				inputs[i] = neko::Fixed8{-0.8f+0.25f*static_cast<float>(i)};
 				inputPacket.inputs[i] = {inputs[i]};
 			}
-			inputPacket.inputSize = static_cast<int>(inputs.size());
+			inputPacket.inputSize = sixit::guidelines::narrow_cast<uint8_t>(inputs.size());
 			inputPacket.playerNumber = 0;
-			inputPacket.frame = static_cast<int>(inputs.size())-1;
+			inputPacket.frame = sixit::guidelines::narrow_cast<uint16_t>(inputs.size())-1;
 
 			rollbackManager.SetInputs(inputPacket);
 
@@ -72,11 +72,11 @@ SCENARIO("Rollback gives a confirm value when confirming")
 	{
 		splash::GameData gameData{{ true, true, false, false }};
 		splash::RollbackManager rollbackManager{ gameData };
-		static constexpr auto frameCount = 5;
-		for(int i = 0; i < frameCount; i++)
+		static constexpr auto frameCount = 5_u16;
+		for(uint16_t i = 0; i < frameCount; i++)
 		{
-			rollbackManager.SetInput(0, {neko::Fixed8{-0.8f+0.25f*static_cast<float>(i)}}, i);
-			rollbackManager.SetInput(1, {neko::Fixed8{0.8f-0.25f*static_cast<float>(i)}}, i);
+			rollbackManager.SetInput(0_u8, {neko::Fixed8{-0.8f+0.25f*static_cast<float>(i)}}, i);
+			rollbackManager.SetInput(1_u8, {neko::Fixed8{0.8f-0.25f*static_cast<float>(i)}}, i);
 		}
 		REQUIRE(rollbackManager.GetLastReceivedFrame() == frameCount-1);
 		REQUIRE(rollbackManager.GetLastConfirmFrame() == -1);

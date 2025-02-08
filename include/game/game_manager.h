@@ -40,7 +40,7 @@ private:
 	RunTimeTimer<float> introDelayTimer_;
 	RunTimeTimer<neko::Scalar> gameTimer_;
 	float currentTime_ = 0.0f;
-	int currentFrame_ = -1;
+	uint16_t currentFrame_ = std::numeric_limits<uint16_t>::max();
 	int systemIndex_ = -1;
 	std::array<PlayerInput, MaxPlayerNmb> playerInputs_;
 

@@ -39,7 +39,7 @@ State GetState();
 bool IsValid();
 
 std::array<bool, MaxPlayerNmb> GetConnectedPlayers();
-int GetPlayerIndex();
+uint8_t GetPlayerIndex();
 bool IsMaster();
 }
 

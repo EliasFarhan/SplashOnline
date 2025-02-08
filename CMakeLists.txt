@@ -91,7 +91,7 @@ link_directories(${FMOD_DIR}/lowlevel/lib ${FMOD_DIR}/studio/lib)
 
 if(MSVC)
     target_link_libraries(SplashLib PUBLIC fmodstudio64_vc.lib)
-    target_compile_options(SplashLib PUBLIC "/utf-8" "/W4" "/permissive-")
+    target_compile_options(SplashLib PUBLIC "/utf-8" "/W4" "/WX" "/permissive-")
     file(COPY ${FMOD_DIR}/studio/lib/fmodstudio64.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
     file(COPY ${FMOD_DIR}/lowlevel/lib/fmod64.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
     if(ENABLE_ASAN)

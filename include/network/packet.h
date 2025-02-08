@@ -25,14 +25,15 @@ enum class PacketType : nByte
 {
 	START_GAME = 1,
 	INPUT,
-	CONFIRM_FRAME
+	CONFIRM_FRAME,
+	PING
 };
 
 struct ConfirmFramePacket
 {
-	int frame = -1;
-	std::array<PlayerInput, MaxPlayerNmb> input{};
 	std::uint32_t checksum{};
+	short frame = -1;
+	std::array<PlayerInput, MaxPlayerNmb> input{};
 
 	bool operator==(const ConfirmFramePacket& confirmFrame) const
 	{
@@ -58,16 +59,16 @@ private:
 struct InputPacket
 {
 	std::array<PlayerInput, MaxPlayerInputNmb> inputs{};
-	int inputSize = -1;
-	int frame = -1;
-	int playerNumber = -1;
+	uint16_t frame : 13 = 0u;
+	uint8_t playerNumber : 3 = 0u;
+	uint8_t inputSize = 0;
 
 	bool operator==(const InputPacket& inputPacket) const
 	{
 		bool result = frame == inputPacket.frame && inputSize == inputPacket.inputSize && playerNumber == inputPacket.playerNumber;
 		if (!result)
 			return false;
-		for(int i = 0; i < inputSize; i++)
+		for(uint8_t i = 0u; i < inputSize; i++)
 		{
 			if(inputs[i] != inputPacket.inputs[i])
 				return false;
@@ -91,6 +92,22 @@ private:
 	InputPacket inputPacket_{};
 };
 
+struct PingPacket
+{
+	float gameStartTime = -1.0f;
+};
+
+class PingSerializer : public ExitGames::Common::CustomType<PingSerializer, static_cast<nByte>(PacketType::PING)>
+{
+public:
+	bool compare(const CustomTypeBase& other) const override;
+	void duplicate(CustomTypeBase* pRetVal) const override;
+	void deserialize(const nByte* pData, short length) override;
+	short serialize(nByte* pRetVal) const override;
+	ExitGames::Common::JString& toString(ExitGames::Common::JString& retStr, bool withTypes) const override;
+private:
+	PingPacket pingPacket_{};
+};
 }
 
 #endif //SPLASHONLINE_NETWORK_PACKET_H_

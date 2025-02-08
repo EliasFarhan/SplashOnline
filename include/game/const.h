@@ -13,12 +13,12 @@
 
 namespace splash
 {
-inline neko::Scalar GetFixedDeltaTime()
+constexpr neko::Scalar GetFixedDeltaTime()
 {
-	return neko::Scalar(1.0f) / neko::Scalar(60.0f);
+	return {1.0f/60.0f};
 }
 
-inline neko::Scalar fixedDeltaTime = GetFixedDeltaTime();
+constexpr neko::Scalar fixedDeltaTime = GetFixedDeltaTime();
 
 enum class Character
 {
@@ -68,7 +68,7 @@ struct ColliderUserData
 	int playerNumber = -1; //Used by player or bullet
 };
 
-static constexpr int MaxPlayerInputNmb = 26; //half a second of input
+static constexpr uint8_t MaxPlayerInputNmb = 26; //half a second of input
 
 
 }
