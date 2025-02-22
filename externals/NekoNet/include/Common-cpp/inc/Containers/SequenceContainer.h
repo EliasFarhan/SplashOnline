@@ -1,6 +1,6 @@
 /* Exit Games Common - C++ Client Lib
  * Copyright (C) 2004-2024 Exit Games GmbH. All rights reserved.
- * http://www.photonengine.com
+ * https://www.photonengine.com
  * mailto:developer@photonengine.com
  */
 
@@ -267,7 +267,7 @@ EG_PRAGMA_VISIBILITY_POP
 		template<template<typename> class T, typename Etype>
 		bool SequenceContainer<T, Etype>::contains(const Etype &elem) const
 		{
-			for(unsigned int i=0; i<mSize; i++)
+			for(unsigned int i=0; i<mSize; ++i)
 			{
 				if(mpData[i] == elem)
 					return true;
@@ -287,7 +287,7 @@ EG_PRAGMA_VISIBILITY_POP
 		template<template<typename> class T, typename Etype>
 		void SequenceContainer<T, Etype>::copyInto(Etype* array) const
 		{
-			for(unsigned int i=0; i<mSize; i++)
+			for(unsigned int i=0; i<mSize; ++i)
 				array[i] = *mpData[i];
 		}
 
@@ -328,7 +328,7 @@ EG_PRAGMA_VISIBILITY_POP
 		template<template<typename> class T, typename Etype>
 		int SequenceContainer<T, Etype>::getIndexOf(const Etype &elem) const
 		{
-			for(unsigned int i=0; i<mSize; i++)
+			for(unsigned int i=0; i<mSize; ++i)
 				if(mpData[i] == elem)
 					return i;
 			return -1;
@@ -368,7 +368,7 @@ EG_PRAGMA_VISIBILITY_POP
 		template<template<typename> class T, typename Etype>
 		int SequenceContainer<T, Etype>::getLastIndexOf(const Etype &elem) const
 		{
-			for(unsigned int i=mSize; i; i--)
+			for(unsigned int i=mSize; i; --i)
 				if(*mpData[i] == elem)
 					return i;
 			return -1;
@@ -473,7 +473,7 @@ EG_PRAGMA_VISIBILITY_POP
 			Etype* temp = static_cast<Etype*>(MemoryManagement::EG_MALLOC(sizeof(Etype)*(mCapacity=minCapacity)));
 
 			//copy all the elements over up to new memory
-			for(unsigned int i=0; i<mSize; i++)
+			for(unsigned int i=0; i<mSize; ++i)
 			{
 				new(temp+i) Etype(mpData[i]);
 				mpData[i].~Etype();
@@ -509,7 +509,7 @@ EG_PRAGMA_VISIBILITY_POP
 				Etype newItem = obj;
 
 				Etype tmp; //temp to hold item to be moved over.
-				for(unsigned int i=index; i<=mSize; i++)
+				for(unsigned int i=index; i<=mSize;++ i)
 				{
 					if(i != mSize)
 					{
@@ -531,7 +531,7 @@ EG_PRAGMA_VISIBILITY_POP
 		template<template<typename> class T, typename Etype>
 		void SequenceContainer<T, Etype>::removeAllElements()
 		{
-			for(unsigned int i=0; i<mSize; i++)
+			for(unsigned int i=0; i<mSize; ++i)
 				mpData[i].~Etype();
 
 			mSize = 0;
@@ -545,7 +545,7 @@ EG_PRAGMA_VISIBILITY_POP
 		template<template<typename> class T, typename Etype>
 		bool SequenceContainer<T, Etype>::removeElement(const Etype &obj)
 		{
-			for(unsigned int i=0; i<mSize; i++)
+			for(unsigned int i=0; i<mSize; ++i)
 			{
 				if(mpData[i] == obj)
 				{
@@ -567,7 +567,7 @@ EG_PRAGMA_VISIBILITY_POP
 		{
 			verifyIndex(index);
 
-			for(unsigned int i=index+1; i<mSize; i++)
+			for(unsigned int i=index+1; i<mSize; ++i)
 			{
 				mpData[i-1].~Etype();
 				new(mpData+i-1) Etype(mpData[i]);
@@ -611,7 +611,7 @@ EG_PRAGMA_VISIBILITY_POP
 				Etype* temp = static_cast<Etype*>(MemoryManagement::EG_MALLOC(sizeof(Etype)*(mCapacity=mSize)));
 				unsigned int i;
 
-				for(i=0; i<mSize; i++)
+				for(i=0; i<mSize; ++i)
 				{
 					new(temp+i) Etype(mpData[i]);
 					mpData[i].~Etype();

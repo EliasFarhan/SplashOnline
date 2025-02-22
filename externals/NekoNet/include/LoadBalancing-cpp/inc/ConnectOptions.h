@@ -1,6 +1,6 @@
 /* Exit Games Photon LoadBalancing - C++ Client Lib
  * Copyright (C) 2004-2024 Exit Games GmbH. All rights reserved.
- * http://www.photonengine.com
+ * https://www.photonengine.com
  * mailto:developer@photonengine.com
  */
 
@@ -18,7 +18,7 @@ namespace ExitGames
 		public:
 			using ToString::toString;
 
-			ConnectOptions(const AuthenticationValues& authenticationValues=AuthenticationValues(), const Common::JString& username=L"", const Common::JString& serverAddress=M_NAMESERVER, nByte serverType=ServerType::NAME_SERVER, bool tryUseDatagramEncryption=false);
+			ConnectOptions(const AuthenticationValues& authenticationValues=AuthenticationValues(), const Common::JString& username=L"", const Common::JString& serverAddress=M_NAMESERVER, nByte serverType=ServerType::NAME_SERVER, bool tryUseDatagramEncryption=false, bool useBackgroundSendReceiveThread=true);
 			~ConnectOptions(void);
 
 			ConnectOptions(const ConnectOptions& toCopy);
@@ -34,6 +34,8 @@ namespace ExitGames
 			ConnectOptions& setServerType(nByte serverType);
 			bool getTryUseDatagramEncryption(void) const;
 			ConnectOptions& setTryUseDatagramEncryption(bool tryUseDatagramEncryption);
+			bool getUseBackgroundSendReceiveThread(void) const;
+			ConnectOptions& setUseBackgroundSendReceiveThread(bool useBackgroundSendReceiveThread);
 
 			virtual Common::JString& toString(Common::JString& retStr, bool withTypes=false) const;
 		private:
@@ -42,6 +44,7 @@ namespace ExitGames
 			Common::JString mServerAddress;
 			nByte mServerType;
 			bool mTryUseDatagramEncryption;
+			bool mUseBackgroundSendReceiveThread;
 
 			static const EG_CHAR* M_NAMESERVER;
 		};

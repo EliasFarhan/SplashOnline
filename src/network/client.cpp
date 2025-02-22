@@ -74,7 +74,6 @@ namespace
 NetworkSystem networkSystem_;
 NetworkClientUi networkClientUi_;
 NetworkClientImpl networkClient_;
-std::unique_ptr<neko::NetworkManager> networkManager_;
 std::vector<std::pair<std::string, std::string>> regions_;
 std::vector<std::function<void()>> networkTasks_;
 std::vector<InputPacket> lastReceivedInputPackets_;
@@ -89,7 +88,7 @@ std::atomic<NetworkClient::State> state_ = NetworkClient::State::UNCONNECTED;
 uint8_t localPlayerIndex_ = std::numeric_limits<uint8_t>::max();
 
 std::atomic<bool> isRunning_ = true;
-
+bool isValid_ = false;
 bool isMaster_ = true;
 }
 
@@ -128,8 +127,8 @@ void NetworkClientImpl::joinRoomEventAction(int playerNr,
 	if(state_.load(std::memory_order_acquire) == NetworkClient::State::JOINING)
 	{
 		state_.store(NetworkClient::State::IN_ROOM, std::memory_order_release);
-		localPlayerIndex_ = sixit::guidelines::narrow_cast<uint8_t>(networkManager_->GetClient().getLocalPlayer().getNumber());
-		const auto& room = networkManager_->GetClient().getCurrentlyJoinedRoom();
+		localPlayerIndex_ = sixit::guidelines::narrow_cast<uint8_t>(neko::GetLoadBalancingClient().getLocalPlayer().getNumber());
+		const auto& room = neko::GetLoadBalancingClient().getCurrentlyJoinedRoom();
 		isMaster_ = room.getMasterClientID() == localPlayerIndex_;
 	}
 }
@@ -137,7 +136,7 @@ void NetworkClientImpl::leaveRoomEventAction(int playerNr, bool isInactive)
 {
 	(void) isInactive;
 	(void) playerNr;
-	auto& room = networkManager_->GetClient().getCurrentlyJoinedRoom();
+	auto& room = neko::GetLoadBalancingClient().getCurrentlyJoinedRoom();
 	isMaster_ = room.getMasterClientID() == localPlayerIndex_;
 	if(state_.load(std::memory_order_acquire) == NetworkClient::State::IN_GAME)
 	{
@@ -233,7 +232,8 @@ void BeginNetwork(const ExitGames::LoadBalancing::ClientConstructOptions& client
 	PingSerializer::registerType();
 	InputSerializer::registerType();
 	ConfirmFrameSerializer::registerType();
-	networkManager_ = std::make_unique<neko::NetworkManager>(&networkClient_, clientConstructOptions);
+	neko::NetworkManager::Begin(&networkClient_, clientConstructOptions);
+	isValid_ = true;
 
 }
 
@@ -306,7 +306,7 @@ void NetworkClientUi::OnGui()
 			{
 				std::scoped_lock<std::mutex> lock(networkTasksMutex_);
 				networkTasks_.emplace_back([region, this]{
-					auto& client = networkManager_->GetClient();
+					auto& client = neko::GetLoadBalancingClient();
 					client.selectRegion(region.first.c_str());
 				});
 				break;
@@ -360,13 +360,6 @@ int NetworkClientUi::GetGuiIndex() const
 }
 static void RunNetwork()
 {
-#ifdef TRACY_ENABLE
-	TracyCZoneN(netStart, "Start Network Manager", true);
-#endif
-	networkManager_->Begin();
-#ifdef TRACY_ENABLE
-	TracyCZoneEnd(netStart);
-#endif
 	static constexpr Uint32 tickTime = 10;//10ms for network loop
 	auto previous = SDL_GetTicks();
 	while(isRunning_.load(std::memory_order_acquire))
@@ -386,7 +379,7 @@ static void RunNetwork()
 #ifdef TRACY_ENABLE
 		TracyCZoneN(networkLoop, "Network Loop", true);
 #endif
-		networkManager_->Tick();
+		neko::NetworkManager::Tick();
 #ifdef TRACY_ENABLE
 		TracyCZoneEnd(networkLoop);
 #endif
@@ -400,8 +393,8 @@ static void RunNetwork()
 #ifdef TRACY_ENABLE
 	TracyCZoneN(netEnd, "Stop Network Manager", true);
 #endif
-	networkManager_->End();
-	networkManager_ = nullptr;
+	neko::NetworkManager::End();
+	isValid_ = false;
 #ifdef TRACY_ENABLE
 	TracyCZoneEnd(netEnd);
 #endif
@@ -416,7 +409,7 @@ void SendInputPacket(const InputPacket& inputPacket)
 	std::scoped_lock<std::mutex> lock(networkTasksMutex_);
 	networkTasks_.emplace_back([serializer]
 	{
-		auto& client = networkManager_->GetClient();
+		auto& client = neko::GetLoadBalancingClient();
 		ExitGames::LoadBalancing::RaiseEventOptions options{};
 		client.opRaiseEvent(false, serializer, static_cast<nByte>(PacketType::INPUT), options);
 	});
@@ -427,7 +420,7 @@ void SendConfirmFramePacket(const ConfirmFramePacket& confirmPacket)
 	std::scoped_lock<std::mutex> lock(networkTasksMutex_);
 	networkTasks_.emplace_back([serializer]
 	{
-		auto& client = networkManager_->GetClient();
+		auto& client = neko::GetLoadBalancingClient();
 		ExitGames::LoadBalancing::RaiseEventOptions options{};
 		client.opRaiseEvent(true, serializer, static_cast<nByte>(PacketType::CONFIRM_FRAME), options);
 	});
@@ -445,7 +438,7 @@ neko::Span<InputPacket> GetInputPackets()
 std::array<bool, MaxPlayerNmb> NetworkClient::GetConnectedPlayers()
 {
 	std::array<bool, MaxPlayerNmb> connectedPlayers{};
-	const auto& room = networkManager_->GetClient().getCurrentlyJoinedRoom();
+	const auto& room = neko::GetLoadBalancingClient().getCurrentlyJoinedRoom();
 	const auto& players = room.getPlayers();
 	for(unsigned i = 0; i < players.getSize(); i++)
 	{
@@ -471,6 +464,6 @@ NetworkClient::State NetworkClient::GetState()
 }
 bool NetworkClient::IsValid()
 {
-	return static_cast<bool>(networkManager_);
+	return isValid_;
 }
 }

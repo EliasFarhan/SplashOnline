@@ -43,8 +43,7 @@ void GameManager::Begin()
 #endif
 	instance = this;
 #ifdef ENABLE_DESYNC_DEBUG
-	auto* netClient = GetNetworkClient();
-	OpenDatabase(netClient ? netClient->GetPlayerIndex()-1 : 0);
+	OpenDatabase(NetworkClient::GetPlayerIndex());
 #endif
 	gameSystems_.Begin();
 	gameRenderer_.Begin();

@@ -10,8 +10,10 @@
 #include <thread/job_system.h>
 #include <fmt/format.h>
 #include <sqlite3.h>
+#pragma warning( push )
+#pragma warning( disable : 4324 ) //warning due to padding
 #include <rigtorp/SPSCQueue.h>
-
+#pragma warning( pop )
 #include <optional>
 
 #include <filesystem>
