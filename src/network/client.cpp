@@ -305,7 +305,7 @@ void NetworkClientUi::OnGui()
 			if(ImGui::Button(region.first.c_str()))
 			{
 				std::scoped_lock<std::mutex> lock(networkTasksMutex_);
-				networkTasks_.emplace_back([region, this]{
+				networkTasks_.emplace_back([region]{
 					auto& client = neko::GetLoadBalancingClient();
 					client.selectRegion(region.first.c_str());
 				});
@@ -330,7 +330,7 @@ void NetworkClientUi::OnGui()
 			if(ImGui::Button("Start Game"))
 			{
 				std::scoped_lock<std::mutex> lock(networkTasksMutex_);
-				networkTasks_.emplace_back([this]{
+				networkTasks_.emplace_back([]{
 					state_.store(NetworkClient::State::IN_GAME, std::memory_order_release);
 
 					auto& client = neko::GetLoadBalancingClient();

@@ -11,6 +11,8 @@
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wnon-virtual-dtor"
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#pragma clang diagnostic ignored "-Wdtor-name"
 #endif
 #include <neko/network_manager.h>
 #if defined(__clang__)
