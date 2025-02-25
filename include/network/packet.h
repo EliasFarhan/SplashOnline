@@ -25,7 +25,9 @@ enum class PacketType : nByte
 {
 	START_GAME = 1,
 	INPUT,
-	CONFIRM_FRAME
+	CONFIRM_FRAME,
+	PING,
+	DESYNC
 };
 
 struct ConfirmFramePacket
@@ -40,6 +42,7 @@ struct ConfirmFramePacket
 	}
 };
 
+
 class ConfirmFrameSerializer : public ExitGames::Common::CustomType<ConfirmFrameSerializer, static_cast<nByte>(PacketType::CONFIRM_FRAME)>
 {
 public:
@@ -50,7 +53,7 @@ public:
 	void deserialize(const nByte* pData, short length) override;
 	short serialize(nByte* pRetVal) const override;
 	ExitGames::Common::JString& toString(ExitGames::Common::JString& retStr, bool withTypes) const override;
-	const auto& GetConfirmPacket() const {return confirmFramePacket_;}
+	[[nodiscard]] const auto& GetConfirmPacket() const {return confirmFramePacket_;}
 private:
 	ConfirmFramePacket confirmFramePacket_{};
 };
@@ -89,6 +92,34 @@ public:
 	[[nodiscard]] const auto& GetPlayerInput() const {return inputPacket_;}
 private:
 	InputPacket inputPacket_{};
+};
+
+struct PingPacket
+{
+	neko::Fixed<uint8_t, 5, uint16_t> masterTime;
+	bool operator==(const PingPacket& other) const
+	{
+		return masterTime == other.masterTime;
+	}
+};
+
+class PingSerializer : public ExitGames::Common::CustomType<PingSerializer, static_cast<nByte>(PacketType::PING)>
+{
+public:
+	explicit PingSerializer(const PingPacket& pingPacket): pingPacket_(pingPacket){}
+	bool compare(const CustomTypeBase& other) const override;
+
+	void duplicate(CustomTypeBase* pRetVal) const override;
+
+	void deserialize(const nByte* pData, short length) override;
+
+	short serialize(nByte* pRetVal) const override;
+
+	ExitGames::Common::JString& toString(ExitGames::Common::JString& retStr, bool withTypes) const override;
+
+	const auto& GetPingPacket() const {return pingPacket_;}
+private:
+	PingPacket pingPacket_{};
 };
 
 }

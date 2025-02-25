@@ -72,4 +72,37 @@ ExitGames::Common::JString& InputSerializer::toString(ExitGames::Common::JString
 {
 	return retStr = ExitGames::Common::JString("Input Packet");
 }
+
+bool PingSerializer::compare(const ExitGames::Common::CustomTypeBase& other) const
+{
+	return pingPacket_ == static_cast<const PingSerializer&>(other).pingPacket_;
+}
+
+void PingSerializer::duplicate(ExitGames::Common::CustomTypeBase* pRetVal) const
+{
+	*reinterpret_cast<PingSerializer*>(pRetVal) = *this;
+}
+
+void PingSerializer::deserialize(const nByte* pData, short length)
+{
+	if(length != 1)
+	{
+		return;
+	}
+	std::memcpy(&pingPacket_.masterTime, pData, 1);
+}
+
+short PingSerializer::serialize(nByte* pRetVal) const
+{
+	if(pRetVal)
+	{
+		*reinterpret_cast<uint8_t*>(pRetVal) = pingPacket_.masterTime.underlyingValue();
+	}
+	return static_cast<short>(1);
+}
+
+ExitGames::Common::JString& PingSerializer::toString(ExitGames::Common::JString& retStr, bool withTypes) const
+{
+	return retStr = ExitGames::Common::JString("Ping Packet");
+}
 }
