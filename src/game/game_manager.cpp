@@ -43,8 +43,7 @@ void GameManager::Begin()
 #endif
 	instance = this;
 #ifdef ENABLE_DESYNC_DEBUG
-	auto* netClient = GetNetworkClient();
-	OpenDatabase(netClient ? netClient->GetPlayerIndex()-1 : 0);
+	OpenDatabase(NetworkClient::GetPlayerIndex());
 #endif
 	gameSystems_.Begin();
 	gameRenderer_.Begin();
@@ -87,8 +86,8 @@ void GameManager::Update(float dt)
 			currentFrame_ = 0;
 			gameTimer_.Reset();
 			FmodPlaySound(GetGameSoundEvent(GameSoundId::BLAST));
-			auto* netClient = GetNetworkClient();
-			if(netClient != nullptr && netClient->IsMaster())
+
+			if(NetworkClient::IsValid() && NetworkClient::IsMaster())
 			{
 				LogDebug("I am master!");
 			}
@@ -107,7 +106,7 @@ void GameManager::Update(float dt)
 	}
 	if(isGameOver_)
 	{
-		if(GetNetworkClient() != nullptr && rollbackManager_.GetLastConfirmFrame() == currentFrame_-1)
+		if(NetworkClient::IsValid() && rollbackManager_.GetLastConfirmFrame() == currentFrame_-1)
 		{
 			RollbackUpdate();
 		}
@@ -174,19 +173,18 @@ void GameManager::Tick()
 		}
 	}
 
-	auto* netClient = GetNetworkClient();
 	PlayerInput localPlayerInput = GetPlayerInput();
 #ifdef ENABLE_DESYNC_DEBUG
 	AddLocalInput(currentFrame_, localPlayerInput);
 #endif
-	if(netClient == nullptr)
+	if(!NetworkClient::IsValid())
 	{
 		playerInputs_[0] = localPlayerInput;
 		gameSystems_.SetPlayerInput(playerInputs_);
 	}
 	else
 	{
-		const auto localPlayerNumber = netClient->GetPlayerIndex()-1;
+		const uint8_t localPlayerNumber = NetworkClient::GetPlayerIndex()-1_u8;
 		//LogDebug(fmt::format("Local Input p{} f{} input: {}", localPlayerNumber+1, currentFrame_, localPlayerInput));
 		rollbackManager_.SetInput(localPlayerNumber, localPlayerInput, currentFrame_);
 		{
@@ -200,7 +198,7 @@ void GameManager::Tick()
 
 		playerInputs_ = rollbackManager_.GetInputs(currentFrame_);
 		gameSystems_.SetPlayerInput(playerInputs_);
-		if(currentFrame_ > 0)
+		if(currentFrame_ > 0 && currentFrame_ != std::numeric_limits<uint16_t>::max())
 		{
 			gameSystems_.SetPreviousPlayerInput(rollbackManager_.GetInputs(currentFrame_-1));
 		}
@@ -208,10 +206,10 @@ void GameManager::Tick()
 	gameSystems_.Tick();
 	gameRenderer_.Tick();
 
-	if(netClient != nullptr)
+	if(NetworkClient::IsValid())
 	{
 		//send input
-		const auto playerNumber =  netClient->GetPlayerIndex()-1;
+		const uint8_t playerNumber =  NetworkClient::GetPlayerIndex()-1_u8;
 		InputPacket inputPacket{};
 		inputPacket.playerNumber = playerNumber;
 		inputPacket.frame = currentFrame_;
@@ -223,7 +221,7 @@ void GameManager::Tick()
 		}
 		inputPacket.inputs = inputs.first;
 		inputPacket.inputSize = inputs.second;
-		netClient->SendInputPacket(inputPacket);
+		SendInputPacket(inputPacket);
 		/*LogDebug(fmt::format("Sent input from p{} f{} with input: {}",
 			inputPacket.playerNumber+1,
 			currentFrame_,
@@ -256,9 +254,8 @@ void GameManager::RollbackUpdate()
 #ifdef TRACY_ENABLE
 	ZoneScoped;
 #endif
-	auto* netClient = GetNetworkClient();
 	//import network inputs
-	auto inputPackets = netClient->GetInputPackets();
+	auto inputPackets = GetInputPackets();
 	for(auto& inputPacket: inputPackets)
 	{
 		/*LogDebug(fmt::format("Received input from p{} f{} s{} with input: {} at f{}",
@@ -276,7 +273,7 @@ void GameManager::RollbackUpdate()
 
 	{
 		//import confirm frames
-		auto confirmPackets = netClient->GetConfirmPackets();
+		auto confirmPackets = GetConfirmPackets();
 		for(auto& confirmPacket : confirmPackets)
 		{
 			//LogDebug(fmt::format("Received confirm inputs f{}: p1: {} p2: {}", confirmPacket.frame, confirmPacket.input[0], confirmPacket.input[1]));
@@ -294,7 +291,7 @@ void GameManager::RollbackUpdate()
 				//LogWarning("Confirm Frame is further than received from unreliable");
 			}
 			const auto& confirmInputs = confirmPacket.input;
-			for (int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
+			for (uint8_t playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
 			{
 				if (!IsValid(playerNumber))
 				{
@@ -319,34 +316,51 @@ void GameManager::RollbackUpdate()
 #ifdef ENABLE_DESYNC_DEBUG
 			AddConfirmFrame(localConfirmValue, lastConfirmFrame);
 #endif
-			LogDebug(fmt::format("Receive confirm frame: {} remote confirm value: {} local confirm value: {}",
+			/*LogDebug(fmt::format("Receive confirm frame: {} remote confirm value: {} local confirm value: {}",
 				confirmPacket.frame,
 				confirmPacket.checksum,
-				(uint32_t)localConfirmValue));
+				(uint32_t)localConfirmValue));*/
 			if (static_cast<std::uint32_t>(localConfirmValue) != lastConfirmValue)
 			{
-				LogError(fmt::format("Desync at f{} with local confirm value: player {} bullet {}", rollbackManager_
-					.GetLastConfirmFrame(), localConfirmValue[0], localConfirmValue[1]));
+				LogError(fmt::format("Desync at f{} with local confirm value:\n"
+									 "player chara {}, player phys: {}, inputs: {}, prev inputs: {}, player body: {}, bullet {}, bullet body: {}",
+									 rollbackManager_.GetLastConfirmFrame(),
+									 localConfirmValue[0],
+									 localConfirmValue[1],
+									 localConfirmValue[2],
+									 localConfirmValue[3],
+									 localConfirmValue[4],
+									 localConfirmValue[5],
+									 localConfirmValue[6]));
 			}
 		}
 		//validate frame
-		if(netClient->IsMaster())
+		if(NetworkClient::IsMaster())
 		{
 			while(rollbackManager_.GetLastReceivedFrame() > neko::Max(rollbackManager_.GetLastConfirmFrame(), 0))
 			{
 				const auto confirmValue = rollbackManager_.ConfirmLastFrame();
 				const auto lastConfirmFrame = rollbackManager_.GetLastConfirmFrame();
-				LogDebug(fmt::format("Confirm Frame Sending at f{} with local confirm value: player {} bullet {}", lastConfirmFrame, confirmValue[0], confirmValue[1]));
+				LogDebug(fmt::format("Confirm Frame Sending at f{} with local confirm value:\n"
+									 "player chara {}, player phys: {}, inputs: {}, prev inputs: {}, player body: {}, bullet {}, bullet body: {}",
+									 lastConfirmFrame,
+									 confirmValue[0],
+									 confirmValue[1],
+									 confirmValue[2],
+									 confirmValue[3],
+									 confirmValue[4],
+									 confirmValue[5],
+									 confirmValue[6]));
 
 				ConfirmFramePacket confirmPacket{};
-				confirmPacket.frame = lastConfirmFrame;
+				confirmPacket.frame = sixit::guidelines::narrow_cast<short>(lastConfirmFrame);
 				confirmPacket.checksum = static_cast<std::uint32_t>(confirmValue);
 				confirmPacket.input = rollbackManager_.GetInputs(lastConfirmFrame);
 				//LogDebug(fmt::format("Sending confirm inputs f{} p1: {} p2: {}", lastConfirmFrame, confirmPacket.input[0], confirmPacket.input[1]));
 #ifdef ENABLE_DESYNC_DEBUG
 				AddConfirmFrame(confirmValue, lastConfirmFrame);
 #endif
-				netClient->SendConfirmFramePacket(confirmPacket);
+				SendConfirmFramePacket(confirmPacket);
 			}
 		}
 	}
@@ -396,10 +410,9 @@ int GetCurrentFrame()
 neko::Vec2i GameManager::GetPlayerScreenPos() const
 {
 	int playerIndex = 0;
-	auto* netClient = GetNetworkClient();
-	if(netClient != nullptr)
+	if(NetworkClient::IsValid())
 	{
-		playerIndex = netClient->GetPlayerIndex()-1;
+		playerIndex = NetworkClient::GetPlayerIndex()-1;
 	}
 	const auto bodyIndex = gameSystems_.GetPlayerManager().GetPlayerPhysics()[playerIndex].bodyIndex;
 	return GetGraphicsPosition(gameSystems_.GetPhysicsWorld().body(bodyIndex).position);
@@ -409,7 +422,7 @@ void GameManager::ExitGame()
 {
 	isGameOver_ = true;
 	hasDesync_ = true;
-	LogError(fmt::format("Desync happened, please send splash_p{}.db to the developers", GetNetworkClient()->GetPlayerIndex()-1));
+	LogError(fmt::format("Desync happened, please send splash_p{}.db to the developers", NetworkClient::GetPlayerIndex()-1));
 }
 
 }

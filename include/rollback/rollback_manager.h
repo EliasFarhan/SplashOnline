@@ -17,9 +17,9 @@ class RollbackManager
 public:
 	explicit RollbackManager(const GameData& gameData);
 	void Begin();
-	void SetInput(int playerNumber, PlayerInput input, int currentFrame);
+	void SetInput(uint8_t playerNumber, PlayerInput input, uint16_t currentFrame);
 	[[nodiscard]] PlayerInput GetInput(int playerNumber, int currentFrame) const;
-	[[nodiscard]] std::pair<std::array<PlayerInput, MaxPlayerInputNmb>, int> GetInputs(int playerNumber, int currentFrame) const;
+	[[nodiscard]] std::pair<std::array<PlayerInput, MaxPlayerInputNmb>, uint8_t> GetInputs(uint8_t playerNumber, uint16_t currentFrame) const;
 	[[nodiscard]] std::array<PlayerInput, MaxPlayerNmb> GetInputs(int currentFrame) const;
 	[[nodiscard]] Checksum<static_cast<int>(BulletChecksumIndex::LENGTH)+static_cast<int>(PlayerChecksumIndex::LENGTH)> ConfirmLastFrame();
 	[[nodiscard]] int GetLastConfirmFrame() const {return lastConfirmFrame_;}
@@ -33,11 +33,11 @@ public:
 private:
 	struct PlayerInputData
 	{
-		int lastReceivedFrame = -1;
+		uint16_t lastReceivedFrame = std::numeric_limits<uint16_t>::max();
 		bool isValid = false;
 	};
 	GameSystems confirmFrameGameSystems_{};
-	int lastConfirmFrame_ = -1;
+	uint16_t lastConfirmFrame_ = std::numeric_limits<uint16_t>::max();
 	std::array<PlayerInputData, MaxPlayerNmb> inputDatas_{};
 	std::vector<std::array<PlayerInput, MaxPlayerNmb>> inputs_{};
 	bool isDirty_ = false;

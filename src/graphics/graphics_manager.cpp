@@ -18,7 +18,6 @@ namespace splash
 
 namespace
 {
-    SpineManager spineManager_;
     SDL_Renderer* renderer_ = nullptr;
     std::vector<DrawInterface*> drawInterfaces_;
     neko::Vec2i windowSize_{};
@@ -105,9 +104,9 @@ void UpdateGraphics()
 	{
 		UpdateTexturesLoad();
 	}
-	if(!spineManager_.IsLoaded())
+	if(!IsSpineLoaded())
 	{
-		spineManager_.UpdateLoad();
+		SpineManager::UpdateLoad();
 	}
 	UpdateGuiRenderer();
 }

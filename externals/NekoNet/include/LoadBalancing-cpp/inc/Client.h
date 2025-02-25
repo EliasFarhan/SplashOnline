@@ -1,6 +1,6 @@
 /* Exit Games Photon LoadBalancing - C++ Client Lib
  * Copyright (C) 2004-2024 Exit Games GmbH. All rights reserved.
- * http://www.photonengine.com
+ * https://www.photonengine.com
  * mailto:developer@photonengine.com
  */
 
@@ -227,6 +227,8 @@ namespace ExitGames
 			Common::JString mCluster;
 			bool mUseAlternativePorts;
 			Internal::PuncherClient* mpPuncherClient;
+			bool mUseBackgroundSendReceiveThread;
+
 			const nByte M_SERIALIZATION_PROTOCOL;
 
 			static const unsigned int M_PINGS_PER_REGION = 5;

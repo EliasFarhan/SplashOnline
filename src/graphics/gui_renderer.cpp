@@ -4,6 +4,7 @@
 
 #include "graphics/gui_renderer.h"
 #include "graphics/graphics_manager.h"
+#include "audio/music_manager.h"
 #include "engine/window.h"
 #include "engine/engine.h"
 

@@ -202,7 +202,7 @@ void UpdateTexturesLoad()
 	{
 		return;
 	}
-	for(int i = 0; i <= loadingIndex.load(std::memory_order_consume); i++)
+	for(int i = 0; i <= loadingIndex.load(std::memory_order_acquire); i++)
 	{
 		if(textures_[i] != nullptr) continue;
 #ifdef TRACY_ENABLE

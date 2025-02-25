@@ -12,7 +12,7 @@
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
 {
-	splash::AudioManager audioManager;
+	splash::AddAudio();
 	splash::GameData gameData{};
 	gameData.introDelay = 0.1f;
 	gameData.period = neko::Scalar {60.0f};

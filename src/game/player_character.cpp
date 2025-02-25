@@ -141,6 +141,7 @@ void PlayerManager::Tick()
 				body.position = spawnPositions[playerNumber];
 				body.isActive = true;
 				playerCharacter.respawnStaticTime.Stop();
+				playerCharacter.invincibleTimer.Reset();
 			}
 			else
 			{
@@ -166,6 +167,10 @@ void PlayerManager::Tick()
 			continue;
 		}
 
+		if(!playerCharacter.invincibleTimer.Over())
+		{
+			playerCharacter.invincibleTimer.Update(fixedDeltaTime);
+		}
 		if(playerCharacter.preJetBurstTimer.Over() &&
 			(reactor < PlayerCharacter::ReactorThreshold ||
 			body.velocity.y > neko::Scalar{0.0f}))
@@ -201,7 +206,8 @@ void PlayerManager::Tick()
 
 				if(playerCharacter.resistancePhase >= 2)
 				{
-					const auto divisor = neko::Exp<neko::Scalar>()*neko::Scalar(playerCharacter.resistancePhase-1);
+					const auto divisor = neko::Exp<neko::Scalar>()*neko::Scalar(
+						sixit::guidelines::precision_cast<float>(playerCharacter.resistancePhase-1));
 					newCap = (PlayerCharacter::CapMoveForce-PlayerCharacter::WetCapMoveForce)/divisor+PlayerCharacter::WetCapMoveForce;
 				}
 				if(newCap > neko::Scalar{} && neko::Abs(f) > newCap)
@@ -485,7 +491,7 @@ void PlayerManager::Tick()
 
 				neko::Scalar waterForce = PlayerCharacter::WaterForce;
 				const auto forceCoefficient = PlayerCharacter::decreaseFactor*playerCharacter.hitTimer.CurrentTime()/PlayerCharacter::HitEffectPeriod+neko::Scalar{1};
-				neko::Vec2f newForce = playerCharacter.hitDirection * waterForce * static_cast<neko::Scalar>(playerCharacter.resistancePhase) * forceCoefficient;
+				neko::Vec2f newForce = playerCharacter.hitDirection * waterForce * neko::Scalar(sixit::guidelines::precision_cast<float>(playerCharacter.resistancePhase)) * forceCoefficient;
 				playerPhysic.AddForce(newForce, PlayerCharacter::HitPriority);
 			}
 			playerCharacter.hitTimer.Update(fixedDeltaTime);
@@ -592,7 +598,8 @@ void PlayerManager::OnTriggerEnter(neko::ColliderIndex playerIndex, int playerNu
 		Respawn(playerNumber);
 	}
 
-	if(otherUserData->type == ColliderType::BULLET && otherUserData->playerNumber != playerNumber)
+	if(otherUserData->type == ColliderType::BULLET &&
+		otherUserData->playerNumber != playerNumber && !playerCharacters_[playerNumber].IsInvincible())
 	{
 		playerCharacters_[playerNumber].hitDirection = otherBody.velocity.Normalized();
 		if(!playerCharacters_[playerNumber].hitTimer.Over())
@@ -609,18 +616,24 @@ void PlayerManager::OnTriggerEnter(neko::ColliderIndex playerIndex, int playerNu
 	if(otherUserData->type == ColliderType::PLAYER)
 	{
 		const auto otherPlayerNumber = otherUserData->playerNumber;
-		if(playerIndex == playerPhysics_[playerNumber].headColliderIndex && otherCollider.colliderIndex == playerPhysics_[otherPlayerNumber].footColliderIndex && playerCharacters_[otherPlayerNumber].IsDashing())
+		if(playerIndex == playerPhysics_[playerNumber].headColliderIndex &&
+			otherCollider.colliderIndex == playerPhysics_[otherPlayerNumber].footColliderIndex &&
+			playerCharacters_[otherPlayerNumber].IsDashing())
 		{
-			//LogDebug(fmt::format("Dashed player {} on player {}", playerNumber+1, otherPlayerNumber+1));
-			//Dashed collision
-			playerCharacters_[playerNumber].dashedTimer.Reset();
-			playerCharacters_[playerNumber].collidedPlayer = otherUserData->playerNumber;
-			if(!playerCharacters_[playerNumber].IsGrounded())
+			if(!playerCharacters_[playerNumber].IsInvincible())
 			{
-				const auto dashedVel = neko::Vec2f(otherBody.velocity.x, PlayerCharacter::DashedSpeed);
-				playerPhysics_[playerNumber].AddForce((dashedVel - body.velocity) / body.inverseMass / GetFixedDeltaTime(),
-					PlayerCharacter::DashedPriority);
+				//LogDebug(fmt::format("Dashed player {} on player {}", playerNumber+1, otherPlayerNumber+1));
+				//Dashed collision
+				playerCharacters_[playerNumber].dashedTimer.Reset();
+				playerCharacters_[playerNumber].collidedPlayer = otherUserData->playerNumber;
+				if(!playerCharacters_[playerNumber].IsGrounded())
+				{
+					const auto dashedVel = neko::Vec2f(otherBody.velocity.x, PlayerCharacter::DashedSpeed);
+					playerPhysics_[playerNumber].AddForce((dashedVel - body.velocity) / body.inverseMass / GetFixedDeltaTime(),
+						PlayerCharacter::DashedPriority);
+				}
 			}
+
 			//LogDebug(fmt::format("Dashing player {} on player {}", otherPlayerNumber+1, playerNumber+1));
 			if(!playerCharacters_[otherPlayerNumber].slowDashTimer.Over())
 			{
@@ -717,40 +730,74 @@ void PlayerManager::Respawn(int playerNumber)
 
 Checksum<static_cast<int>(PlayerChecksumIndex::LENGTH)> PlayerManager::CalculateChecksum() const
 {
-	Adler32 playerCharacterResult;
-	Adler32 playerPhysicsResult;
+	Adler32 playerCharacterResult{};
+	Adler32 playerPhysicsResult{};
+	Adler32 playerBodyResult{};
 	for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
 	{
 		if(!IsValid(playerNumber))
 		{
 			continue;
 		}
-		Adler32 adler32{};
 
-		auto value = adler32.Add(playerCharacters_[playerNumber]);
-		playerCharacterResult.Add(reinterpret_cast<uint8_t*>(&value), sizeof(value));
+		const auto& playerCharacter = playerCharacters_[playerNumber];
+		playerCharacterResult.Add(playerCharacter.respawnPauseTimer);
+		playerCharacterResult.Add(playerCharacter.respawnMoveTimer);
+		playerCharacterResult.Add(playerCharacter.respawnStaticTime);
+		playerCharacterResult.Add(playerCharacter.invincibleTimer);
+		playerCharacterResult.Add(playerCharacter.hitTimer);
+		playerCharacterResult.Add(playerCharacter.reserveWaterTimer);
+		playerCharacterResult.Add(playerCharacter.waterTimer);
+		playerCharacterResult.Add(playerCharacter.reloadTimer);
+		playerCharacterResult.Add(playerCharacter.jetBurstCoolDownTimer);
+		playerCharacterResult.Add(playerCharacter.jumpTimer);
+		playerCharacterResult.Add(playerCharacter.preJetBurstTimer);
+		playerCharacterResult.Add(playerCharacter.dashDownTimer);
+		playerCharacterResult.Add(playerCharacter.stopDashTimer);
+		playerCharacterResult.Add(playerCharacter.slowDashTimer);
+		playerCharacterResult.Add(playerCharacter.bounceDashTimer);
+		playerCharacterResult.Add(playerCharacter.dashPrepTimer);
+		playerCharacterResult.Add(playerCharacter.dashedTimer);
+		playerCharacterResult.Add(playerCharacter.wasDownRecoverTimer);
+		playerCharacterResult.Add(playerCharacter.recoilTimer);
+		playerCharacterResult.Add(playerCharacter.collidedTimer);
+		playerCharacterResult.Add(playerCharacter.hitDirection);
+		playerCharacterResult.Add(playerCharacter.recoilDirection);
+		playerCharacterResult.Add(playerCharacter.fallCount);
+		playerCharacterResult.Add(playerCharacter.killCount);
+		playerCharacterResult.Add(playerCharacter.resistancePhase);
+		playerCharacterResult.Add(playerCharacter.hitPlayer);
+		playerCharacterResult.Add(playerCharacter.firstShots);
+		playerCharacterResult.Add(playerCharacter.collidedPlayer);
+		playerCharacterResult.Add(playerCharacter.footCount);
 
-		adler32.Reset();
-		value = adler32.Add(playerPhysics_[playerNumber]);
-		playerPhysicsResult.Add(reinterpret_cast<uint8_t*>(&value), sizeof(value));
+
+		const auto& playerPhysic = playerPhysics_[playerNumber];
+		playerPhysicsResult.Add(playerPhysic.bodyIndex);
+		playerPhysicsResult.Add(playerPhysic.colliderIndex);
+		playerPhysicsResult.Add(playerPhysic.footColliderIndex);
+		playerPhysicsResult.Add(playerPhysic.headColliderIndex);
+		playerPhysicsResult.Add(playerPhysic.leftColliderIndex);
+		playerPhysicsResult.Add(playerPhysic.rightColliderIndex);
+		playerPhysicsResult.Add(playerPhysic.userData);
+		playerPhysicsResult.Add(playerPhysic.GetForce());
+		playerPhysicsResult.Add(playerPhysic.GetPriority());
+
+		const auto& body = gameSystems_->GetPhysicsWorld().body(playerPhysics_[playerNumber].bodyIndex);
+		playerBodyResult.Add(body.position);
+		playerBodyResult.Add(body.velocity);
+		playerBodyResult.Add(body.force);
+		playerBodyResult.Add(body.inverseMass);
+		playerBodyResult.Add(body.type);
+		playerBodyResult.Add(body.isActive);
 	}
 
-	Adler32 playerInputResult;
+	Adler32 playerInputResult{};
 	playerInputResult.Add(playerInputs_);
 
-	Adler32 previousPlayerInputResult;
+	Adler32 previousPlayerInputResult{};
 	previousPlayerInputResult.Add(previousPlayerInputs_);
 
-	Adler32 playerBodyResult;
-	for(int playerNumber = 0; playerNumber < MaxPlayerNmb; playerNumber++)
-	{
-		if(!IsValid(playerNumber))
-		{
-			continue;
-		}
-		const auto& body = gameSystems_->GetPhysicsWorld().body(playerPhysics_[playerNumber].bodyIndex);
-		playerBodyResult.Add(body);
-	}
 	return {playerCharacterResult.GetValue(), playerPhysicsResult.GetValue(), playerInputResult.GetValue(), previousPlayerInputResult.GetValue(), playerBodyResult.GetValue()};
 }
 

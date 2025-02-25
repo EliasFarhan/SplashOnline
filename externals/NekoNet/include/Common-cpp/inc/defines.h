@@ -1,6 +1,6 @@
 /* Exit Games Common - C++ Client Lib
  * Copyright (C) 2004-2024 Exit Games GmbH. All rights reserved.
- * http://www.photonengine.com
+ * https://www.photonengine.com
  * mailto:developer@photonengine.com
  */
 
@@ -136,7 +136,9 @@
 #define ZEROAT(ptr)            (void)MEMSET(ptr, 0, sizeof(*ptr))
 
 // Strings //////////////////////////////////////
-#define STRINGIFY(param) #param
+#ifndef STRINGIFY
+#	define STRINGIFY(param) #param
+#endif
 
 #include <wchar.h>
 

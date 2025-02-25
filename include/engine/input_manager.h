@@ -31,7 +31,8 @@ struct PlayerInput
 	neko::Fixed8 moveDirY{};
 	neko::Fixed8 targetDirX{};
 	neko::Fixed8 targetDirY{};
-	std::uint8_t buttons{};
+	uint8_t buttons : 3 = {};
+	uint8_t repetitions : 5 = 0;
 
 	[[nodiscard]] constexpr bool GetStomp() const { return (buttons & STOMP) == STOMP; }
 	[[nodiscard]] constexpr bool GetConfirm() const { return (buttons & CONFIRM) == CONFIRM; }

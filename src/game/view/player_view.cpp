@@ -432,6 +432,7 @@ void PlayerView::Draw()
 		auto& bodyDrawable = playerRenderDatas_[i].bodyDrawable;
 		auto& armDrawable = playerRenderDatas_[i].armDrawable;
 		auto& gunDrawable = playerRenderDatas_[i].gunDrawable;
+		const auto& playerCharacter = playerManager.GetPlayerCharacter()[i];
 
 		playerRenderDatas_[i].jetBurstFx.Draw();
 		playerRenderDatas_[i].dashPrepFx.Draw();
@@ -447,7 +448,6 @@ void PlayerView::Draw()
 		//draw dash trail
 		if(playerRenderDatas_[i].state == PlayerRenderState::DASH)
 		{
-			const auto& playerCharacter = playerManager.GetPlayerCharacter()[i];
 			if(playerCharacter.dashPositions.size() > 1)
 			{
 				int positionsCount = static_cast<int>(playerCharacter.dashPositions.size());
@@ -504,9 +504,14 @@ void PlayerView::Draw()
 			}
 		}
 
+		const int invincibleTime = static_cast<int>(playerCharacter.invincibleTimer.RemainingTime().to_float()*1000.0f);
+		const bool hidPlayerInvicible = (invincibleTime % 125) > (125 /2);
 		// Draw in correct order
-		bodyDrawable->draw(renderer);
-		if(playerRenderDatas_[i].state != PlayerRenderState::DASHPREP && playerRenderDatas_[i].state != PlayerRenderState::DASH)
+		if(!hidPlayerInvicible)
+		{
+			bodyDrawable->draw(renderer);
+		}
+		if(playerRenderDatas_[i].state != PlayerRenderState::DASHPREP && playerRenderDatas_[i].state != PlayerRenderState::DASH && !hidPlayerInvicible)
 		{
 			gunDrawable->draw(renderer);
 			armDrawable->draw(renderer);

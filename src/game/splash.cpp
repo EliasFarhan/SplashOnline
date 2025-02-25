@@ -92,7 +92,7 @@ void SplashManager::Update(float dt)
 	}
 	case State::LOBBY:
 	{
-		if(client_->GetState() == NetworkClient::State::IN_GAME)
+		if(NetworkClient::GetState() == NetworkClient::State::IN_GAME)
 		{
 			SwitchToState(State::GAME);
 		}
@@ -100,7 +100,7 @@ void SplashManager::Update(float dt)
 	}
 	case State::GAME:
 	{
-		if(client_->GetState() == NetworkClient::State::IN_ROOM)
+		if(NetworkClient::GetState() == NetworkClient::State::IN_ROOM)
 		{
 			gameManager_->End();
 			gameManager_ = nullptr;
@@ -192,19 +192,18 @@ void SplashManager::SwitchToState(SplashManager::State state)
 		SetMusicParameter("Transition Title", 0.5f);
 
 
-		if(!client_)
+		if(!NetworkClient::IsValid())
 		{
 			ExitGames::LoadBalancing::ClientConstructOptions clientConstructOptions{};
 			clientConstructOptions.setRegionSelectionMode(ExitGames::LoadBalancing::RegionSelectionMode::SELECT);
-			client_ = std::make_unique<NetworkClient>(clientConstructOptions);
-			client_->Begin();
+			BeginNetwork(clientConstructOptions);
 		}
 		break;
 	}
 	case State::GAME:
 	{
 		GameData gameData{};
-		gameData.connectedPlayers = client_->GetConnectedPlayers();
+		gameData.connectedPlayers = NetworkClient::GetConnectedPlayers();
 		gameManager_ = std::make_unique<GameManager>(gameData);
 		gameManager_->Begin();
 		SetMusicParameter("Transition Title", 0.0f);

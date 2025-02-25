@@ -10,8 +10,14 @@
 #include <thread/job_system.h>
 #include <fmt/format.h>
 #include <sqlite3.h>
+#ifdef _MSC_VER
+#pragma warning( push )
+#pragma warning( disable : 4324 ) //warning due to padding
+#endif
 #include <rigtorp/SPSCQueue.h>
-
+#ifdef MSVC
+#pragma warning( pop )
+#endif
 #include <optional>
 
 #include <filesystem>
@@ -149,7 +155,6 @@ static void RunQuery(const QueryData& queryData)
 {
 	std::visit([&](auto&& arg)
 	{
-		using T = std::decay_t<decltype(arg)>;
 		Query(arg);
 	}, queryData);
 }

@@ -47,23 +47,23 @@ static int callback(void *data, int argc, char **argv, char **azColName)
 		}
 		else if(arg == "move_x")
 		{
-			currentInput.moveDirX = neko::Fixed8::fromUnderlyingValue(std::stoi(argv[i]));
+			currentInput.moveDirX = neko::Fixed8::fromUnderlyingValue(static_cast<std::int8_t>(std::stoi(argv[i])));
 		}
 		else if(arg == "move_y")
 		{
-			currentInput.moveDirY = neko::Fixed8::fromUnderlyingValue(std::stoi(argv[i]));
+			currentInput.moveDirY = neko::Fixed8::fromUnderlyingValue(static_cast<std::int8_t>(std::stoi(argv[i])));
 		}
 		else if(arg == "target_x")
 		{
-			currentInput.targetDirX = neko::Fixed8::fromUnderlyingValue(std::stoi(argv[i]));
+			currentInput.targetDirX = neko::Fixed8::fromUnderlyingValue(static_cast<std::int8_t>(std::stoi(argv[i])));
 		}
 		else if(arg == "target_y")
 		{
-			currentInput.targetDirY = neko::Fixed8::fromUnderlyingValue(std::stoi(argv[i]));
+			currentInput.targetDirY = neko::Fixed8::fromUnderlyingValue(static_cast<std::int8_t>(std::stoi(argv[i])));
 		}
 		else if(arg == "button")
 		{
-			currentInput.buttons = std::stoi(argv[i]);
+			currentInput.buttons = static_cast<uint8_t>(std::stoi(argv[i]));
 		}
 	}
 	if(frame > std::ssize(inputs))

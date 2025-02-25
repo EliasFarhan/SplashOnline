@@ -1,6 +1,6 @@
 ﻿/* Exit Games Common - C++ Client Lib
  * Copyright (C) 2004-2024 Exit Games GmbH. All rights reserved.
- * http://www.photonengine.com
+ * https://www.photonengine.com
  * mailto:developer@photonengine.com
  */
 

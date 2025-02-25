@@ -2,39 +2,22 @@
 #ifndef SPLASHONLINE_AUDIO_MANAGER_H
 #define SPLASHONLINE_AUDIO_MANAGER_H
 
-#include "engine/system.h"
-#include "audio/music_manager.h"
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
 #include <fmod_studio.hpp>
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 #include <string_view>
-#include <atomic>
 
 namespace splash
 {
 
-class AudioManager : public SystemInterface
-{
-public:
-	AudioManager();
-	void Begin() override;
-	void End() override;
-	void Update(float dt) override;
-	[[nodiscard]] int GetSystemIndex() const override;
-	void SetSystemIndex(int index) override;
-
-	MusicManager& GetMusicManager() { return musicManager_; }
-	FMOD::Studio::EventDescription* GetEventDescription(std::string_view eventName);
-	[[nodiscard]] bool IsLoaded() const { return isLoaded_.load(std::memory_order_consume); }
-
-	FMOD::Studio::EventInstance* PlaySound(std::string_view eventName);
-private:
-	MusicManager musicManager_;
-	FMOD::Studio::System* system_ = nullptr;
-	int systemIndex_ = 0;
-	std::atomic<bool> isLoaded_{false};
-};
-
+void AddAudio();
 FMOD::Studio::EventDescription* GetEventDescription(std::string_view eventName);
 bool IsFmodLoaded();
 FMOD::Studio::EventInstance* FmodPlaySound(std::string_view eventName);

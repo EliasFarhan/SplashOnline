@@ -1,6 +1,6 @@
 /* Exit Games Common - C++ Client Lib
  * Copyright (C) 2004-2024 Exit Games GmbH. All rights reserved.
- * http://www.photonengine.com
+ * https://www.photonengine.com
  * mailto:developer@photonengine.com
  */
 
@@ -27,9 +27,9 @@ namespace ExitGames
 			namespace Internal
 			{
 #				define CONSTRUCT_ARRAY_ELEMENTS_TEMPLATE_BODY(p, count, ...)                      for(EG_SIZE_T i=0; i<count; ++i) ::new(p+i) Ftype(__VA_ARGS__);
-#				define CONSTRUCT_ARRAY_ELEMENTS_IS_PRIMITIVE_TEMPLATE_BODY(p, count, initVal)     MEMSET(p, initVal, count*sizeof(Ftype));
+#				define CONSTRUCT_ARRAY_ELEMENTS_IS_PRIMITIVE_TEMPLATE_BODY(p, count, initVal)     MEMSET(p, initVal, static_cast<size_t>(count)*sizeof(Ftype));
 #				define COPY_CONSTRUCT_ARRAY_ELEMENTS_TEMPLATE_BODY(pOut, count, pIn)              for(EG_SIZE_T i=0; i<count; ++i) ::new(pOut+i) Ftype(pIn[i]);
-#				define COPY_CONSTRUCT_ARRAY_ELEMENTS_IS_PRIMITIVE_TEMPLATE_BODY(pOut, count, pIn) MEMCPY(pOut, pIn, count*sizeof(Ftype));
+#				define COPY_CONSTRUCT_ARRAY_ELEMENTS_IS_PRIMITIVE_TEMPLATE_BODY(pOut, count, pIn) MEMCPY(pOut, pIn, static_cast<size_t>(count)*sizeof(Ftype));
 
 				template<typename Ftype>                                                                  typename Helpers::EnableIf<!Helpers::IsPrimitiveType<Ftype>::is>::type constructArrayElements(Ftype* p, EG_SIZE_T count)                                                                       {CONSTRUCT_ARRAY_ELEMENTS_TEMPLATE_BODY(p, count)}
 				template<typename Ftype>                                                                  typename Helpers::EnableIf< Helpers::IsPrimitiveType<Ftype>::is>::type constructArrayElements(Ftype* p, EG_SIZE_T count)                                                                       {CONSTRUCT_ARRAY_ELEMENTS_IS_PRIMITIVE_TEMPLATE_BODY(p, count, 0)}

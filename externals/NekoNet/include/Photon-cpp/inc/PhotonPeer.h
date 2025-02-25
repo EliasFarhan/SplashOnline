@@ -1,6 +1,6 @@
 /* Exit Games Photon - C++ Client Lib
  * Copyright (C) 2004-2024 Exit Games GmbH. All rights reserved.
- * http://www.photonengine.com
+ * https://www.photonengine.com
  * mailto:developer@photonengine.com
  */
 
@@ -42,10 +42,10 @@ namespace ExitGames
 			PhotonPeer(PhotonListener& listener, nByte connectionProtocol=ConnectionProtocol::DEFAULT, nByte serializationProtocol=Common::SerializationProtocol::DEFAULT);
 			virtual ~PhotonPeer(void);
 
-			virtual bool connect(const Common::JString& ipAddr, const Common::JString& appID=Common::JString());
-			template<typename Ftype> bool connect(const Common::JString& ipAddr, const Common::JString& appID, const Ftype& customData);
-			template<typename Ftype> bool connect(const Common::JString& ipAddr, const Common::JString& appID, const Ftype pCustomDataArray, int arrSize);
-			template<typename Ftype> bool connect(const Common::JString& ipAddr, const Common::JString& appID, const Ftype pCustomDataArray, const int* pArrSizes);
+			virtual bool connect(const Common::JString& ipAddr, const Common::JString& appID=Common::JString(), bool useBackgroundSendReceiveThread=true);
+			template<typename Ftype> bool connect(const Common::JString& ipAddr, const Common::JString& appID, const Ftype& customData, bool useBackgroundSendReceiveThread=true);
+			template<typename Ftype> bool connect(const Common::JString& ipAddr, const Common::JString& appID, const Ftype pCustomDataArray, int arrSize, bool useBackgroundSendReceiveThread=true);
+			template<typename Ftype> bool connect(const Common::JString& ipAddr, const Common::JString& appID, const Ftype pCustomDataArray, const int* pArrSizes, bool useBackgroundSendReceiveThread=true);
 			virtual void disconnect(void);
 			virtual void service(bool dispatchIncomingCommands=true);
 			virtual void serviceBasic(void);
@@ -121,7 +121,7 @@ namespace ExitGames
 			Common::Logger mLogger;
 		private:
 			void init(PhotonListener& listener, nByte connectionProtocol);
-			virtual bool connect(const Common::JString& ipAddr, const Common::JString& appID, const Common::Object& customData);
+			virtual bool connect(const Common::JString& ipAddr, const Common::JString& appID, const Common::Object& customData, bool useBackgroundSendReceiveThread);
 			void createPeerBase(void);
 
 			Common::Helpers::SharedPointer<Internal::PeerData> mspPeerData;
@@ -144,10 +144,10 @@ namespace ExitGames
 			   @param appID the appID (default: an empty string)
 			   @param customData custom data to send to the server when initializing the connection - has to be provided in the form of one of the supported data types, specified at @link Datatypes Table of Datatypes\endlink*/
 			template<typename Ftype>
-			bool PhotonPeer::connect(const Common::JString& ipAddr, const Common::JString& appID, const Ftype& customData)
+			bool PhotonPeer::connect(const Common::JString& ipAddr, const Common::JString& appID, const Ftype& customData, bool useBackgroundSendReceiveThread)
 			{
 				COMPILE_TIME_ASSERT2_TRUE_MSG(!Common::Helpers::ConfirmAllowed<Ftype>::dimensions, ERROR_THIS_OVERLOAD_IS_ONLY_FOR_SINGLE_VALUES);
-				return connect(ipAddr, appID, Common::Helpers::ValueToObject<Common::Object>::get(customData));
+				return connect(ipAddr, appID, Common::Helpers::ValueToObject<Common::Object>::get(customData), useBackgroundSendReceiveThread);
 			}
 
 			/**
@@ -160,10 +160,10 @@ namespace ExitGames
 			   @param pCustomDataArray custom data to send to the server when initializing the connection - has to be provided in the form of a 1D array of one of the supported data types, specified at @link Datatypes Table of Datatypes\endlink
 			   @param arrSize the element count of the customData array */
 			template<typename Ftype>
-			bool PhotonPeer::connect(const Common::JString& ipAddr, const Common::JString& appID, const Ftype pCustomDataArray, int arrSize)
+			bool PhotonPeer::connect(const Common::JString& ipAddr, const Common::JString& appID, const Ftype pCustomDataArray, int arrSize, bool useBackgroundSendReceiveThread)
 			{
 				COMPILE_TIME_ASSERT2_TRUE_MSG(Common::Helpers::ConfirmAllowed<Ftype>::dimensions==1, ERROR_THIS_OVERLOAD_IS_ONLY_FOR_1D_ARRAYS);
-				return connect(ipAddr, appID, Common::Helpers::ValueToObject<Common::Object>::get(pCustomDataArray, arrSize));
+				return connect(ipAddr, appID, Common::Helpers::ValueToObject<Common::Object>::get(pCustomDataArray, arrSize), useBackgroundSendReceiveThread);
 			}
 
 			/**
@@ -180,10 +180,10 @@ namespace ExitGames
 			   @param pCustomDataArray custom data to send to the server when initializing the connection - has to be provided in the form of an array of one of the supported data types, specified at @link Datatypes Table of Datatypes\endlink
 			   @param pArrSizes the element counts for every dimension of the custom data array - the element count of this array has to match the dimensions of the custom data array */
 			template<typename Ftype>
-			bool PhotonPeer::connect(const Common::JString& ipAddr, const Common::JString& appID, const Ftype pCustomDataArray, const int* pArrSizes)
+			bool PhotonPeer::connect(const Common::JString& ipAddr, const Common::JString& appID, const Ftype pCustomDataArray, const int* pArrSizes, bool useBackgroundSendReceiveThread)
 			{
 				COMPILE_TIME_ASSERT2_TRUE_MSG((Common::Helpers::ConfirmAllowed<Ftype>::dimensions>1), ERROR_THIS_OVERLOAD_IS_ONLY_FOR_MULTIDIMENSIONAL_ARRAYS);
-				return connect(ipAddr, appID, Common::Helpers::ValueToObject<Common::Object>::get(pCustomDataArray, pArrSizes));
+				return connect(ipAddr, appID, Common::Helpers::ValueToObject<Common::Object>::get(pCustomDataArray, pArrSizes), useBackgroundSendReceiveThread);
 			}
 	}
 }

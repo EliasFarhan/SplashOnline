@@ -160,14 +160,24 @@ void BulletManager::SpawnWata(
 
 Checksum<static_cast<int>(BulletChecksumIndex::LENGTH)> BulletManager::CalculateChecksum() const
 {
-	Adler32 bulletResult;
-	Adler32 bulletBodyResult;
+	Adler32 bulletResult{};
+	Adler32 bulletBodyResult{};
 	for(const auto & bullet : bullets_)
 	{
-		bulletResult.Add(bullet);
+		bulletResult.Add(bullet.bodyIndex);
+		bulletResult.Add(bullet.colliderIndex);
+		bulletResult.Add(bullet.destroyedTimer);
+		bulletResult.Add(bullet.timeToLiveTimer);
+		bulletResult.Add(bullet.colliderUserData);
+		bulletResult.Add(bullet.playerNumber);
 
 		const auto& body = gameSystems_->GetPhysicsWorld().body(bullet.bodyIndex);
-		bulletBodyResult.Add(body);
+		bulletBodyResult.Add(body.position);
+		bulletBodyResult.Add(body.velocity);
+		bulletBodyResult.Add(body.force);
+		bulletBodyResult.Add(body.inverseMass);
+		bulletBodyResult.Add(body.type);
+		bulletBodyResult.Add(body.isActive);
 	}
 	return {bulletResult.GetValue(), bulletBodyResult.GetValue()};
 }

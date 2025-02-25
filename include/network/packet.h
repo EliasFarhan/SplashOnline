@@ -32,9 +32,9 @@ enum class PacketType : nByte
 
 struct ConfirmFramePacket
 {
-	int frame = -1;
-	std::array<PlayerInput, MaxPlayerNmb> input{};
 	std::uint32_t checksum{};
+	short frame = -1;
+	std::array<PlayerInput, MaxPlayerNmb> input{};
 
 	bool operator==(const ConfirmFramePacket& confirmFrame) const
 	{
@@ -61,16 +61,16 @@ private:
 struct InputPacket
 {
 	std::array<PlayerInput, MaxPlayerInputNmb> inputs{};
-	int inputSize = -1;
-	int frame = -1;
-	int playerNumber = -1;
+	uint16_t frame : 13 = 0u;
+	uint8_t playerNumber : 3 = 0u;
+	uint8_t inputSize = 0;
 
 	bool operator==(const InputPacket& inputPacket) const
 	{
 		bool result = frame == inputPacket.frame && inputSize == inputPacket.inputSize && playerNumber == inputPacket.playerNumber;
 		if (!result)
 			return false;
-		for(int i = 0; i < inputSize; i++)
+		for(uint8_t i = 0u; i < inputSize; i++)
 		{
 			if(inputs[i] != inputPacket.inputs[i])
 				return false;
