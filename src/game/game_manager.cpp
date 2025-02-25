@@ -332,6 +332,7 @@ void GameManager::RollbackUpdate()
 									 localConfirmValue[4],
 									 localConfirmValue[5],
 									 localConfirmValue[6]));
+				SendDesync({localConfirmValue});
 			}
 		}
 		//validate frame

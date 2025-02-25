@@ -17,6 +17,7 @@
 #endif
 
 #include "game/const.h"
+#include "rollback/rollback_manager.h"
 
 namespace splash
 {
@@ -106,6 +107,7 @@ struct PingPacket
 class PingSerializer : public ExitGames::Common::CustomType<PingSerializer, static_cast<nByte>(PacketType::PING)>
 {
 public:
+	PingSerializer() = default;
 	explicit PingSerializer(const PingPacket& pingPacket): pingPacket_(pingPacket){}
 	bool compare(const CustomTypeBase& other) const override;
 
@@ -122,6 +124,30 @@ private:
 	PingPacket pingPacket_{};
 };
 
+struct DesyncPacket
+{
+	RollbackChecksum checksum;
+};
+
+class DesyncSerializer : public ExitGames::Common::CustomType<DesyncSerializer, static_cast<nByte>(PacketType::DESYNC)>
+{
+public:
+	DesyncSerializer() = default;
+	explicit DesyncSerializer(const DesyncPacket& desyncPacket): desyncPacket_(desyncPacket){}
+
+	bool compare(const CustomTypeBase& other) const override;
+
+	void duplicate(CustomTypeBase* pRetVal) const override;
+
+	void deserialize(const nByte* pData, short length) override;
+
+	short serialize(nByte* pRetVal) const override;
+
+	ExitGames::Common::JString& toString(ExitGames::Common::JString& retStr, bool withTypes) const override;
+
+private:
+	DesyncPacket desyncPacket_{};
+};
 }
 
 #endif //SPLASHONLINE_NETWORK_PACKET_H_

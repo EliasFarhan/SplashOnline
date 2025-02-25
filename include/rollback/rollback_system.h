@@ -27,7 +27,7 @@ struct Checksum
 	}
 	bool operator==(const Checksum& other) const
 	{
-		return data_ == other;
+		return data_ == other.data_;
 	}
 	bool operator!=(const Checksum& other) const
 	{

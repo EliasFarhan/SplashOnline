@@ -6,12 +6,14 @@
 #define SPLASHONLINE_ROLLBACK_MANAGER_H
 
 #include "game/game_systems.h"
-#include "network/packet.h"
 
 namespace splash
 {
 
 struct GameData;
+
+using RollbackChecksum = Checksum<static_cast<int>(BulletChecksumIndex::LENGTH)+static_cast<int>(PlayerChecksumIndex::LENGTH)>;
+struct InputPacket;
 class RollbackManager
 {
 public:
@@ -21,7 +23,7 @@ public:
 	[[nodiscard]] PlayerInput GetInput(int playerNumber, int currentFrame) const;
 	[[nodiscard]] std::pair<std::array<PlayerInput, MaxPlayerInputNmb>, uint8_t> GetInputs(uint8_t playerNumber, uint16_t currentFrame) const;
 	[[nodiscard]] std::array<PlayerInput, MaxPlayerNmb> GetInputs(int currentFrame) const;
-	[[nodiscard]] Checksum<static_cast<int>(BulletChecksumIndex::LENGTH)+static_cast<int>(PlayerChecksumIndex::LENGTH)> ConfirmLastFrame();
+	[[nodiscard]] RollbackChecksum ConfirmLastFrame();
 	[[nodiscard]] int GetLastConfirmFrame() const {return lastConfirmFrame_;}
 	[[nodiscard]] int GetLastReceivedFrame() const;
 	[[nodiscard]] int GetLastReceivedFrame(int playerNumber) const;

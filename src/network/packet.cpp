@@ -100,8 +100,41 @@ short PingSerializer::serialize(nByte* pRetVal) const
 	return static_cast<short>(1);
 }
 
-ExitGames::Common::JString& PingSerializer::toString(ExitGames::Common::JString& retStr, bool withTypes) const
+ExitGames::Common::JString& PingSerializer::toString(ExitGames::Common::JString& retStr, [[maybe_unused]] bool withTypes) const
 {
 	return retStr = ExitGames::Common::JString("Ping Packet");
+}
+
+bool DesyncSerializer::compare(const ExitGames::Common::CustomTypeBase& other) const
+{
+	return desyncPacket_.checksum == static_cast<const DesyncSerializer&>(other).desyncPacket_.checksum;
+}
+
+void DesyncSerializer::duplicate(ExitGames::Common::CustomTypeBase* pRetVal) const
+{
+	*reinterpret_cast<DesyncSerializer*>(pRetVal) = *this;
+}
+
+void DesyncSerializer::deserialize(const nByte* pData, short length)
+{
+	if(length != sizeof(DesyncPacket))
+	{
+		return;
+	}
+	std::memcpy(&desyncPacket_, pData, length);
+}
+
+short DesyncSerializer::serialize(nByte* pRetVal) const
+{
+	if(pRetVal)
+	{
+		*reinterpret_cast<DesyncPacket*>(pRetVal) = desyncPacket_;
+	}
+	return sixit::guidelines::narrow_cast<short>(sizeof(DesyncPacket));
+}
+
+ExitGames::Common::JString& DesyncSerializer::toString(ExitGames::Common::JString& retStr, [[maybe_unused]] bool withTypes) const
+{
+	return retStr = ExitGames::Common::JString("Desync Packet");
 }
 }

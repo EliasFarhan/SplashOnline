@@ -229,6 +229,7 @@ void BeginNetwork(const ExitGames::LoadBalancing::ClientConstructOptions& client
 	AddSystem(&networkSystem_);
 	AddGuiInterface(&networkClientUi_);
 
+	DesyncSerializer::registerType();
 	PingSerializer::registerType();
 	InputSerializer::registerType();
 	ConfirmFrameSerializer::registerType();
@@ -245,6 +246,7 @@ void NetworkSystem::End()
 	ConfirmFrameSerializer::unregisterType();
 	InputSerializer::unregisterType();
 	PingSerializer::unregisterType();
+	DesyncSerializer::unregisterType();
 	RemoveSystem(this);
 	RemoveGuiInterface(&networkClientUi_);
 	isRunning_.store(false, std::memory_order_release);
@@ -455,6 +457,18 @@ neko::Span<ConfirmFramePacket> GetConfirmPackets()
 		lastReceivedConfirmPackets_.clear();
 	}
 	return {returnedConfirmPackets_.data(), returnedConfirmPackets_.size()};
+}
+
+void SendDesync(const DesyncPacket& desyncPacket)
+{
+	DesyncSerializer serializer(desyncPacket);
+	std::scoped_lock<std::mutex> lock(networkTasksMutex_);
+	networkTasks_.emplace_back([serializer]
+	{
+		auto& client = neko::GetLoadBalancingClient();
+		ExitGames::LoadBalancing::RaiseEventOptions options{};
+		client.opRaiseEvent(true, serializer, static_cast<nByte>(PacketType::CONFIRM_FRAME), options);
+	});
 }
 
 bool NetworkClient::IsMaster() {return isMaster_;}

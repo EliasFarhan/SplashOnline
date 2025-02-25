@@ -48,6 +48,7 @@ bool IsMaster();
 void BeginNetwork(const ExitGames::LoadBalancing::ClientConstructOptions& clientConstructOptions={});
 void SendInputPacket(const InputPacket& inputPacket);
 void SendConfirmFramePacket(const ConfirmFramePacket& confirmPacket);
+void SendDesync(const DesyncPacket& desyncPacket);
 neko::Span<InputPacket> GetInputPackets();
 neko::Span<ConfirmFramePacket> GetConfirmPackets();
 }
