@@ -36,6 +36,7 @@ enum class State
 	JOINING,
 	IN_ROOM,
 	IN_GAME,
+	ERROR_ROOM,
 };
 State GetState();
 bool IsValid();
@@ -49,8 +50,10 @@ void BeginNetwork(const ExitGames::LoadBalancing::ClientConstructOptions& client
 void SendInputPacket(const InputPacket& inputPacket);
 void SendConfirmFramePacket(const ConfirmFramePacket& confirmPacket);
 void SendDesync(const DesyncPacket& desyncPacket);
+void SendPingPacket();
 neko::Span<InputPacket> GetInputPackets();
 neko::Span<ConfirmFramePacket> GetConfirmPackets();
+float GetPing();
 }
 
 #endif //SPLASHONLINE_NETWORK_CLIENT_H_

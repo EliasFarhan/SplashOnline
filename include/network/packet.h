@@ -97,7 +97,8 @@ private:
 
 struct PingPacket
 {
-	neko::Fixed<uint8_t, 5, uint16_t> masterTime;
+    using time_type = neko::Fixed<uint8_t, 5, uint16_t>;
+	time_type masterTime;
 	bool operator==(const PingPacket& other) const
 	{
 		return masterTime == other.masterTime;

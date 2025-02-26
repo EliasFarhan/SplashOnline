@@ -23,6 +23,7 @@ public:
 		LOGO,
 		LOBBY,
 		GAME,
+		ERROR_STATE,
 		VICTORY_SCREEN
 	};
 	SplashManager();
@@ -49,8 +50,10 @@ public:
 
 private:
 	std::unique_ptr<GameManager> gameManager_{};
-
+    Uint64 previousPingTime_= 0;
+    float lastDt_ = -1.0f;
 	Timer<float, 2000> logoTimer_{-1.0f};
+    Timer<float, 1000> pingTimer_{1.0f};
 
 	std::unique_ptr<spine::SkeletonDrawable> logo_ = nullptr;
 	SDL_Texture* bg_ = nullptr;

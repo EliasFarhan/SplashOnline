@@ -15,7 +15,7 @@ namespace splash
 struct GameData
 {
 	std::array<bool, MaxPlayerNmb> connectedPlayers{};
-	float introDelay = 5.0f;
+	float introDelay = 7.0f;
 	neko::Scalar period {120.0f}; //two minutes default game
 };
 
@@ -32,6 +32,11 @@ public:
 	[[nodiscard]] neko::Vec2i GetPlayerScreenPos() const;
 	[[nodiscard]] bool HasDesync() const {return hasDesync_;}
 	[[nodiscard]] int GetCurrentFrame() const {return currentFrame_;}
+
+	void ExitGame();
+    float GetIntroRemainingTime() const;
+    void UpdateIntroTime(float newTime);
+
 private:
 	void RollbackUpdate();
 	GameSystems gameSystems_;
@@ -47,12 +52,12 @@ private:
 	bool isGameOver_ = false;
 	bool hasDesync_ = false;
 
-	void ExitGame();
 };
 
 neko::Vec2i GetPlayerScreenPos();
 int GetCurrentFrame();
-
+float GetIntroRemainingTime();
+void UpdateIntroTime(float newTime);
 
 }
 #endif //SPLASHONLINE_GAME_GAME_MANAGER_H_

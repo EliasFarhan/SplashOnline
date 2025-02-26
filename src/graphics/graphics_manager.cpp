@@ -88,6 +88,7 @@ void EndGraphics()
 	ZoneScoped;
 #endif
 	EndGuiRenderer();
+    SpineManager::End();
 	TextureManager::End();
 	SDL_DestroyRenderer(renderer_);
 }

@@ -284,6 +284,7 @@ void GameManager::RollbackUpdate()
 					lastConfirmFrame,
 					rollbackManager_.GetLastConfirmFrame() + 1));
 				ExitGame();
+				SendDesync({});
 				return;
 			}
 			if (lastConfirmFrame > rollbackManager_.GetLastReceivedFrame())
@@ -333,6 +334,7 @@ void GameManager::RollbackUpdate()
 									 localConfirmValue[5],
 									 localConfirmValue[6]));
 				SendDesync({localConfirmValue});
+				ExitGame();
 			}
 		}
 		//validate frame
@@ -408,22 +410,48 @@ int GetCurrentFrame()
 	return  instance->GetCurrentFrame();
 }
 
+
+
 neko::Vec2i GameManager::GetPlayerScreenPos() const
 {
-	int playerIndex = 0;
-	if(NetworkClient::IsValid())
-	{
-		playerIndex = NetworkClient::GetPlayerIndex()-1;
-	}
-	const auto bodyIndex = gameSystems_.GetPlayerManager().GetPlayerPhysics()[playerIndex].bodyIndex;
-	return GetGraphicsPosition(gameSystems_.GetPhysicsWorld().body(bodyIndex).position);
+    int playerIndex = 0;
+    if (NetworkClient::IsValid())
+    {
+        playerIndex = NetworkClient::GetPlayerIndex() - 1;
+    }
+    const auto bodyIndex = gameSystems_.GetPlayerManager().GetPlayerPhysics()[playerIndex].bodyIndex;
+    return GetGraphicsPosition(gameSystems_.GetPhysicsWorld().body(bodyIndex).position);
 }
 
+float GetIntroRemainingTime()
+{
+    if (instance == nullptr)
+    {
+        return 0;
+    }
+    return !instance->GetIntroRemainingTime();
+}
+void UpdateIntroTime(float newTime)
+{
+    if (instance != nullptr)
+    {
+        instance->UpdateIntroTime(newTime);
+    }
+}
 void GameManager::ExitGame()
 {
-	isGameOver_ = true;
-	hasDesync_ = true;
-	LogError(fmt::format("Desync happened, please send splash_p{}.db to the developers", NetworkClient::GetPlayerIndex()-1));
+    isGameOver_ = true;
+    hasDesync_ = true;
+    LogError(fmt::format("Desync happened, please send splash_p{}.db to the developers",
+                         NetworkClient::GetPlayerIndex() - 1));
+}
+float GameManager::GetIntroRemainingTime() const
+{
+    return introDelayTimer_.Over() ? 0.0f : introDelayTimer_.RemainingTime();
+}
+void GameManager::UpdateIntroTime(float newTime)
+{
+    introDelayTimer_.SetTime(newTime);
 }
 
-}
+} // namespace splash
