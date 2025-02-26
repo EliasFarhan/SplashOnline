@@ -340,7 +340,8 @@ void GameManager::RollbackUpdate()
 		//validate frame
 		if(NetworkClient::IsMaster())
 		{
-			while(rollbackManager_.GetLastReceivedFrame() > neko::Max(rollbackManager_.GetLastConfirmFrame(), 0))
+		    const auto lastReceivedFrame = rollbackManager_.GetLastReceivedFrame();
+			while(lastReceivedFrame > neko::Max(rollbackManager_.GetLastConfirmFrame(), 0))
 			{
 				const auto confirmValue = rollbackManager_.ConfirmLastFrame();
 				const auto lastConfirmFrame = rollbackManager_.GetLastConfirmFrame();
@@ -451,7 +452,10 @@ float GameManager::GetIntroRemainingTime() const
 }
 void GameManager::UpdateIntroTime(float newTime)
 {
-    introDelayTimer_.SetTime(newTime);
+    if (!introDelayTimer_.Over())
+    {
+        introDelayTimer_.SetTime(newTime);
+    }
 }
 
 } // namespace splash

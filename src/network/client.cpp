@@ -150,7 +150,6 @@ void NetworkClientImpl::customEventAction(int playerNr, nByte eventCode, const E
     {
         if (isMaster_)
         {
-            LogDebug("Received Ping Packet from Client");
             const auto remainingTime = GetIntroRemainingTime();
             PingSerializer serializer{{PingPacket::time_type{remainingTime}}};
             std::scoped_lock lock(networkTasksMutex_);
@@ -165,7 +164,6 @@ void NetworkClientImpl::customEventAction(int playerNr, nByte eventCode, const E
         }
         else
         {
-            LogDebug("Received Ping Packet from Master");
             const auto pingSerializer = ExitGames::Common::ValueObject<PingSerializer>(eventContent).getDataCopy();
             const auto& pingPacket = pingSerializer.GetPingPacket();
 

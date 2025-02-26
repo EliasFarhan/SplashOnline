@@ -62,8 +62,8 @@ private:
 struct InputPacket
 {
 	std::array<PlayerInput, MaxPlayerInputNmb> inputs{};
-	uint16_t frame : 13 = 0u;
-	uint8_t playerNumber : 3 = 0u;
+	uint16_t frame = 0u;
+	uint8_t playerNumber = 0u;
 	uint8_t inputSize = 0;
 
 	bool operator==(const InputPacket& inputPacket) const

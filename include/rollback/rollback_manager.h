@@ -35,11 +35,11 @@ public:
 private:
 	struct PlayerInputData
 	{
-		uint16_t lastReceivedFrame = std::numeric_limits<uint16_t>::max();
+		int16_t lastReceivedFrame = -1;
 		bool isValid = false;
 	};
 	GameSystems confirmFrameGameSystems_{};
-	uint16_t lastConfirmFrame_ = std::numeric_limits<uint16_t>::max();
+	int16_t lastConfirmFrame_ = -1;
 	std::array<PlayerInputData, MaxPlayerNmb> inputDatas_{};
 	std::vector<std::array<PlayerInput, MaxPlayerNmb>> inputs_{};
 	bool isDirty_ = false;
