@@ -58,7 +58,36 @@ public:
 	template<typename T>
 	uint32_t Add(const T& data)
 	{
-		return Add(reinterpret_cast<const uint8_t*>(&data), sizeof(T));
+		if constexpr (sizeof(T) == sizeof(uint32_t))
+		{
+			a = (a + std::bit_cast <uint32_t>(data)) % MOD_ADLER;
+			b = (b + a) % MOD_ADLER;
+			return (b << 16) | a;
+		}
+		else if constexpr (sizeof(T) == sizeof (uint16_t))
+		{
+			a = (a + std::bit_cast <uint16_t>(data)) % MOD_ADLER;
+			b = (b + a) % MOD_ADLER;
+			return (b << 16) | a;
+		}
+		else if constexpr (sizeof(T) == sizeof (uint8_t))
+		{
+			a = (a + std::bit_cast <uint8_t>(data)) % MOD_ADLER;
+			b = (b + a) % MOD_ADLER;
+			return (b << 16) | a;
+		}
+		else if constexpr (sizeof (T) == sizeof(uint64_t))
+		{
+			const auto tmpValue = std::bit_cast <uint64_t>(data);
+			const uint32_t lowerValue = sixit::guidelines::narrow_cast<uint32_t>(tmpValue);
+			const uint32_t upperValue = sixit::guidelines::narrow_cast<uint32_t>(tmpValue>>32);
+			Add(lowerValue);
+			return Add(upperValue);
+		}
+		else
+		{
+			return Add(reinterpret_cast<const uint8_t*>(&data), sizeof(T));
+		}
 	}
 	uint32_t Add(const uint8_t* data, size_t len)
 	{

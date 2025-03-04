@@ -31,7 +31,7 @@ namespace
 #endif
 }
 
-
+#ifdef USE_SQLITE
 static int callback(void *data, int argc, char **argv, char **azColName)
 {
 	std::vector<PlayerInput>& inputs = *static_cast<std::vector<PlayerInput>*>(data);
@@ -73,7 +73,7 @@ static int callback(void *data, int argc, char **argv, char **azColName)
 	inputs[frame] = currentInput;
 	return 0;
 }
-
+#endif
 
 static SDL_JoystickID GetControllerInstanceId(SDL_GameController* controller)
 {

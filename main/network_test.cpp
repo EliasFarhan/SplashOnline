@@ -75,7 +75,7 @@ private:
 	SDL_Texture* bg_ = nullptr;
 	int systemIndex_ = -1;
 	int graphicsIndex_ = -1;
-	int frame_ = 0;
+	uint16_t frame_ = 0;
 	splash::PlayerInput playerInput_{};
 };
 
