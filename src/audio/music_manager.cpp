@@ -46,7 +46,7 @@ void SetMusicParameter(std::string_view name, float value)
 {
 	if(eventInstance_ != nullptr)
 	{
-		eventInstance_->setParameterValue(name.data(), value);
+		eventInstance_->setParameterByName(name.data(), value);
 	}
 }
 

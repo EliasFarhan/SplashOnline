@@ -253,7 +253,7 @@ void PlayerView::Update([[maybe_unused]]float dt)
 						{
 							SwitchToState(PlayerRenderState::JET, playerNumber);
 
-							playerSoundDatas_[playerNumber].jetpackSoundInstance->setParameterValue("Transition Jetpack", 0.0f);
+							playerSoundDatas_[playerNumber].jetpackSoundInstance->setParameterByName("Transition Jetpack", 0.0f);
 							if(playerCharacter.preJetBurstTimer.Over())
 							{
 								FmodPlaySound(GetPlayerSoundEvent(PlayerSoundId::JETPACKON));
@@ -322,7 +322,7 @@ void PlayerView::Update([[maybe_unused]]float dt)
 				}
 				if(playerRenderData.state != PlayerRenderState::JET)
 				{
-					playerSoundDatas_[playerNumber].jetpackSoundInstance->setParameterValue("Transition Jetpack", 0.75f);
+					playerSoundDatas_[playerNumber].jetpackSoundInstance->setParameterByName("Transition Jetpack", 0.75f);
 				}
 				break;
 
@@ -334,7 +334,7 @@ void PlayerView::Update([[maybe_unused]]float dt)
 					if (neko::Scalar{ static_cast<float>(playerInput.moveDirY) } > PlayerCharacter::JetBurstThreshold)
 					{
 						SwitchToState(PlayerRenderState::JET, playerNumber);
-						playerSoundDatas_[playerNumber].jetpackSoundInstance->setParameterValue("Transition Jetpack", 0.0f);
+						playerSoundDatas_[playerNumber].jetpackSoundInstance->setParameterByName("Transition Jetpack", 0.0f);
 
 						FmodPlaySound(GetPlayerSoundEvent(PlayerSoundId::JETPACKON));
 					}
@@ -679,7 +679,7 @@ void PlayerView::Load()
 		playerRenderDatas_[i].outIconArrow = GetTexture(TextureManager::TextureId::RIGHT_ARROW);
 
 		playerSoundDatas_[i].jetpackSoundInstance = FmodPlaySound(GetPlayerSoundEvent(PlayerSoundId::JETPACK));
-		playerSoundDatas_[i].jetpackSoundInstance->setParameterValue("Transition Jetpack", 0.75f);
+		playerSoundDatas_[i].jetpackSoundInstance->setParameterByName("Transition Jetpack", 0.75f);
 
 		playerRenderDatas_[i].dashFxDrawable = CreateSkeletonDrawable(SpineManager::SkeletonId::DASH);
 		playerRenderDatas_[i].dashFxDrawable->animationState->setAnimation(0, "animation", true);
