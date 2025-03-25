@@ -164,9 +164,17 @@ void SplashManager::Draw()
         break;
     }
     case State::GAME:
-        break;
+	{
+		break;
+	}
     case State::VICTORY_SCREEN:
-        break;
+	{
+		break;
+	}
+	case State::ERROR_STATE:
+	{
+		break;
+	}
     }
 }
 
@@ -217,7 +225,13 @@ void SplashManager::SwitchToState(SplashManager::State state)
         break;
     }
     case State::VICTORY_SCREEN:
-        break;
+	{
+		break;
+	}
+	case State::ERROR_STATE:
+	{
+		break;
+	}
     }
 }
 } // namespace splash
