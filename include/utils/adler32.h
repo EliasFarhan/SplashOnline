@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <ranges>
+#include <span>
 
 #include <math/vec2.h>
 

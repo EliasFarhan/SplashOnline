@@ -109,8 +109,8 @@ elseif (UNIX)
             "-Wold-style-cast" "-Wunused" "-Werror")
     target_link_libraries(SplashLib PUBLIC libfmodstudio.so libfmod.so)
     file(COPY ${FMOD_DIR}/core/lib/libfmod.so DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
-    file(COPY ${FMOD_DIR}/core/lib/libfmod.so.9 DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
-    file(COPY ${FMOD_DIR}/core/lib/libfmod.so.9.5 DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+    file(COPY ${FMOD_DIR}/core/lib/libfmod.so.13 DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+    file(COPY ${FMOD_DIR}/core/lib/libfmod.so.13.22 DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 
 endif ()
 #neko net
