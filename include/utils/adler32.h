@@ -5,7 +5,7 @@
 #include <span>
 
 #include <math/vec2.h>
-
+#include "engine/input_manager.h"
 #include "timer.h"
 
 namespace splash
@@ -41,7 +41,7 @@ public:
 
 	uint32_t Add(neko::Scalar s)
 	{
-		return Add(s.to_float());
+		return Add(static_cast<float>(s));
 	}
 
 	template<class T>
@@ -55,6 +55,36 @@ public:
 		return result;
 	}
 
+    template<class T, int N>
+    uint32_t Add(const std::array<T, N>& range)
+	{
+	    uint32_t result = 0;
+	    for (auto& elem: range)
+	    {
+	        result = Add(elem);
+	    }
+	    return result;
+	}
+
+    template<class T, int N>
+    uint32_t Add(const neko::SmallVector<T, N>& range)
+	{
+	    uint32_t result = 0;
+	    for (auto& elem: range)
+	    {
+	        result = Add(elem);
+	    }
+	    return result;
+	}
+
+    uint32_t Add(const PlayerInput& playerInput)
+	{
+	    Add(playerInput.moveDirX);
+	    Add(playerInput.moveDirY);
+	    Add(playerInput.targetDirX);
+	    Add(playerInput.targetDirY);
+	    return Add(playerInput.buttons);
+	}
 
 	template<typename T>
 	uint32_t Add(const T& data)
@@ -80,13 +110,14 @@ public:
 		else if constexpr (sizeof (T) == sizeof(uint64_t))
 		{
 			const auto tmpValue = std::bit_cast <uint64_t>(data);
-			const uint32_t lowerValue = sixit::guidelines::narrow_cast<uint32_t>(tmpValue);
-			const uint32_t upperValue = sixit::guidelines::narrow_cast<uint32_t>(tmpValue>>32);
+			const auto lowerValue = static_cast<uint32_t>(tmpValue);
+			const auto upperValue = static_cast<uint32_t>(tmpValue>>32);
 			Add(lowerValue);
 			return Add(upperValue);
 		}
 		else
 		{
+		    assert(false && "Don't use please");
 			return Add(reinterpret_cast<const uint8_t*>(&data), sizeof(T));
 		}
 	}

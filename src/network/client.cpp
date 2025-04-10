@@ -84,7 +84,7 @@ bool isMaster_ = true;
 Uint64 previousPingTime = 0;
 float lastPingDt = -1.0f;
 float ping = 0.0f;
-
+std::array<char, 40> playerName_{};
 } // namespace
 
 
@@ -117,6 +117,7 @@ void NetworkClientImpl::joinRoomEventAction(int playerNr, const ExitGames::Commo
             sixit::guidelines::narrow_cast<uint8_t>(neko::GetLoadBalancingClient().getLocalPlayer().getNumber());
         const auto& room = neko::GetLoadBalancingClient().getCurrentlyJoinedRoom();
         isMaster_ = room.getMasterClientID() == localPlayerIndex_;
+
     }
 }
 void NetworkClientImpl::leaveRoomEventAction(int playerNr, bool isInactive)
@@ -178,6 +179,7 @@ void NetworkClientImpl::customEventAction(int playerNr, nByte eventCode, const E
             {
                 UpdateIntroTime(static_cast<float>(pingPacket.masterTime)-ping/2.0f);
             }
+            SendPingPacket();
         }
         break;
     }
@@ -305,9 +307,8 @@ void NetworkClientUi::OnGui()
     case NetworkClient::State::CONNECTED_TO_MASTER:
     {
         static std::array<char, 40> roomName{};
-        static std::array<char, 40> playerName{};
-        ImGui::InputText("Player Name", playerName.data(), playerName.size());
-        ImGui::InputText("Room Name", roomName.data(), roomName.size());
+        ImGui::InputText("Player Name", playerName_.data(), playerName_.size());
+        //ImGui::InputText("Room Name", roomName.data(), roomName.size());
         if (ImGui::Button("Join Or Create"))
         {
             state_.store(NetworkClient::State::JOINING, std::memory_order_release);
@@ -315,7 +316,7 @@ void NetworkClientUi::OnGui()
             roomOptions.setMaxPlayers(4);
             auto& client = neko::GetLoadBalancingClient();
             auto& player = client.getLocalPlayer();
-            player.setName(playerName.data());
+            player.setName(playerName_.data());
             client.opJoinRandomOrCreateRoom(ExitGames::Common::JString(roomName.data()), roomOptions);
         }
         break;
