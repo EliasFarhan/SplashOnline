@@ -44,38 +44,17 @@ public:
 		return Add(static_cast<float>(s));
 	}
 
-	template<class T>
-	uint32_t Add(std::span<T> range)
-	{
-		uint32_t result = 0;
-		for (auto& elem: range)
-		{
-			result = Add(elem);
-		}
-		return result;
-	}
-
-    template<class T, int N>
-    uint32_t Add(const std::array<T, N>& range)
+	template<std::ranges::range R>
+	uint32_t Add(R&& range)
 	{
 	    uint32_t result = 0;
-	    for (auto& elem: range)
+	    for (auto&& elem: range)
 	    {
 	        result = Add(elem);
 	    }
 	    return result;
 	}
 
-    template<class T, int N>
-    uint32_t Add(const neko::SmallVector<T, N>& range)
-	{
-	    uint32_t result = 0;
-	    for (auto& elem: range)
-	    {
-	        result = Add(elem);
-	    }
-	    return result;
-	}
 
     uint32_t Add(const PlayerInput& playerInput)
 	{
@@ -87,6 +66,7 @@ public:
 	}
 
 	template<typename T>
+    requires !std::ranges::range<T>
 	uint32_t Add(const T& data)
 	{
 		if constexpr (sizeof(T) == sizeof(uint32_t))
