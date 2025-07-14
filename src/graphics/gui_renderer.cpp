@@ -8,10 +8,16 @@
 #include "engine/window.h"
 #include "engine/engine.h"
 
+#if(defined(__clang__))
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnontrivial-memcall"
+#endif
 #include <imgui.h>
 #include <imgui_impl_sdlrenderer2.h>
 #include <imgui_impl_sdl2.h>
+#if(defined(__clang__))
 
+#endif
 #include <algorithm>
 #include <numeric>
 #include <vector>

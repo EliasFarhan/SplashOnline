@@ -184,7 +184,7 @@ void GameManager::Tick()
 	}
 	else
 	{
-		const uint8_t localPlayerNumber = NetworkClient::GetPlayerIndex()-1_u8;
+		const uint8_t localPlayerNumber = NetworkClient::GetPlayerIndex()-1u;
 		//LogDebug(fmt::format("Local Input p{} f{} input: {}", localPlayerNumber+1, currentFrame_, localPlayerInput));
 		rollbackManager_.SetInput(localPlayerNumber, localPlayerInput, currentFrame_);
 		{
@@ -209,7 +209,7 @@ void GameManager::Tick()
 	if(NetworkClient::IsValid())
 	{
 		//send input
-		const uint8_t playerNumber =  NetworkClient::GetPlayerIndex()-1_u8;
+		const uint8_t playerNumber =  NetworkClient::GetPlayerIndex()-1u;
 		InputPacket inputPacket{};
 		inputPacket.playerNumber = playerNumber;
 		inputPacket.frame = currentFrame_;

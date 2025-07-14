@@ -66,7 +66,7 @@ public:
 	}
 
 	template<typename T>
-    requires !std::ranges::range<T>
+    requires (!std::ranges::range<T>)
 	uint32_t Add(const T& data)
 	{
 		if constexpr (sizeof(T) == sizeof(uint32_t))
